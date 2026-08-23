@@ -1,39 +1,45 @@
 import { describe, expect, it } from "vitest"
 import {
-  CATEGORY_COUNT,
-  QUESTION_COUNT,
-  QUESTION_VALUES,
+  DEFAULT_CATEGORY_COUNT,
+  DEFAULT_ROW_COUNT,
+  addCategory,
+  addRow,
   buildEmptyDraft,
   countCompleteQuestions,
-  formatQuestionValue,
+  countQuestions,
+  formatRowValue,
+  getRowCount,
+  hasCategoryContent,
+  hasDraftContent,
+  hasRowContent,
   isDraftComplete,
   isQuestionComplete,
+  removeCategory,
+  removeRow,
   setCategoryName,
   setQuestion,
 } from "@/lib/board"
 import type { GameDraft } from "@/lib/db"
 
-const buildCompleteDraft = (): GameDraft => ({
-  categories: Array.from({ length: CATEGORY_COUNT }, (_, index) => ({
+const buildFilledDraft = (draft: GameDraft): GameDraft => ({
+  categories: draft.categories.map((category, index) => ({
     name: `Category ${index + 1}`,
-    questions: QUESTION_VALUES.map((value) => ({
+    questions: category.questions.map(() => ({
       answer: "An answer",
       question: "A question",
-      value,
     })),
   })),
   title: "A board",
 })
 
 describe("buildEmptyDraft", () => {
-  it("makes a 5 by 5 board with the row values", () => {
+  it("makes a 5 by 5 board", () => {
     const draft = buildEmptyDraft()
-    expect(draft.categories).toHaveLength(CATEGORY_COUNT)
-    for (const category of draft.categories) {
-      expect(category.questions.map((question) => question.value)).toEqual(
-        QUESTION_VALUES
-      )
-    }
+    expect(draft.categories).toHaveLength(DEFAULT_CATEGORY_COUNT)
+    expect(getRowCount(draft)).toBe(DEFAULT_ROW_COUNT)
+    expect(countQuestions(draft)).toBe(
+      DEFAULT_CATEGORY_COUNT * DEFAULT_ROW_COUNT
+    )
   })
 
   it("makes a new set of categories on each call", () => {
@@ -60,17 +66,8 @@ describe("setCategoryName", () => {
 describe("setQuestion", () => {
   it("changes one question and leaves the others", () => {
     const draft = buildEmptyDraft()
-    const question = {
-      answer: "Who is John?",
-      question: "Magna Carta",
-      value: 400,
-    }
-    const next = setQuestion({
-      categoryIndex: 1,
-      draft,
-      question,
-      questionIndex: 1,
-    })
+    const question = { answer: "Who is John?", question: "Magna Carta" }
+    const next = setQuestion({ categoryIndex: 1, draft, question, rowIndex: 1 })
     expect(next.categories[1].questions[1]).toEqual(question)
     expect(next.categories[1].questions[0]).toBe(
       draft.categories[1].questions[0]
@@ -79,58 +76,202 @@ describe("setQuestion", () => {
   })
 })
 
+describe("addCategory", () => {
+  it("adds an empty category that has one question for each row", () => {
+    const draft = addCategory(buildEmptyDraft())
+    expect(draft.categories).toHaveLength(DEFAULT_CATEGORY_COUNT + 1)
+    expect(draft.categories[DEFAULT_CATEGORY_COUNT]).toEqual({
+      name: "",
+      questions: Array.from({ length: DEFAULT_ROW_COUNT }, () => ({
+        answer: "",
+        question: "",
+      })),
+    })
+  })
+
+  it("matches the row count after a row is added", () => {
+    const draft = addCategory(addRow(buildEmptyDraft()))
+    expect(getRowCount(draft)).toBe(DEFAULT_ROW_COUNT + 1)
+    expect(draft.categories[DEFAULT_CATEGORY_COUNT].questions).toHaveLength(
+      DEFAULT_ROW_COUNT + 1
+    )
+  })
+})
+
+describe("removeCategory", () => {
+  it("drops that category and keeps the others in order", () => {
+    const draft = buildFilledDraft(buildEmptyDraft())
+    const next = removeCategory({ categoryIndex: 1, draft })
+    expect(next.categories.map((category) => category.name)).toEqual([
+      "Category 1",
+      "Category 3",
+      "Category 4",
+      "Category 5",
+    ])
+    expect(draft.categories).toHaveLength(DEFAULT_CATEGORY_COUNT)
+  })
+})
+
+describe("addRow", () => {
+  it("adds one empty question to every category", () => {
+    const draft = addRow(buildFilledDraft(buildEmptyDraft()))
+    expect(getRowCount(draft)).toBe(DEFAULT_ROW_COUNT + 1)
+    for (const category of draft.categories) {
+      expect(category.questions).toHaveLength(DEFAULT_ROW_COUNT + 1)
+      expect(category.questions[DEFAULT_ROW_COUNT]).toEqual({
+        answer: "",
+        question: "",
+      })
+    }
+  })
+})
+
+describe("removeRow", () => {
+  it("drops that row from every category", () => {
+    const draft = setQuestion({
+      categoryIndex: 0,
+      draft: buildEmptyDraft(),
+      question: { answer: "An answer", question: "A question" },
+      rowIndex: 0,
+    })
+    const next = removeRow({ draft, rowIndex: 0 })
+    expect(getRowCount(next)).toBe(DEFAULT_ROW_COUNT - 1)
+    expect(countCompleteQuestions(next)).toBe(0)
+    for (const category of next.categories) {
+      expect(category.questions).toHaveLength(DEFAULT_ROW_COUNT - 1)
+    }
+  })
+})
+
 describe("isQuestionComplete", () => {
   it("needs a question and an answer that are not blank", () => {
-    expect(isQuestionComplete({ answer: "a", question: "q", value: 200 })).toBe(
-      true
-    )
-    expect(isQuestionComplete({ answer: " ", question: "q", value: 200 })).toBe(
-      false
-    )
-    expect(isQuestionComplete({ answer: "a", question: "", value: 200 })).toBe(
-      false
-    )
+    expect(isQuestionComplete({ answer: "a", question: "q" })).toBe(true)
+    expect(isQuestionComplete({ answer: " ", question: "q" })).toBe(false)
+    expect(isQuestionComplete({ answer: "a", question: "" })).toBe(false)
   })
 })
 
 describe("countCompleteQuestions", () => {
   it("counts only the questions that have both fields", () => {
     expect(countCompleteQuestions(buildEmptyDraft())).toBe(0)
-    expect(countCompleteQuestions(buildCompleteDraft())).toBe(QUESTION_COUNT)
+    expect(countCompleteQuestions(buildFilledDraft(buildEmptyDraft()))).toBe(
+      DEFAULT_CATEGORY_COUNT * DEFAULT_ROW_COUNT
+    )
   })
 })
 
 describe("isDraftComplete", () => {
   it("accepts a board with a title, category names and every question", () => {
-    expect(isDraftComplete(buildCompleteDraft())).toBe(true)
+    expect(isDraftComplete(buildFilledDraft(buildEmptyDraft()))).toBe(true)
+  })
+
+  it("needs the questions of a row that was just added", () => {
+    expect(isDraftComplete(addRow(buildFilledDraft(buildEmptyDraft())))).toBe(
+      false
+    )
   })
 
   it("rejects a board that misses the title, a category or a question", () => {
-    expect(isDraftComplete({ ...buildCompleteDraft(), title: " " })).toBe(false)
+    const draft = buildFilledDraft(buildEmptyDraft())
+    expect(isDraftComplete({ ...draft, title: " " })).toBe(false)
     expect(
-      isDraftComplete(
-        setCategoryName({
-          categoryIndex: 0,
-          draft: buildCompleteDraft(),
-          name: "",
-        })
-      )
+      isDraftComplete(setCategoryName({ categoryIndex: 0, draft, name: "" }))
     ).toBe(false)
     expect(
       isDraftComplete(
         setQuestion({
           categoryIndex: 0,
-          draft: buildCompleteDraft(),
-          question: { answer: "", question: "", value: 200 },
-          questionIndex: 0,
+          draft,
+          question: { answer: "", question: "" },
+          rowIndex: 0,
         })
       )
     ).toBe(false)
   })
 })
 
-describe("formatQuestionValue", () => {
-  it("shows whole dollars", () => {
-    expect(formatQuestionValue(1000)).toBe("$1,000")
+describe("formatRowValue", () => {
+  it("goes up by 200 dollars for each row", () => {
+    expect(formatRowValue(0)).toBe("$200")
+    expect(formatRowValue(4)).toBe("$1,000")
+  })
+})
+
+describe("hasCategoryContent", () => {
+  it("is false for a category that holds nothing", () => {
+    expect(hasCategoryContent(buildEmptyDraft().categories[0])).toBe(false)
+  })
+
+  it("is true for a name on its own", () => {
+    const draft = setCategoryName({
+      categoryIndex: 1,
+      draft: buildEmptyDraft(),
+      name: "History",
+    })
+    expect(hasCategoryContent(draft.categories[1])).toBe(true)
+    expect(hasCategoryContent(draft.categories[0])).toBe(false)
+  })
+
+  it("is true for a half-written question", () => {
+    const draft = setQuestion({
+      categoryIndex: 2,
+      draft: buildEmptyDraft(),
+      question: { answer: "", question: "Magna Carta" },
+      rowIndex: 3,
+    })
+    expect(hasCategoryContent(draft.categories[2])).toBe(true)
+    expect(hasCategoryContent(draft.categories[3])).toBe(false)
+  })
+})
+
+describe("hasDraftContent", () => {
+  it("is false for a board that holds nothing", () => {
+    expect(hasDraftContent(buildEmptyDraft())).toBe(false)
+  })
+
+  it("is true for a title on its own", () => {
+    expect(
+      hasDraftContent({ ...buildEmptyDraft(), title: "Movie night" })
+    ).toBe(true)
+  })
+
+  it("is true for a half-written question in any category", () => {
+    const draft = setQuestion({
+      categoryIndex: 4,
+      draft: buildEmptyDraft(),
+      question: { answer: "Who is John?", question: "" },
+      rowIndex: 4,
+    })
+    expect(hasDraftContent(draft)).toBe(true)
+  })
+
+  it("ignores blank space", () => {
+    expect(hasDraftContent({ ...buildEmptyDraft(), title: "   " })).toBe(false)
+  })
+})
+
+describe("hasRowContent", () => {
+  it("is false for a row that holds nothing", () => {
+    expect(hasRowContent({ draft: buildEmptyDraft(), rowIndex: 0 })).toBe(false)
+  })
+
+  it("is true when any category has content in that row", () => {
+    const draft = setQuestion({
+      categoryIndex: 4,
+      draft: buildEmptyDraft(),
+      question: { answer: "Who is John?", question: "" },
+      rowIndex: 2,
+    })
+    expect(hasRowContent({ draft, rowIndex: 2 })).toBe(true)
+    expect(hasRowContent({ draft, rowIndex: 1 })).toBe(false)
+  })
+
+  it("ignores the name of a category", () => {
+    const draft = setCategoryName({
+      categoryIndex: 0,
+      draft: buildEmptyDraft(),
+      name: "History",
+    })
+    expect(hasRowContent({ draft, rowIndex: 0 })).toBe(false)
   })
 })

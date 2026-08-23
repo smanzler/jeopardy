@@ -1,7 +1,7 @@
 import Dexie from "dexie"
 import type { EntityTable } from "dexie"
 
-export type Question = { answer: string; question: string; value: number }
+export type Question = { answer: string; question: string }
 
 export type Category = { name: string; questions: Array<Question> }
 

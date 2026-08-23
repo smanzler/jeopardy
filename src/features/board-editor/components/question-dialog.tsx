@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { formatQuestionValue } from "@/lib/board"
 
 type QuestionDialogProps = {
   categoryName: string
   onChange: (question: Question) => void
   onClose: () => void
   question: Question | undefined
+  value: string
 }
 
 export function QuestionDialog({
@@ -24,6 +24,7 @@ export function QuestionDialog({
   onChange,
   onClose,
   question,
+  value,
 }: QuestionDialogProps) {
   return (
     <Dialog
@@ -35,8 +36,7 @@ export function QuestionDialog({
           <>
             <DialogHeader>
               <DialogTitle>
-                {categoryName || "Untitled category"} —{" "}
-                {formatQuestionValue(question.value)}
+                {categoryName || "Untitled category"} — {value}
               </DialogTitle>
             </DialogHeader>
             <FieldGroup>
