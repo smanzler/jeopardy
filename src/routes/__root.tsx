@@ -1,6 +1,14 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
+import {
+  HeadContent,
+  Link,
+  Scripts,
+  createRootRoute,
+} from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
+
+import { Button } from "@/components/ui/button"
+import { SITE_DESCRIPTION } from "@/lib/meta"
 
 import appCss from "../styles.css?url"
 
@@ -15,7 +23,28 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "Jeopardy",
+      },
+      {
+        name: "description",
+        content: SITE_DESCRIPTION,
+      },
+      // The navy of the board, for the chrome that a phone puts round the page.
+      {
+        name: "theme-color",
+        content: "#06144F",
+      },
+      {
+        property: "og:title",
+        content: "Jeopardy",
+      },
+      {
+        property: "og:description",
+        content: SITE_DESCRIPTION,
+      },
+      {
+        property: "og:type",
+        content: "website",
       },
     ],
     links: [
@@ -23,16 +52,45 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: appCss,
       },
+      // The legacy icon comes first and modern browsers prefer the vector.
+      {
+        rel: "icon",
+        href: "/favicon.ico",
+        sizes: "16x16",
+      },
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/icon.svg",
+      },
+      {
+        rel: "manifest",
+        href: "/manifest.json",
+      },
     ],
   }),
-  notFoundComponent: () => (
-    <main className="container mx-auto p-4 pt-16">
-      <h1>404</h1>
-      <p>The requested page could not be found.</p>
-    </main>
-  ),
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
+
+function NotFound() {
+  return (
+    <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-6">
+      <h1 className="font-heading text-7xl font-medium tracking-wide text-primary uppercase">
+        404
+      </h1>
+      <p className="text-muted-foreground">This page is not on the board.</p>
+      <div className="flex gap-2">
+        <Button size="lg" render={<Link to="/" />}>
+          Home
+        </Button>
+        <Button size="lg" variant="outline" render={<Link to="/play" />}>
+          Boards
+        </Button>
+      </div>
+    </main>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

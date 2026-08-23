@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Quiz board tile with dollar sign">
+  <defs>
+    <linearGradient id="tile" x1="32" y1="0" x2="32" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2036E8"/>
+      <stop offset="0.55" stop-color="#0D1CBE"/>
+      <stop offset="1" stop-color="#060C8C"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="32" y1="12" x2="32" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE08A"/>
+      <stop offset="0.5" stop-color="#FFC534"/>
+      <stop offset="1" stop-color="#E9A013"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="64" height="64" rx="13" fill="url(#tile)"/>
+  <rect x="3.5" y="3.5" width="57" height="57" rx="10" fill="none" stroke="#FFD24A" stroke-opacity="0.55" stroke-width="1.6"/>
+
+  <g fill="none" stroke="url(#gold)" stroke-width="6.4" stroke-linecap="round">
+    <path d="M41.5 25.2C41.5 20.3 37.3 17.6 32 17.6C26.7 17.6 22.5 19.9 22.5 24.6C22.5 29.3 26.8 30.9 32 32C37.2 33.1 41.5 34.9 41.5 39.4C41.5 44.1 37.3 46.4 32 46.4C26.7 46.4 22.5 43.7 22.5 38.8"/>
+    <path d="M32 12.4L32 51.6" stroke-width="5.6"/>
+  </g>
+</svg>
