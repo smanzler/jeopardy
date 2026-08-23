@@ -1,5 +1,4 @@
 import { Fragment, useState } from "react"
-import { Link } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon, XIcon } from "lucide-react"
 import type { Game, GameDraft, Question } from "@/lib/db"
@@ -25,6 +24,7 @@ import { listGames, saveGame } from "@/lib/games"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { ButtonLink } from "@/components/button-link"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -145,12 +145,12 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" render={<Link to="/" />}>
+        <ButtonLink variant="ghost" to="/">
           Home
-        </Button>
-        <Button variant="ghost" render={<Link to="/play" />}>
+        </ButtonLink>
+        <ButtonLink variant="ghost" to="/play">
           Boards
-        </Button>
+        </ButtonLink>
       </div>
       <div className="flex items-end justify-between gap-4">
         <Field className="max-w-sm">
@@ -169,9 +169,9 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             {isDraftComplete(draft) ? " — ready" : ""}
           </span>
           {game ? (
-            <Button variant="outline" render={<Link to="/create" />}>
+            <ButtonLink variant="outline" to="/create">
               New board
-            </Button>
+            </ButtonLink>
           ) : (
             <Button variant="outline" onClick={handleNew}>
               New board
@@ -291,14 +291,13 @@ export default function BoardEditor({ game }: BoardEditorProps) {
                 {savedGame.categories.length} categories,{" "}
                 {getRowCount(savedGame.categories)} rows
               </span>
-              <Button
+              <ButtonLink
                 variant="ghost"
-                render={
-                  <Link to="/edit/$gameId" params={{ gameId: savedGame.id }} />
-                }
+                to="/edit/$gameId"
+                params={{ gameId: savedGame.id }}
               >
                 Edit
-              </Button>
+              </ButtonLink>
             </div>
           ))}
         </div>

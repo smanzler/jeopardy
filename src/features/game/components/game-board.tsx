@@ -26,7 +26,7 @@ export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
       {categories.map((category, categoryIndex) => (
         <div
           key={categoryIndex}
-          className="flex items-center justify-center rounded-lg bg-primary p-2 text-center text-lg font-semibold text-primary-foreground uppercase"
+          className="flex items-center justify-center rounded-sm bg-card p-2 text-center font-heading text-xl font-medium tracking-wide text-card-foreground uppercase"
         >
           {category.name}
         </div>
@@ -41,11 +41,10 @@ export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
               key={`${categoryIndex}-${rowIndex}`}
               variant="outline"
               className={cn(
-                "h-full w-full text-3xl font-bold tabular-nums",
+                "h-full w-full rounded-sm border-0 bg-card font-heading text-4xl font-medium text-primary tabular-nums hover:bg-card/80 hover:text-primary",
                 // The hover of the button lifts the text back to full colour,
                 // which hides which questions the game showed already.
-                isUsed &&
-                  "text-muted-foreground/40 hover:text-muted-foreground/40"
+                isUsed && "text-primary/20 hover:text-primary/20"
               )}
               onClick={() => onSelect({ categoryIndex, rowIndex })}
             >

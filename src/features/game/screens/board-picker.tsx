@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { Link } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { Game } from "@/lib/db"
 import { getRowCount } from "@/lib/board"
 import { deleteGame, listGames } from "@/lib/games"
 import { Button } from "@/components/ui/button"
+import { ButtonLink } from "@/components/button-link"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 
 export default function BoardPicker() {
@@ -20,12 +20,12 @@ export default function BoardPicker() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-4 p-6">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" render={<Link to="/" />}>
+        <ButtonLink variant="ghost" to="/">
           Home
-        </Button>
-        <Button variant="ghost" render={<Link to="/create" />}>
+        </ButtonLink>
+        <ButtonLink variant="ghost" to="/create">
           New board
-        </Button>
+        </ButtonLink>
       </div>
       <h1 className="text-xl font-semibold">Boards</h1>
       {games.length === 0 ? (
@@ -33,7 +33,7 @@ export default function BoardPicker() {
           <p className="text-muted-foreground">
             This browser holds no boards yet.
           </p>
-          <Button render={<Link to="/create" />}>Create a board</Button>
+          <ButtonLink to="/create">Create a board</ButtonLink>
         </div>
       ) : (
         games.map((game) => (
@@ -49,17 +49,16 @@ export default function BoardPicker() {
             >
               Delete
             </Button>
-            <Button
+            <ButtonLink
               variant="outline"
-              render={<Link to="/edit/$gameId" params={{ gameId: game.id }} />}
+              to="/edit/$gameId"
+              params={{ gameId: game.id }}
             >
               Edit
-            </Button>
-            <Button
-              render={<Link to="/play/$gameId" params={{ gameId: game.id }} />}
-            >
+            </ButtonLink>
+            <ButtonLink to="/play/$gameId" params={{ gameId: game.id }}>
               Play
-            </Button>
+            </ButtonLink>
           </div>
         ))
       )}

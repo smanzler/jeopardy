@@ -44,7 +44,7 @@ export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
             <span className="text-xs text-muted-foreground">
               {formatTeamName(teamIndex)}
             </span>
-            <span className="text-2xl font-bold tabular-nums">
+            <span className="font-heading text-2xl font-medium text-primary tabular-nums">
               {formatValue(score)}
             </span>
           </div>

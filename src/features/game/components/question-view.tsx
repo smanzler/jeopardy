@@ -35,14 +35,14 @@ export function QuestionView({
               ? "Esc goes back to the board."
               : "Space shows the answer. Esc goes back to the board."}
           </p>
-          <span className="text-2xl font-semibold tracking-wide uppercase">
-            {categoryName} {value}
+          <span className="font-heading text-2xl font-medium tracking-wide uppercase">
+            {categoryName} <span className="text-primary">{value}</span>
           </span>
         </div>
         <div />
       </div>
       <div className="flex flex-1 flex-col items-center justify-center gap-10 text-center">
-        <p className="max-w-5xl text-6xl leading-tight font-semibold text-balance">
+        <p className="max-w-5xl font-heading text-6xl leading-tight font-medium text-balance uppercase">
           {question.question}
         </p>
         {isAnswerShown && (

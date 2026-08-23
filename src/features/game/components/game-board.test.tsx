@@ -47,7 +47,7 @@ describe("GameBoard", () => {
     const usedKeys = [buildQuestionKey({ categoryIndex: 0, rowIndex: 0 })]
     renderBoard({ usedKeys })
     const [used, unused] = screen.getAllByText("$200")
-    expect(used.className).toContain("text-muted-foreground/40")
-    expect(unused.className).not.toContain("text-muted-foreground/40")
+    expect(used.className).toContain("text-primary/20")
+    expect(unused.className).not.toContain("text-primary/20")
   })
 })

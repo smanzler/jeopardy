@@ -1,11 +1,12 @@
 import { useState } from "react"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import { formatValue } from "@/lib/board"
 import { getGame } from "@/lib/games"
 import { buildStandings, formatTeamName, formatWinners } from "@/lib/score"
 import { endSession, getSession } from "@/lib/sessions"
 import { Button } from "@/components/ui/button"
+import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 
 export default function Winner({ gameId }: { gameId: string }) {
@@ -37,9 +38,9 @@ export default function Winner({ gameId }: { gameId: string }) {
     return (
       <div className="flex flex-col items-start gap-4 p-6">
         <p>No game runs on this board.</p>
-        <Button variant="outline" render={<Link to="/play" />}>
+        <ButtonLink variant="outline" to="/play">
           Boards
-        </Button>
+        </ButtonLink>
       </div>
     )
   }
@@ -49,7 +50,7 @@ export default function Winner({ gameId }: { gameId: string }) {
       <p className="text-sm tracking-wide text-muted-foreground uppercase">
         {game === null ? "The board is gone" : game.title || "Untitled board"}
       </p>
-      <h1 className="text-5xl font-semibold text-balance">
+      <h1 className="font-heading text-6xl font-medium tracking-wide text-balance text-primary uppercase">
         {formatWinners(session.scores)}
       </h1>
       <ol className="flex w-full max-w-sm flex-col gap-2">
@@ -62,7 +63,7 @@ export default function Winner({ gameId }: { gameId: string }) {
               {standing.rank}
             </span>
             <span className="flex-1">{formatTeamName(standing.teamIndex)}</span>
-            <span className="text-2xl font-bold tabular-nums">
+            <span className="font-heading text-2xl font-medium tabular-nums">
               {formatValue(standing.score)}
             </span>
           </li>
@@ -72,12 +73,12 @@ export default function Winner({ gameId }: { gameId: string }) {
         <Button size="lg" onClick={handleNewGame}>
           New game
         </Button>
-        <Button size="lg" variant="outline" render={<Link to="/play" />}>
+        <ButtonLink size="lg" variant="outline" to="/play">
           Boards
-        </Button>
-        <Button size="lg" variant="ghost" render={<Link to="/" />}>
+        </ButtonLink>
+        <ButtonLink size="lg" variant="ghost" to="/">
           Home
-        </Button>
+        </ButtonLink>
       </div>
     </main>
   )

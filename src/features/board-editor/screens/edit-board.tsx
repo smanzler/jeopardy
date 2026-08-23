@@ -1,7 +1,6 @@
-import { Link } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import { getGame } from "@/lib/games"
-import { Button } from "@/components/ui/button"
+import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 import BoardEditor from "@/features/board-editor/screens/board-editor"
 
@@ -20,9 +19,9 @@ export default function EditBoard({ gameId }: { gameId: string }) {
     return (
       <div className="flex flex-col items-start gap-4 p-6">
         <p>That board is not in this browser.</p>
-        <Button variant="outline" render={<Link to="/play" />}>
+        <ButtonLink variant="outline" to="/play">
           Boards
-        </Button>
+        </ButtonLink>
       </div>
     )
   }

@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Link } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ButtonLink } from "@/components/button-link"
 
 const DEFAULT_TEAM_COUNT = 2
 
@@ -27,7 +27,9 @@ export function TeamSetup({ onStart, title }: TeamSetupProps) {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6">
-      <h1 className="text-3xl font-semibold">{title}</h1>
+      <h1 className="font-heading text-4xl font-medium tracking-wide uppercase">
+        {title}
+      </h1>
       <Field className="w-48">
         <FieldLabel htmlFor="team-count">Teams</FieldLabel>
         <Select
@@ -51,12 +53,12 @@ export function TeamSetup({ onStart, title }: TeamSetupProps) {
         Play
       </Button>
       <div className="flex gap-2">
-        <Button variant="ghost" render={<Link to="/play" />}>
+        <ButtonLink variant="ghost" to="/play">
           Boards
-        </Button>
-        <Button variant="ghost" render={<Link to="/" />}>
+        </ButtonLink>
+        <ButtonLink variant="ghost" to="/">
           Home
-        </Button>
+        </ButtonLink>
       </div>
     </div>
   )

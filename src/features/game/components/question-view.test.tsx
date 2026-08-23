@@ -19,7 +19,9 @@ describe("QuestionView", () => {
         onClose={vi.fn()}
       />
     )
-    expect(screen.getByText("History $400")).toBeTruthy()
+    // The value sits in its own element, so it can carry the gold of the show.
+    expect(screen.getByText(/History/)).toBeTruthy()
+    expect(screen.getByText("$400")).toBeTruthy()
     expect(screen.getByText(question.question)).toBeTruthy()
   })
 

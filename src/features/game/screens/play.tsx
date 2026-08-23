@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition } from "@/lib/db"
 import { formatRowValue, getRowValue, isEveryQuestionUsed } from "@/lib/board"
@@ -12,7 +12,7 @@ import {
   revealAnswer,
   startSession,
 } from "@/lib/sessions"
-import { Button } from "@/components/ui/button"
+import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 import { GameBoard } from "@/features/game/components/game-board"
 import { QuestionView } from "@/features/game/components/question-view"
@@ -71,9 +71,9 @@ export default function Play({ gameId }: { gameId: string }) {
     return (
       <div className="flex flex-col items-start gap-4 p-6">
         <p>That board is not in this browser.</p>
-        <Button variant="outline" render={<Link to="/play" />}>
+        <ButtonLink variant="outline" to="/play">
           Boards
-        </Button>
+        </ButtonLink>
       </div>
     )
   }
@@ -117,15 +117,16 @@ export default function Play({ gameId }: { gameId: string }) {
           <div className="flex items-center justify-between gap-4 p-4">
             <h1 className="text-xl font-semibold">{title}</h1>
             <div className="flex gap-2">
-              <Button
+              <ButtonLink
                 variant="outline"
-                render={<Link to="/play/$gameId/winner" params={{ gameId }} />}
+                to="/play/$gameId/winner"
+                params={{ gameId }}
               >
                 End the game
-              </Button>
-              <Button variant="outline" render={<Link to="/play" />}>
+              </ButtonLink>
+              <ButtonLink variant="outline" to="/play">
                 Boards
-              </Button>
+              </ButtonLink>
             </div>
           </div>
           <div className="flex flex-1 flex-col px-4 pb-2">
