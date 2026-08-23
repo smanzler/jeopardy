@@ -2,24 +2,18 @@ import { db } from "@/lib/db"
 import type { Game, GameDraft } from "@/lib/db"
 
 /**
- * Writes a draft to the local database.
- * Give the `id` of an earlier save to replace that board. Without an `id`, this
- * makes a new board.
+ * Writes a draft to the local database under `id`, and makes the board if that
+ * key holds none yet. The editor holds the key, because it must have one before
+ * the first write.
  */
 export const saveGame = async ({
   draft,
   id,
 }: {
   draft: GameDraft
-  id?: string
-}): Promise<Game> => {
-  const game = {
-    ...draft,
-    id: id ?? crypto.randomUUID(),
-    updatedAt: Date.now(),
-  }
-  await db.games.put(game)
-  return game
+  id: string
+}): Promise<void> => {
+  await db.games.put({ ...draft, id, updatedAt: Date.now() })
 }
 
 export const listGames = (): Promise<Array<Game>> =>

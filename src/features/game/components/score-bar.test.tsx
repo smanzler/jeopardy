@@ -18,9 +18,9 @@ describe("ScoreBar", () => {
   it("takes the step from the value of the open question", () => {
     const onAdjust = vi.fn()
     render(<ScoreBar scores={[0, 0]} value={400} onAdjust={onAdjust} />)
-    fireEvent.click(screen.getAllByText("+$400")[1])
+    fireEvent.click(screen.getByLabelText("Give points to Team 2"))
     expect(onAdjust).toHaveBeenCalledWith({ delta: 400, teamIndex: 1 })
-    fireEvent.click(screen.getAllByText("-$400")[0])
+    fireEvent.click(screen.getByLabelText("Take points from Team 1"))
     expect(onAdjust).toHaveBeenCalledWith({ delta: -400, teamIndex: 0 })
   })
 

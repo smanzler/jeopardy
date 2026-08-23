@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react"
-import { Link, useBlocker } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon, XIcon } from "lucide-react"
 import type { Game, GameDraft, Question } from "@/lib/db"
@@ -14,7 +14,6 @@ import {
   formatRowValue,
   getRowCount,
   hasCategoryContent,
-  hasDraftContent,
   hasRowContent,
   isDraftComplete,
   removeCategory,
@@ -33,23 +32,12 @@ import type { ConfirmPrompt } from "@/components/confirm-dialog"
 
 type Selection = { categoryIndex: number; rowIndex: number }
 
-/** An action that throws work away, and that waits for a confirmation. */
-type PendingAction =
-  | { categoryIndex: number; type: "remove-category" }
-  | { rowIndex: number; type: "remove-row" }
-  | { type: "new-board" }
+/** A removal that deletes work, and that waits for a confirmation. */
+type PendingRemoval =
+  | { categoryIndex: number; type: "category" }
+  | { rowIndex: number; type: "row" }
 
 const REMOVAL_WARNING = "This deletes the questions and the answers in it."
-
-const UNSAVED_WARNING =
-  "The board that you have now has changes that you did not save. You lose those changes."
-
-const LEAVE_PROMPT = {
-  cancelLabel: "Stay here",
-  confirmLabel: "Leave the board",
-  description: UNSAVED_WARNING,
-  title: "Leave the board?",
-}
 
 type BoardEditorProps = {
   /** A board to edit. The editor reads it on the first render only. */
@@ -62,113 +50,96 @@ export default function BoardEditor({ game }: BoardEditorProps) {
       ? { categories: game.categories, title: game.title }
       : buildEmptyDraft()
   )
-  // Each edit builds a new draft, so the reference tells if a save is current.
-  // A board that comes from the database starts as the draft that it holds.
-  const [savedDraft, setSavedDraft] = useState(() => (game ? draft : undefined))
-  const [gameId, setGameId] = useState(game?.id)
+  // The board claims its key before the first write, so quick changes cannot
+  // race each other into two rows. A new board reaches the database when the
+  // host makes the first change to it.
+  const [gameId, setGameId] = useState(() => game?.id ?? crypto.randomUUID())
   const [selection, setSelection] = useState<Selection>()
-  const [pending, setPending] = useState<PendingAction>()
+  const [removal, setRemoval] = useState<PendingRemoval>()
+  const [hasSaveFailed, setHasSaveFailed] = useState(false)
   const savedGames = useLiveQuery(listGames, [], [])
 
   const categoryCount = draft.categories.length
   const rowCount = getRowCount(draft.categories)
-  const hasUnsavedChanges = hasDraftContent(draft) && draft !== savedDraft
-
-  // A link out of the editor throws the work away, the same as a new board.
-  const blocker = useBlocker({
-    enableBeforeUnload: () => hasUnsavedChanges,
-    shouldBlockFn: () => hasUnsavedChanges,
-    withResolver: true,
-  })
+  const otherGames = savedGames.filter((savedGame) => savedGame.id !== gameId)
 
   const selectedQuestion =
     selection &&
     draft.categories[selection.categoryIndex].questions[selection.rowIndex]
 
-  const handleSave = async () => {
-    const saved = await saveGame({ draft, id: gameId })
-    setGameId(saved.id)
-    setSavedDraft(draft)
+  /**
+   * Holds the change for the screen and writes it to the database. The screen
+   * keeps its own copy, so the text of an input does not wait for the write.
+   */
+  const updateBoard = (next: GameDraft) => {
+    setDraft(next)
+    saveGame({ draft: next, id: gameId }).then(
+      () => setHasSaveFailed(false),
+      () => setHasSaveFailed(true)
+    )
   }
 
-  const buildConfirmPrompt = (action: PendingAction): ConfirmPrompt => {
+  const buildConfirmPrompt = (action: PendingRemoval): ConfirmPrompt => {
     switch (action.type) {
-      case "remove-category":
+      case "category":
         return {
           cancelLabel: "Keep it",
           confirmLabel: "Remove",
           description: REMOVAL_WARNING,
           title: `Remove ${draft.categories[action.categoryIndex].name || `category ${action.categoryIndex + 1}`}?`,
         }
-      case "remove-row":
+      case "row":
         return {
           cancelLabel: "Keep it",
           confirmLabel: "Remove",
           description: REMOVAL_WARNING,
           title: `Remove the ${formatRowValue(action.rowIndex)} row?`,
         }
-      case "new-board":
-        return {
-          cancelLabel: "Keep it",
-          confirmLabel: "Start a new board",
-          description: UNSAVED_WARNING,
-          title: "Start a new board?",
-        }
     }
   }
 
-  const startNewBoard = () => {
-    setDraft(buildEmptyDraft())
-    setGameId(undefined)
-    setSavedDraft(undefined)
-  }
-
-  // An action that throws no work away runs with no confirmation.
+  // A removal that throws no work away runs with no confirmation.
   const handleRemoveCategory = (categoryIndex: number) => {
     if (hasCategoryContent(draft.categories[categoryIndex])) {
-      setPending({ categoryIndex, type: "remove-category" })
+      setRemoval({ categoryIndex, type: "category" })
       return
     }
-    setDraft(removeCategory({ categoryIndex, draft }))
+    updateBoard(removeCategory({ categoryIndex, draft }))
   }
 
   const handleRemoveRow = (rowIndex: number) => {
     if (hasRowContent({ draft, rowIndex })) {
-      setPending({ rowIndex, type: "remove-row" })
+      setRemoval({ rowIndex, type: "row" })
       return
     }
-    setDraft(removeRow({ draft, rowIndex }))
-  }
-
-  const handleNew = () => {
-    if (hasUnsavedChanges) {
-      setPending({ type: "new-board" })
-      return
-    }
-    startNewBoard()
+    updateBoard(removeRow({ draft, rowIndex }))
   }
 
   const handleConfirm = () => {
-    if (!pending) return
-    switch (pending.type) {
-      case "remove-category":
-        setDraft(
-          removeCategory({ categoryIndex: pending.categoryIndex, draft })
+    if (!removal) return
+    switch (removal.type) {
+      case "category":
+        updateBoard(
+          removeCategory({ categoryIndex: removal.categoryIndex, draft })
         )
         break
-      case "remove-row":
-        setDraft(removeRow({ draft, rowIndex: pending.rowIndex }))
-        break
-      case "new-board":
-        startNewBoard()
+      case "row":
+        updateBoard(removeRow({ draft, rowIndex: removal.rowIndex }))
         break
     }
-    setPending(undefined)
+    setRemoval(undefined)
   }
 
   const handleQuestionChange = (question: Question) => {
     if (!selection) return
-    setDraft(setQuestion({ ...selection, draft, question }))
+    updateBoard(setQuestion({ ...selection, draft, question }))
+  }
+
+  // The board that the editor holds stays in the database, so a new board only
+  // needs an empty draft under a new key.
+  const handleNew = () => {
+    setDraft(buildEmptyDraft())
+    setGameId(crypto.randomUUID())
   }
 
   return (
@@ -188,7 +159,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             id="board-title"
             value={draft.title}
             onChange={(event) =>
-              setDraft({ ...draft, title: event.target.value })
+              updateBoard({ ...draft, title: event.target.value })
             }
           />
         </Field>
@@ -206,11 +177,15 @@ export default function BoardEditor({ game }: BoardEditorProps) {
               New board
             </Button>
           )}
-          <Button onClick={handleSave}>
-            {gameId ? "Save changes" : "Save board"}
-          </Button>
         </div>
       </div>
+
+      {hasSaveFailed && (
+        <p className="text-sm text-destructive">
+          The browser did not keep the last change. Look at the space that the
+          browser gives to this site.
+        </p>
+      )}
 
       <div
         className="grid gap-2"
@@ -226,7 +201,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
               placeholder={`Category ${categoryIndex + 1}`}
               value={category.name}
               onChange={(event) =>
-                setDraft(
+                updateBoard(
                   setCategoryName({
                     categoryIndex,
                     draft,
@@ -251,7 +226,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           size="icon"
           aria-label="Add category"
           disabled={categoryCount >= MAX_CATEGORY_COUNT}
-          onClick={() => setDraft(addCategory(draft))}
+          onClick={() => updateBoard(addCategory(draft))}
         >
           <PlusIcon />
         </Button>
@@ -284,7 +259,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         variant="outline"
         className="self-start"
         disabled={rowCount >= MAX_ROW_COUNT}
-        onClick={() => setDraft(addRow(draft))}
+        onClick={() => updateBoard(addRow(draft))}
       >
         <PlusIcon />
         Add row
@@ -301,21 +276,15 @@ export default function BoardEditor({ game }: BoardEditorProps) {
       />
 
       <ConfirmDialog
-        prompt={pending && buildConfirmPrompt(pending)}
-        onCancel={() => setPending(undefined)}
+        prompt={removal && buildConfirmPrompt(removal)}
+        onCancel={() => setRemoval(undefined)}
         onConfirm={handleConfirm}
       />
 
-      <ConfirmDialog
-        prompt={blocker.status === "blocked" ? LEAVE_PROMPT : undefined}
-        onCancel={() => blocker.reset?.()}
-        onConfirm={() => blocker.proceed?.()}
-      />
-
-      {savedGames.length > 0 && (
+      {otherGames.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium">Saved boards</h2>
-          {savedGames.map((savedGame) => (
+          <h2 className="text-sm font-medium">Other boards</h2>
+          {otherGames.map((savedGame) => (
             <div key={savedGame.id} className="flex items-center gap-2 text-sm">
               <span>{savedGame.title || "Untitled board"}</span>
               <span className="text-muted-foreground">

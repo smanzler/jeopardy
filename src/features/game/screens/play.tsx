@@ -79,6 +79,7 @@ export default function Play({ gameId }: { gameId: string }) {
         <QuestionView
           categoryName={game.categories[openPosition.categoryIndex].name}
           isAnswerShown={session.isAnswerShown}
+          onClose={() => closeQuestion(gameId)}
           question={
             game.categories[openPosition.categoryIndex].questions[
               openPosition.rowIndex

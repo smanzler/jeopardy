@@ -14,7 +14,6 @@ import {
   getRowCount,
   getRowValue,
   hasCategoryContent,
-  hasDraftContent,
   hasRowContent,
   isDraftComplete,
   isQuestionComplete,
@@ -225,32 +224,6 @@ describe("hasCategoryContent", () => {
     })
     expect(hasCategoryContent(draft.categories[2])).toBe(true)
     expect(hasCategoryContent(draft.categories[3])).toBe(false)
-  })
-})
-
-describe("hasDraftContent", () => {
-  it("is false for a board that holds nothing", () => {
-    expect(hasDraftContent(buildEmptyDraft())).toBe(false)
-  })
-
-  it("is true for a title on its own", () => {
-    expect(
-      hasDraftContent({ ...buildEmptyDraft(), title: "Movie night" })
-    ).toBe(true)
-  })
-
-  it("is true for a half-written question in any category", () => {
-    const draft = setQuestion({
-      categoryIndex: 4,
-      draft: buildEmptyDraft(),
-      question: { answer: "Who is John?", question: "" },
-      rowIndex: 4,
-    })
-    expect(hasDraftContent(draft)).toBe(true)
-  })
-
-  it("ignores blank space", () => {
-    expect(hasDraftContent({ ...buildEmptyDraft(), title: "   " })).toBe(false)
   })
 })
 

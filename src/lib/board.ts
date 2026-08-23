@@ -74,9 +74,6 @@ const hasQuestionContent = (question: Question): boolean =>
 export const hasCategoryContent = (category: Category): boolean =>
   category.name.trim() !== "" || category.questions.some(hasQuestionContent)
 
-export const hasDraftContent = (draft: GameDraft): boolean =>
-  draft.title.trim() !== "" || draft.categories.some(hasCategoryContent)
-
 export const hasRowContent = ({
   draft,
   rowIndex,

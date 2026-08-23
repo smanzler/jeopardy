@@ -1,3 +1,4 @@
+import { MinusIcon, PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatValue } from "@/lib/board"
 import { formatTeamName } from "@/lib/score"
@@ -26,9 +27,20 @@ export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
       {scores.map((score, teamIndex) => (
         <div
           key={teamIndex}
-          className="flex items-center gap-3 rounded-lg border px-4 py-2"
+          className="flex items-center gap-3 rounded-lg border px-3 py-2"
         >
-          <div className="flex flex-col">
+          {value !== undefined && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              aria-label={`Take points from ${formatTeamName(teamIndex)}`}
+              onClick={() => handleAdjust({ sign: -1, teamIndex })}
+            >
+              <MinusIcon />
+            </Button>
+          )}
+          <div className="flex flex-col items-center">
             <span className="text-xs text-muted-foreground">
               {formatTeamName(teamIndex)}
             </span>
@@ -37,22 +49,15 @@ export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
             </span>
           </div>
           {value !== undefined && (
-            <>
-              <Button
-                variant="outline"
-                className="tabular-nums"
-                onClick={() => handleAdjust({ sign: -1, teamIndex })}
-              >
-                {`-${formatValue(value)}`}
-              </Button>
-              <Button
-                variant="outline"
-                className="tabular-nums"
-                onClick={() => handleAdjust({ sign: 1, teamIndex })}
-              >
-                {`+${formatValue(value)}`}
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              aria-label={`Give points to ${formatTeamName(teamIndex)}`}
+              onClick={() => handleAdjust({ sign: 1, teamIndex })}
+            >
+              <PlusIcon />
+            </Button>
           )}
         </div>
       ))}
