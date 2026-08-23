@@ -42,7 +42,10 @@ export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
               variant="outline"
               className={cn(
                 "h-full w-full text-3xl font-bold tabular-nums",
-                isUsed && "text-muted-foreground/40"
+                // The hover of the button lifts the text back to full colour,
+                // which hides which questions the game showed already.
+                isUsed &&
+                  "text-muted-foreground/40 hover:text-muted-foreground/40"
               )}
               onClick={() => onSelect({ categoryIndex, rowIndex })}
             >

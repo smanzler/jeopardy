@@ -10,6 +10,7 @@ import {
   countQuestions,
   formatRowValue,
   formatValue,
+  getQuestionStatus,
   getRowCount,
   getRowValue,
   hasCategoryContent,
@@ -298,5 +299,21 @@ describe("buildQuestionKey", () => {
     expect(buildQuestionKey({ categoryIndex: 1, rowIndex: 2 })).not.toBe(
       buildQuestionKey({ categoryIndex: 2, rowIndex: 1 })
     )
+  })
+})
+
+describe("getQuestionStatus", () => {
+  it("names what a question still needs", () => {
+    expect(getQuestionStatus({ answer: "", question: "" })).toBe("empty")
+    expect(getQuestionStatus({ answer: "  ", question: " " })).toBe("empty")
+    expect(getQuestionStatus({ answer: "", question: "Magna Carta" })).toBe(
+      "no-answer"
+    )
+    expect(getQuestionStatus({ answer: "Who is John?", question: "" })).toBe(
+      "no-question"
+    )
+    expect(
+      getQuestionStatus({ answer: "Who is John?", question: "Magna Carta" })
+    ).toBe("complete")
   })
 })

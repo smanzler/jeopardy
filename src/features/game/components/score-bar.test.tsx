@@ -24,13 +24,14 @@ describe("ScoreBar", () => {
     expect(onAdjust).toHaveBeenCalledWith({ delta: -400, teamIndex: 0 })
   })
 
-  it("holds the buttons shut while no question is open", () => {
-    const onAdjust = vi.fn()
-    render(<ScoreBar scores={[0]} value={undefined} onAdjust={onAdjust} />)
-    const [subtract, add] = screen.getAllByRole("button")
-    expect(subtract.getAttribute("disabled")).not.toBeNull()
-    expect(add.getAttribute("disabled")).not.toBeNull()
-    fireEvent.click(add)
-    expect(onAdjust).not.toHaveBeenCalled()
+  it("hides the buttons while no question is open", () => {
+    render(<ScoreBar scores={[0, 0]} value={undefined} onAdjust={vi.fn()} />)
+    expect(screen.queryAllByRole("button")).toHaveLength(0)
+    expect(screen.getByText("Team 2")).toBeTruthy()
+  })
+
+  it("shows a pair of buttons for each team while a question is open", () => {
+    render(<ScoreBar scores={[0, 0]} value={200} onAdjust={vi.fn()} />)
+    expect(screen.queryAllByRole("button")).toHaveLength(4)
   })
 })

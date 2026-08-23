@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export type ConfirmPrompt = {
+  cancelLabel: string
   confirmLabel: string
   description: string
   title: string
@@ -42,7 +43,7 @@ export function ConfirmDialog({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Keep it</AlertDialogCancel>
+              <AlertDialogCancel>{prompt.cancelLabel}</AlertDialogCancel>
               <AlertDialogAction variant="destructive" onClick={onConfirm}>
                 {prompt.confirmLabel}
               </AlertDialogAction>

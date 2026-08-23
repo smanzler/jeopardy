@@ -55,6 +55,18 @@ export const getRowCount = (categories: Array<Category>): number =>
 export const isQuestionComplete = (question: Question): boolean =>
   question.answer.trim() !== "" && question.question.trim() !== ""
 
+/** What the editor must still get for a question. */
+export type QuestionStatus = "complete" | "empty" | "no-answer" | "no-question"
+
+export const getQuestionStatus = (question: Question): QuestionStatus => {
+  const hasQuestion = question.question.trim() !== ""
+  const hasAnswer = question.answer.trim() !== ""
+  if (hasQuestion && hasAnswer) return "complete"
+  if (hasQuestion) return "no-answer"
+  if (hasAnswer) return "no-question"
+  return "empty"
+}
+
 const hasQuestionContent = (question: Question): boolean =>
   question.answer.trim() !== "" || question.question.trim() !== ""
 

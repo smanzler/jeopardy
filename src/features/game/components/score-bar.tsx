@@ -5,7 +5,7 @@ import { formatTeamName } from "@/lib/score"
 type ScoreBarProps = {
   onAdjust: ({ delta, teamIndex }: { delta: number; teamIndex: number }) => void
   scores: Array<number>
-  /** The value of the open question. No value holds the buttons shut. */
+  /** The value of the open question. No value hides the buttons. */
   value: number | undefined
 }
 
@@ -22,7 +22,7 @@ export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
   }
 
   return (
-    <div className="flex justify-center gap-4 border-t p-4">
+    <div className="flex flex-wrap justify-center gap-3 border-t p-4">
       {scores.map((score, teamIndex) => (
         <div
           key={teamIndex}
@@ -36,22 +36,24 @@ export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
               {formatValue(score)}
             </span>
           </div>
-          <Button
-            variant="outline"
-            className="tabular-nums"
-            disabled={value === undefined}
-            onClick={() => handleAdjust({ sign: -1, teamIndex })}
-          >
-            {value === undefined ? "-" : `-${formatValue(value)}`}
-          </Button>
-          <Button
-            variant="outline"
-            className="tabular-nums"
-            disabled={value === undefined}
-            onClick={() => handleAdjust({ sign: 1, teamIndex })}
-          >
-            {value === undefined ? "+" : `+${formatValue(value)}`}
-          </Button>
+          {value !== undefined && (
+            <>
+              <Button
+                variant="outline"
+                className="tabular-nums"
+                onClick={() => handleAdjust({ sign: -1, teamIndex })}
+              >
+                {`-${formatValue(value)}`}
+              </Button>
+              <Button
+                variant="outline"
+                className="tabular-nums"
+                onClick={() => handleAdjust({ sign: 1, teamIndex })}
+              >
+                {`+${formatValue(value)}`}
+              </Button>
+            </>
+          )}
         </div>
       ))}
     </div>
