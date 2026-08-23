@@ -5,10 +5,13 @@ import {
   addCategory,
   addRow,
   buildEmptyDraft,
+  buildQuestionKey,
   countCompleteQuestions,
   countQuestions,
   formatRowValue,
+  formatValue,
   getRowCount,
+  getRowValue,
   hasCategoryContent,
   hasDraftContent,
   hasRowContent,
@@ -36,7 +39,7 @@ describe("buildEmptyDraft", () => {
   it("makes a 5 by 5 board", () => {
     const draft = buildEmptyDraft()
     expect(draft.categories).toHaveLength(DEFAULT_CATEGORY_COUNT)
-    expect(getRowCount(draft)).toBe(DEFAULT_ROW_COUNT)
+    expect(getRowCount(draft.categories)).toBe(DEFAULT_ROW_COUNT)
     expect(countQuestions(draft)).toBe(
       DEFAULT_CATEGORY_COUNT * DEFAULT_ROW_COUNT
     )
@@ -91,7 +94,7 @@ describe("addCategory", () => {
 
   it("matches the row count after a row is added", () => {
     const draft = addCategory(addRow(buildEmptyDraft()))
-    expect(getRowCount(draft)).toBe(DEFAULT_ROW_COUNT + 1)
+    expect(getRowCount(draft.categories)).toBe(DEFAULT_ROW_COUNT + 1)
     expect(draft.categories[DEFAULT_CATEGORY_COUNT].questions).toHaveLength(
       DEFAULT_ROW_COUNT + 1
     )
@@ -115,7 +118,7 @@ describe("removeCategory", () => {
 describe("addRow", () => {
   it("adds one empty question to every category", () => {
     const draft = addRow(buildFilledDraft(buildEmptyDraft()))
-    expect(getRowCount(draft)).toBe(DEFAULT_ROW_COUNT + 1)
+    expect(getRowCount(draft.categories)).toBe(DEFAULT_ROW_COUNT + 1)
     for (const category of draft.categories) {
       expect(category.questions).toHaveLength(DEFAULT_ROW_COUNT + 1)
       expect(category.questions[DEFAULT_ROW_COUNT]).toEqual({
@@ -135,7 +138,7 @@ describe("removeRow", () => {
       rowIndex: 0,
     })
     const next = removeRow({ draft, rowIndex: 0 })
-    expect(getRowCount(next)).toBe(DEFAULT_ROW_COUNT - 1)
+    expect(getRowCount(next.categories)).toBe(DEFAULT_ROW_COUNT - 1)
     expect(countCompleteQuestions(next)).toBe(0)
     for (const category of next.categories) {
       expect(category.questions).toHaveLength(DEFAULT_ROW_COUNT - 1)
@@ -273,5 +276,27 @@ describe("hasRowContent", () => {
       name: "History",
     })
     expect(hasRowContent({ draft, rowIndex: 0 })).toBe(false)
+  })
+})
+
+describe("getRowValue", () => {
+  it("goes up by 200 for each row", () => {
+    expect(getRowValue(0)).toBe(200)
+    expect(getRowValue(4)).toBe(1000)
+  })
+})
+
+describe("formatValue", () => {
+  it("shows whole dollars, and a loss with a sign", () => {
+    expect(formatValue(1200)).toBe("$1,200")
+    expect(formatValue(-400)).toBe("-$400")
+  })
+})
+
+describe("buildQuestionKey", () => {
+  it("gives each position on the board its own key", () => {
+    expect(buildQuestionKey({ categoryIndex: 1, rowIndex: 2 })).not.toBe(
+      buildQuestionKey({ categoryIndex: 2, rowIndex: 1 })
+    )
   })
 })

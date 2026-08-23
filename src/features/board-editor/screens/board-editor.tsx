@@ -54,7 +54,7 @@ export default function BoardEditor() {
   const savedGames = useLiveQuery(listGames, [], [])
 
   const categoryCount = draft.categories.length
-  const rowCount = getRowCount(draft)
+  const rowCount = getRowCount(draft.categories)
   const hasUnsavedChanges = hasDraftContent(draft) && draft !== savedDraft
 
   const selectedQuestion =
@@ -296,7 +296,8 @@ export default function BoardEditor() {
             <div key={game.id} className="flex items-center gap-2 text-sm">
               <span>{game.title || "Untitled board"}</span>
               <span className="text-muted-foreground">
-                {game.categories.length} categories, {getRowCount(game)} rows
+                {game.categories.length} categories,{" "}
+                {getRowCount(game.categories)} rows
               </span>
               <Button variant="ghost" onClick={() => handleOpen(game)}>
                 Open

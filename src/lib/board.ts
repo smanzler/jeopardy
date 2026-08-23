@@ -1,4 +1,4 @@
-import type { Category, GameDraft, Question } from "@/lib/db"
+import type { Category, GameDraft, Question, QuestionPosition } from "@/lib/db"
 
 export const DEFAULT_CATEGORY_COUNT = 5
 
@@ -20,8 +20,14 @@ const currencyFormat = new Intl.NumberFormat("en-US", {
  * The value of a row comes from its position, so the values stay correct after
  * the editor adds or removes a row.
  */
+export const getRowValue = (rowIndex: number): number =>
+  (rowIndex + 1) * ROW_VALUE_STEP
+
+export const formatValue = (value: number): string =>
+  currencyFormat.format(value)
+
 export const formatRowValue = (rowIndex: number): string =>
-  currencyFormat.format((rowIndex + 1) * ROW_VALUE_STEP)
+  formatValue(getRowValue(rowIndex))
 
 const buildEmptyQuestion = (): Question => ({ answer: "", question: "" })
 
@@ -37,9 +43,14 @@ export const buildEmptyDraft = (): GameDraft => ({
   title: "",
 })
 
+export const buildQuestionKey = ({
+  categoryIndex,
+  rowIndex,
+}: QuestionPosition): string => `${categoryIndex}-${rowIndex}`
+
 /** Every category holds the same number of questions, one for each row. */
-export const getRowCount = (draft: GameDraft): number =>
-  draft.categories[0].questions.length
+export const getRowCount = (categories: Array<Category>): number =>
+  categories[0].questions.length
 
 export const isQuestionComplete = (question: Question): boolean =>
   question.answer.trim() !== "" && question.question.trim() !== ""
@@ -106,7 +117,10 @@ export const setQuestion = ({
 
 export const addCategory = (draft: GameDraft): GameDraft => ({
   ...draft,
-  categories: [...draft.categories, buildEmptyCategory(getRowCount(draft))],
+  categories: [
+    ...draft.categories,
+    buildEmptyCategory(getRowCount(draft.categories)),
+  ],
 })
 
 export const removeCategory = ({

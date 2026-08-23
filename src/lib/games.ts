@@ -24,3 +24,6 @@ export const saveGame = async ({
 
 export const listGames = (): Promise<Array<Game>> =>
   db.games.orderBy("updatedAt").reverse().toArray()
+
+export const getGame = (id: string): Promise<Game | undefined> =>
+  db.games.get(id)
