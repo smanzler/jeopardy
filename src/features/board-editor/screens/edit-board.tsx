@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import { getGame } from "@/lib/games"
 import { Button } from "@/components/ui/button"
+import { LoadingScreen } from "@/components/loading-screen"
 import BoardEditor from "@/features/board-editor/screens/board-editor"
 
 export default function EditBoard({ gameId }: { gameId: string }) {
@@ -12,7 +13,7 @@ export default function EditBoard({ gameId }: { gameId: string }) {
   )
 
   if (game === undefined) {
-    return <p className="p-6">Loading the board...</p>
+    return <LoadingScreen />
   }
 
   if (game === null) {

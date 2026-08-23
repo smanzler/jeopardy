@@ -13,6 +13,7 @@ import {
   startSession,
 } from "@/lib/sessions"
 import { Button } from "@/components/ui/button"
+import { LoadingScreen } from "@/components/loading-screen"
 import { GameBoard } from "@/features/game/components/game-board"
 import { QuestionView } from "@/features/game/components/question-view"
 import { ScoreBar } from "@/features/game/components/score-bar"
@@ -63,7 +64,7 @@ export default function Play({ gameId }: { gameId: string }) {
   }, [gameId, isFinished, navigate])
 
   if (game === undefined || session === undefined) {
-    return <p className="p-6">Loading the board...</p>
+    return <LoadingScreen />
   }
 
   if (game === null) {

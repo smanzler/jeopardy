@@ -6,6 +6,7 @@ import { getGame } from "@/lib/games"
 import { buildStandings, formatTeamName, formatWinners } from "@/lib/score"
 import { endSession, getSession } from "@/lib/sessions"
 import { Button } from "@/components/ui/button"
+import { LoadingScreen } from "@/components/loading-screen"
 
 export default function Winner({ gameId }: { gameId: string }) {
   const navigate = useNavigate()
@@ -29,7 +30,7 @@ export default function Winner({ gameId }: { gameId: string }) {
   }
 
   if (isEnding || session === undefined || game === undefined) {
-    return <p className="p-6">Loading the game...</p>
+    return <LoadingScreen />
   }
 
   if (session === null) {
