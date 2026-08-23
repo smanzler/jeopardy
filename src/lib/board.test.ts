@@ -14,6 +14,7 @@ import {
   getRowCount,
   getRowValue,
   hasCategoryContent,
+  isEveryQuestionUsed,
   hasRowContent,
   isDraftComplete,
   isQuestionComplete,
@@ -288,5 +289,43 @@ describe("getQuestionStatus", () => {
     expect(
       getQuestionStatus({ answer: "Who is John?", question: "Magna Carta" })
     ).toBe("complete")
+  })
+})
+
+describe("isEveryQuestionUsed", () => {
+  const { categories } = buildEmptyDraft()
+
+  const buildAllKeys = () =>
+    categories.flatMap((category, categoryIndex) =>
+      category.questions.map((_, rowIndex) =>
+        buildQuestionKey({ categoryIndex, rowIndex })
+      )
+    )
+
+  it("is false while the board holds a question that the game did not show", () => {
+    expect(isEveryQuestionUsed({ categories, usedKeys: [] })).toBe(false)
+    expect(
+      isEveryQuestionUsed({ categories, usedKeys: buildAllKeys().slice(1) })
+    ).toBe(false)
+  })
+
+  it("is true when every question has a key", () => {
+    expect(isEveryQuestionUsed({ categories, usedKeys: buildAllKeys() })).toBe(
+      true
+    )
+  })
+
+  it("counts only the positions that the board holds now", () => {
+    const smaller = removeCategory({
+      categoryIndex: 0,
+      draft: buildEmptyDraft(),
+    })
+    // The keys of the board before the removal cover the smaller board.
+    expect(
+      isEveryQuestionUsed({
+        categories: smaller.categories,
+        usedKeys: buildAllKeys(),
+      })
+    ).toBe(true)
   })
 })

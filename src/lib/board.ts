@@ -48,6 +48,24 @@ export const buildQuestionKey = ({
   rowIndex,
 }: QuestionPosition): string => `${categoryIndex}-${rowIndex}`
 
+/**
+ * True when `usedKeys` holds a key for every question that the board has now.
+ * The keys carry positions, so a board that changed after the game started
+ * counts only the positions that it still holds.
+ */
+export const isEveryQuestionUsed = ({
+  categories,
+  usedKeys,
+}: {
+  categories: Array<Category>
+  usedKeys: Array<string>
+}): boolean =>
+  categories.every((category, categoryIndex) =>
+    category.questions.every((_, rowIndex) =>
+      usedKeys.includes(buildQuestionKey({ categoryIndex, rowIndex }))
+    )
+  )
+
 /** Every category holds the same number of questions, one for each row. */
 export const getRowCount = (categories: Array<Category>): number =>
   categories[0].questions.length
