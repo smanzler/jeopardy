@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from "lucide-react"
 import type { Question } from "@/lib/db"
 import { Button } from "@/components/ui/button"
+import { Kbd } from "@/components/ui/kbd"
 
 type QuestionViewProps = {
   categoryName: string
@@ -30,10 +31,15 @@ export function QuestionView({
           Board
         </Button>
         <div className="flex flex-col items-center gap-2 text-center">
-          <p className="text-sm text-muted-foreground">
-            {isAnswerShown
-              ? "Esc goes back to the board."
-              : "Space shows the answer. Esc goes back to the board."}
+          <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-sm text-muted-foreground">
+            {!isAnswerShown && (
+              <>
+                <Kbd>Space</Kbd>
+                <span>shows the answer.</span>
+              </>
+            )}
+            <Kbd>Esc</Kbd>
+            <span>goes back to the board.</span>
           </p>
           <span className="font-heading text-2xl font-medium tracking-wide uppercase">
             {categoryName} <span className="text-primary">{value}</span>

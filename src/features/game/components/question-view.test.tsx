@@ -36,7 +36,8 @@ describe("QuestionView", () => {
       />
     )
     expect(screen.queryByText(question.answer)).toBeNull()
-    expect(screen.getByText(/Space shows the answer/)).toBeTruthy()
+    expect(screen.getByText("Space").tagName).toBe("KBD")
+    expect(screen.getByText("shows the answer.")).toBeTruthy()
   })
 
   it("drops the note about Space once the answer is out", () => {
@@ -50,8 +51,9 @@ describe("QuestionView", () => {
       />
     )
     expect(screen.getByText(question.answer)).toBeTruthy()
-    expect(screen.queryByText(/Space shows the answer/)).toBeNull()
-    expect(screen.getByText(/Esc goes back/)).toBeTruthy()
+    expect(screen.queryByText("Space")).toBeNull()
+    expect(screen.getByText("Esc").tagName).toBe("KBD")
+    expect(screen.getByText("goes back to the board.")).toBeTruthy()
   })
 
   it("goes back to the board on the button", () => {
