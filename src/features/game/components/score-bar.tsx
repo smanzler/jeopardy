@@ -1,5 +1,7 @@
 import { MinusIcon, PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { listLeaderIndexes } from "@/lib/score"
+import { cn } from "@/lib/utils"
 import { TeamScore } from "@/features/game/components/team-score"
 
 type ScoreBarProps = {
@@ -36,26 +38,37 @@ export function ScoreBar({
     onAdjust({ delta: sign * value, teamIndex })
   }
 
+  const leaderIndexes = listLeaderIndexes(scores)
+
   return (
-    <div className="flex flex-wrap justify-center gap-3 border-t-2 border-card bg-shade px-5 py-3">
+    <div
+      className="grid shrink-0 border-t-2 border-card bg-shade"
+      // The team count comes from the session, so Tailwind cannot name it.
+      style={{
+        gridTemplateColumns: `repeat(${scores.length}, minmax(0, 1fr))`,
+      }}
+    >
       {scores.map((score, teamIndex) => (
         <div
           key={teamIndex}
-          className="flex min-w-44 items-center justify-center gap-3 rounded-md bg-secondary px-3 py-1.5"
+          className={cn(
+            "flex min-w-0 items-center justify-center gap-3 border-b-4 border-l border-b-transparent border-l-secondary px-3 py-2 first:border-l-0",
+            leaderIndexes.includes(teamIndex) && "border-b-primary bg-secondary"
+          )}
         >
           {value !== undefined && (
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full"
+              className="shrink-0 rounded-full"
               aria-label={`Take points from ${teamNames[teamIndex]}`}
               onClick={() => handleAdjust({ sign: -1, teamIndex })}
             >
               <MinusIcon />
             </Button>
           )}
-          <div className="flex flex-col items-center">
-            <span className="max-w-32 truncate font-heading text-sm tracking-widest text-muted-foreground uppercase">
+          <div className="flex min-w-0 items-baseline gap-3">
+            <span className="truncate font-heading text-lg tracking-widest text-muted-foreground uppercase">
               {teamNames[teamIndex]}
             </span>
             <TeamScore
@@ -68,7 +81,7 @@ export function ScoreBar({
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full"
+              className="shrink-0 rounded-full"
               aria-label={`Give points to ${teamNames[teamIndex]}`}
               onClick={() => handleAdjust({ sign: 1, teamIndex })}
             >

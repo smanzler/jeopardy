@@ -5,6 +5,8 @@ type BoardTabsProps = {
   boardIndex: number
   /** Classes for each tab. */
   className?: string
+  /** The look of the selected tab. */
+  activeVariant?: "default" | "ghost"
   /** Text after the name of each board. */
   getDetail?: (boardIndex: number) => string
   /** The look of the tabs that are not selected. */
@@ -13,6 +15,7 @@ type BoardTabsProps = {
 }
 
 export function BoardTabs({
+  activeVariant = "default",
   boardCount,
   boardIndex,
   className,
@@ -23,7 +26,7 @@ export function BoardTabs({
   return Array.from({ length: boardCount }, (_, index) => (
     <Button
       key={index}
-      variant={index === boardIndex ? "default" : inactiveVariant}
+      variant={index === boardIndex ? activeVariant : inactiveVariant}
       aria-pressed={index === boardIndex}
       className={className}
       onClick={() => onSelect(index)}
