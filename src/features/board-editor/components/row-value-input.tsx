@@ -23,7 +23,7 @@ export function RowValueInput({ label, onChange, value }: RowValueInputProps) {
     <Input
       aria-label={label}
       aria-invalid={text !== undefined && toPoints(text) === undefined}
-      className="w-24 tabular-nums"
+      className="h-full w-20 rounded-md bg-shade text-center font-heading text-xl font-bold text-primary tabular-nums md:text-xl dark:bg-shade"
       inputMode="numeric"
       value={text ?? String(value)}
       onBlur={() => setText(undefined)}
