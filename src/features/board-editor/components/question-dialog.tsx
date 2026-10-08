@@ -12,6 +12,8 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+import { POPUP_FIELD_CLASS } from "@/features/board-editor/lib/popup-field"
 
 type QuestionDialogProps = {
   categoryName: string
@@ -85,7 +87,7 @@ export function QuestionDialog({
                   ref={questionRef}
                   autoFocus
                   id="question-text"
-                  className="min-h-24 border-border bg-shade dark:bg-shade"
+                  className={cn("min-h-24", POPUP_FIELD_CLASS)}
                   value={question.question}
                   onChange={(event) =>
                     onChange({ ...question, question: event.target.value })
@@ -96,7 +98,7 @@ export function QuestionDialog({
                 <FieldLabel htmlFor="question-answer">Answer</FieldLabel>
                 <Input
                   id="question-answer"
-                  className="border-border bg-shade dark:bg-shade"
+                  className={POPUP_FIELD_CLASS}
                   value={question.answer}
                   onChange={(event) =>
                     onChange({ ...question, answer: event.target.value })

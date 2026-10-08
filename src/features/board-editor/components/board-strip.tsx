@@ -1,5 +1,5 @@
 import { EllipsisIcon, PlusIcon, Trash2Icon, UploadIcon } from "lucide-react"
-import type { DailyDoubles, GameDraft } from "@/lib/db"
+import type { GameDraft } from "@/lib/db"
 import {
   MAX_BOARD_COUNT,
   countCompleteQuestions,
@@ -15,24 +15,21 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { BoardTabs } from "@/components/board-tabs"
 import { useFilePicker } from "@/hooks/use-file-picker"
-import { DailyDoubleSettings } from "@/features/board-editor/components/daily-double-settings"
 
 type BoardStripProps = {
   boardIndex: number
   draft: GameDraft
   onAddBoard: () => void
-  onDailyDoublesChange: (dailyDoubles: DailyDoubles) => void
   onImportBoards: (file: File) => void
   onRemoveBoard: () => void
   onSelectBoard: (boardIndex: number) => void
 }
 
-/** The tabs of the boards, and the settings of the open board. */
+/** The tabs of the boards, and the actions on the open board. */
 export function BoardStrip({
   boardIndex,
   draft,
   onAddBoard,
-  onDailyDoublesChange,
   onImportBoards,
   onRemoveBoard,
   onSelectBoard,
@@ -70,12 +67,7 @@ export function BoardStrip({
           <PlusIcon />
         </Button>
       </div>
-      <div className="ml-auto flex flex-wrap items-center gap-2">
-        <DailyDoubleSettings
-          boardIndex={boardIndex}
-          dailyDoubles={draft.boards[boardIndex].dailyDoubles}
-          onChange={onDailyDoublesChange}
-        />
+      <div className="ml-auto">
         <DropdownMenu>
           <DropdownMenuTrigger
             render={

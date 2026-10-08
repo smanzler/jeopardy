@@ -4,7 +4,9 @@ import {
   MAX_RANDOM_DAILY_DOUBLES,
   buildDailyDoubles,
 } from "@/lib/daily-doubles"
-import { Label } from "@/components/ui/label"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { cn } from "@/lib/utils"
+import { POPUP_FIELD_CLASS } from "@/features/board-editor/lib/popup-field"
 import {
   Select,
   SelectContent,
@@ -35,55 +37,63 @@ export function DailyDoubleSettings({
   onChange,
 }: DailyDoubleSettingsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Label
-        htmlFor="daily-double-type"
-        className="font-normal text-muted-foreground"
-      >
-        Daily doubles
-      </Label>
-      <Select
-        items={TYPE_ITEMS}
-        value={dailyDoubles.type}
-        onValueChange={(type) =>
-          type && onChange(buildDailyDoubles({ boardIndex, type }))
-        }
-      >
-        <SelectTrigger id="daily-double-type" className="w-48">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {TYPE_ITEMS.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {dailyDoubles.type === "random" ? (
+    <FieldGroup>
+      <Field>
+        <FieldLabel htmlFor="daily-double-type">
+          How the board gets them
+        </FieldLabel>
         <Select
-          items={COUNT_ITEMS}
-          value={dailyDoubles.count}
-          onValueChange={(count) =>
-            count !== null && onChange({ ...dailyDoubles, count })
+          items={TYPE_ITEMS}
+          value={dailyDoubles.type}
+          onValueChange={(type) =>
+            type && onChange(buildDailyDoubles({ boardIndex, type }))
           }
         >
-          <SelectTrigger aria-label="How many daily doubles" className="w-16">
+          <SelectTrigger
+            id="daily-double-type"
+            className={cn("w-full", POPUP_FIELD_CLASS)}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {COUNT_ITEMS.map((item) => (
+            {TYPE_ITEMS.map((item) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+      </Field>
+      {dailyDoubles.type === "random" ? (
+        <Field>
+          <FieldLabel htmlFor="daily-double-count">How many</FieldLabel>
+          <Select
+            items={COUNT_ITEMS}
+            value={dailyDoubles.count}
+            onValueChange={(count) =>
+              count !== null && onChange({ ...dailyDoubles, count })
+            }
+          >
+            <SelectTrigger
+              id="daily-double-count"
+              className={cn("w-24", POPUP_FIELD_CLASS)}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {COUNT_ITEMS.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       ) : (
-        <span className="text-sm text-muted-foreground">
-          Set them in each question.
-        </span>
+        <p className="text-sm text-muted-foreground">
+          Open a question to make it a daily double.
+        </p>
       )}
-    </div>
+    </FieldGroup>
   )
 }
