@@ -211,7 +211,7 @@ describe("removeRow", () => {
     const next = removeRow({ board, rowIndex: 0 })
     expect(getRowCount(next)).toBe(DEFAULT_ROW_COUNT - 1)
     expect(next.values).toEqual([200, 300, 400, 500])
-    expect(countCompleteQuestions({ boards: [next], title: "" })).toBe(0)
+    expect(countCompleteQuestions({ boards: [next] })).toBe(0)
     for (const category of next.categories) {
       expect(category.questions).toHaveLength(DEFAULT_ROW_COUNT - 1)
     }
