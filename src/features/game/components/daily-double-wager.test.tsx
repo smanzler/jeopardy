@@ -19,14 +19,28 @@ const renderWager = () => {
 }
 
 describe("DailyDoubleWager", () => {
-  it("waits for a whole number", () => {
+  it("waits for a number", () => {
     renderWager()
     const submit = screen.getByText<HTMLButtonElement>("Show the question")
     expect(submit.disabled).toBe(true)
     fireEvent.change(screen.getByLabelText("Wager"), {
-      target: { value: "-5" },
+      target: { value: "abc" },
     })
     expect(submit.disabled).toBe(true)
+  })
+
+  it("keeps only the digits that the host types", () => {
+    renderWager()
+    const field = screen.getByLabelText<HTMLInputElement>("Wager")
+    fireEvent.change(field, { target: { value: "-1,2a00" } })
+    expect(field.value).toBe("1200")
+  })
+
+  it("asks the browser for no autofill", () => {
+    renderWager()
+    expect(screen.getByLabelText("Wager").getAttribute("autocomplete")).toBe(
+      "off"
+    )
   })
 
   it("sends the wager", () => {
