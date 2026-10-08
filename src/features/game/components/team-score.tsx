@@ -27,7 +27,7 @@ export function TeamScore({ onChange, score, teamName }: TeamScoreProps) {
       <Button
         variant="ghost"
         className={cn(
-          "h-auto px-2 font-heading text-3xl font-bold text-primary tabular-nums",
+          "h-auto px-2 font-heading text-4xl font-bold text-primary tabular-nums",
           score < 0 && "text-destructive"
         )}
         aria-label={`Change the score of ${teamName}`}

@@ -50,6 +50,15 @@ export const buildStandings = (scores: Array<number>): Array<Standing> =>
     }))
     .sort((a, b) => a.rank - b.rank || a.teamIndex - b.teamIndex)
 
+/** The teams on the top rank, or none while every team shares it. */
+export const listLeaderIndexes = (scores: Array<number>): Array<number> => {
+  const leaders = buildStandings(scores).filter(
+    (standing) => standing.rank === 1
+  )
+  if (leaders.length === scores.length) return []
+  return leaders.map((standing) => standing.teamIndex)
+}
+
 const nameFormat = new Intl.ListFormat("en", {
   style: "long",
   type: "conjunction",

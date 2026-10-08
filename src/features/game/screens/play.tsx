@@ -4,6 +4,8 @@ import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition } from "@/lib/db"
 import {
   buildQuestionKey,
+  countQuestions,
+  countQuestionsLeft,
   findQuestion,
   formatGameSummary,
   formatValue,
@@ -22,11 +24,11 @@ import {
   showBoard,
   startSession,
 } from "@/lib/sessions"
-import { BoardTabs } from "@/components/board-tabs"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 import { DailyDoubleWager } from "@/features/game/components/daily-double-wager"
 import { GameBoard } from "@/features/game/components/game-board"
+import { HostStrip } from "@/features/game/components/host-strip"
 import { QuestionView } from "@/features/game/components/question-view"
 import { ScoreBar } from "@/features/game/components/score-bar"
 import { TeamSetup } from "@/features/game/components/team-setup"
@@ -156,40 +158,22 @@ export default function Play({ gameId }: { gameId: string }) {
       )}
       {!openQuestionView && (
         <>
-          <div className="flex items-center justify-between gap-4 px-5 py-3">
-            <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
-              {title}
-            </h1>
-            {game.boards.length > 1 && (
-              <div className="flex gap-1 rounded-full bg-secondary p-1">
-                <BoardTabs
-                  boardCount={game.boards.length}
-                  boardIndex={boardIndex}
-                  className="rounded-full px-4 font-heading tracking-wider uppercase"
-                  inactiveVariant="ghost"
-                  onSelect={(index) => showBoard({ boardIndex: index, gameId })}
-                />
-              </div>
-            )}
-            <div className="flex gap-2">
-              <ButtonLink
-                variant="outline"
-                className="font-heading tracking-wider uppercase"
-                to="/play/$gameId/winner"
-                params={{ gameId }}
-              >
-                End the game
-              </ButtonLink>
-              <ButtonLink
-                variant="outline"
-                className="font-heading tracking-wider uppercase"
-                to="/"
-              >
-                Home
-              </ButtonLink>
-            </div>
-          </div>
-          <div className="flex flex-1 flex-col px-5 pb-3">
+          <HostStrip
+            boardCount={game.boards.length}
+            boardIndex={boardIndex}
+            gameId={gameId}
+            questionsLeft={countQuestionsLeft({
+              board: game.boards[boardIndex],
+              boardIndex,
+              usedKeys: session.usedKeys,
+            })}
+            questionTotal={countQuestions({
+              boards: [game.boards[boardIndex]],
+            })}
+            title={title}
+            onSelectBoard={(index) => showBoard({ boardIndex: index, gameId })}
+          />
+          <div className="flex flex-1 flex-col px-3.5 py-2.5">
             <GameBoard
               board={game.boards[boardIndex]}
               boardIndex={boardIndex}

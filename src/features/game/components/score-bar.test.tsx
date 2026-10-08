@@ -85,4 +85,21 @@ describe("ScoreBar", () => {
     fireEvent.keyDown(input, { key: "Enter" })
     expect(onSetScore).toHaveBeenCalledWith({ score: -400, teamIndex: 1 })
   })
+
+  it("marks the team in the lead", () => {
+    const { container } = render(
+      <ScoreBar
+        scores={[200, 600]}
+        teamNames={["Team 1", "Team 2"]}
+        value={undefined}
+        onAdjust={vi.fn()}
+        onSetScore={vi.fn()}
+      />
+    )
+    const [first, second] = Array.from(
+      container.firstElementChild?.children ?? []
+    )
+    expect(second.className).toContain("border-b-primary")
+    expect(first.className).not.toContain("border-b-primary")
+  })
 })

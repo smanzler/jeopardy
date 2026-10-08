@@ -7,6 +7,7 @@ import {
   formatLeaders,
   formatTeamName,
   formatWinners,
+  listLeaderIndexes,
   setScore,
   toScore,
 } from "@/lib/score"
@@ -137,5 +138,19 @@ describe("formatLeaders", () => {
     expect(formatLeaders({ scores: [0, 0, 0], teamNames })).toBe(
       "No points yet"
     )
+  })
+})
+
+describe("listLeaderIndexes", () => {
+  it("finds the team on top", () => {
+    expect(listLeaderIndexes([200, 1200, -300])).toEqual([1])
+  })
+
+  it("finds every team that shares the top score", () => {
+    expect(listLeaderIndexes([800, 200, 800])).toEqual([0, 2])
+  })
+
+  it("finds none while every team has the same score", () => {
+    expect(listLeaderIndexes([0, 0, 0])).toEqual([])
   })
 })
