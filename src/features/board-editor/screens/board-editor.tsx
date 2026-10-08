@@ -1,5 +1,4 @@
 import { Fragment, useState } from "react"
-import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon, UploadIcon, XIcon } from "lucide-react"
 import type { Board, Game, GameDraft, Question } from "@/lib/db"
 import {
@@ -10,29 +9,25 @@ import {
   addCategory,
   addRow,
   buildEmptyDraft,
-  countCompleteQuestions,
-  countQuestions,
-  formatBoardCount,
   formatValue,
   getRowCount,
-  isDraftComplete,
   moveQuestion,
   setBoard,
   setCategoryName,
   setQuestion,
   setRowValue,
 } from "@/lib/board"
-import { listGames, saveGame } from "@/lib/games"
+import { saveGame } from "@/lib/games"
 import { Button } from "@/components/ui/button"
-import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { BoardTabs } from "@/components/board-tabs"
-import { ButtonLink } from "@/components/button-link"
 import { FileButton } from "@/components/file-button"
 import { GAME_FILE_ACCEPT, parseGameFile } from "@/lib/game-file"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
+import { EditorHeader } from "@/features/board-editor/components/editor-header"
+import type { SaveState } from "@/features/board-editor/components/editor-header"
 import { DailyDoubleSettings } from "@/features/board-editor/components/daily-double-settings"
 import { getDailyDoubleOps } from "@/lib/daily-doubles"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -58,15 +53,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const [boardIndex, setBoardIndex] = useState(0)
   const [selection, setSelection] = useState<Selection>()
   const [removal, setRemoval] = useState<Removal>()
-  const [hasSaveFailed, setHasSaveFailed] = useState(false)
+  const [saveState, setSaveState] = useState<SaveState>(game ? "saved" : "new")
+  const [isStored, setIsStored] = useState(Boolean(game))
   const [importError, setImportError] = useState<string>()
-  const savedGames = useLiveQuery(listGames, [], [])
 
   const boardCount = draft.boards.length
   const board = draft.boards[boardIndex]
   const categoryCount = board.categories.length
   const rowCount = getRowCount(board)
-  const otherGames = savedGames.filter((savedGame) => savedGame.id !== gameId)
 
   const dailyDoubleOps = getDailyDoubleOps(board.dailyDoubles)
 
@@ -83,8 +77,11 @@ export default function BoardEditor({ game }: BoardEditorProps) {
     // A removed board can take the open tab with it.
     setBoardIndex((index) => Math.min(index, next.boards.length - 1))
     saveGame({ draft: next, id: gameId }).then(
-      () => setHasSaveFailed(false),
-      () => setHasSaveFailed(true)
+      () => {
+        setSaveState("saved")
+        setIsStored(true)
+      },
+      () => setSaveState("failed")
     )
   }
 
@@ -152,31 +149,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
-      <div className="flex items-end justify-between gap-4">
-        <Field className="max-w-sm">
-          <FieldLabel htmlFor="board-title">Board title</FieldLabel>
-          <Input
-            id="board-title"
-            value={draft.title}
-            onChange={(event) =>
-              updateBoard({ ...draft, title: event.target.value })
-            }
-          />
-        </Field>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {countCompleteQuestions(draft)} of {countQuestions(draft)} questions
-            {isDraftComplete(draft) ? " — ready" : ""}
-          </span>
-        </div>
-      </div>
-
-      {hasSaveFailed && (
-        <p className="text-sm text-destructive">
-          The browser did not keep the last change. Look at the space that the
-          browser gives to this site.
-        </p>
-      )}
+      <EditorHeader
+        draft={draft}
+        gameId={gameId}
+        isNew={!game}
+        isStored={isStored}
+        saveState={saveState}
+        onTitleChange={(title) => updateBoard({ ...draft, title })}
+      />
 
       {importError && <p className="text-sm text-destructive">{importError}</p>}
 
@@ -353,27 +333,6 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         onCancel={() => setRemoval(undefined)}
         onConfirm={handleConfirm}
       />
-
-      {otherGames.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium">Other boards</h2>
-          {otherGames.map((savedGame) => (
-            <div key={savedGame.id} className="flex items-center gap-2 text-sm">
-              <span>{savedGame.title || "Untitled board"}</span>
-              <span className="text-muted-foreground">
-                {formatBoardCount(savedGame.boards.length)}
-              </span>
-              <ButtonLink
-                variant="ghost"
-                to="/edit/$gameId"
-                params={{ gameId: savedGame.id }}
-              >
-                Edit
-              </ButtonLink>
-            </div>
-          ))}
-        </div>
-      )}
     </main>
   )
 }

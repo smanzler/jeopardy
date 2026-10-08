@@ -1,3 +1,6 @@
+import type { GameDraft } from "@/lib/db"
+import { buildGameFileName, renderGameFile } from "@/lib/game-file"
+
 export const downloadFile = ({
   name,
   text,
@@ -14,3 +17,9 @@ export const downloadFile = ({
   link.click()
   URL.revokeObjectURL(url)
 }
+
+export const downloadGameFile = (draft: GameDraft): void =>
+  downloadFile({
+    name: buildGameFileName(draft.title),
+    text: renderGameFile(draft),
+  })

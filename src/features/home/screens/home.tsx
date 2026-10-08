@@ -4,7 +4,6 @@ import { PlusIcon } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import type { Game } from "@/lib/db"
 import { deleteGame, listGames } from "@/lib/games"
-import { buildGameFileName, renderGameFile } from "@/lib/game-file"
 import { listSessions } from "@/lib/sessions"
 import { Spinner } from "@/components/ui/spinner"
 import { buildNewBoardState } from "@/components/app-header"
@@ -12,7 +11,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 import { GameCard } from "@/features/home/components/game-card"
 import { ResumePanel } from "@/features/home/components/resume-panel"
 import { TitleCard } from "@/features/home/components/title-card"
-import { downloadFile } from "@/features/home/lib/download-file"
+import { downloadGameFile } from "@/lib/download-file"
 import { findGamesInProgress } from "@/features/home/lib/hub"
 
 export default function Home() {
@@ -28,12 +27,6 @@ export default function Home() {
     await deleteGame(pendingDelete.id)
     setPendingDelete(undefined)
   }
-
-  const handleExport = (game: Game) =>
-    downloadFile({
-      name: buildGameFileName(game.title),
-      text: renderGameFile(game),
-    })
 
   if (!hub) {
     return (
@@ -71,7 +64,7 @@ export default function Home() {
               key={game.id}
               game={game}
               onDelete={() => setPendingDelete(game)}
-              onExport={() => handleExport(game)}
+              onExport={() => downloadGameFile(game)}
             />
           ))}
           <Link
