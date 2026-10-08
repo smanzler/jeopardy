@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react"
-import { PlusIcon, UploadIcon, XIcon } from "lucide-react"
+import { PlusIcon, XIcon } from "lucide-react"
 import type { Board, Game, GameDraft, Question } from "@/lib/db"
 import {
   MAX_BOARD_COUNT,
@@ -20,15 +20,13 @@ import {
 import { saveGame } from "@/lib/games"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BoardTabs } from "@/components/board-tabs"
-import { FileButton } from "@/components/file-button"
-import { GAME_FILE_ACCEPT, parseGameFile } from "@/lib/game-file"
+import { parseGameFile } from "@/lib/game-file"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
 import { EditorHeader } from "@/features/board-editor/components/editor-header"
 import type { SaveState } from "@/features/board-editor/components/editor-header"
-import { DailyDoubleSettings } from "@/features/board-editor/components/daily-double-settings"
+import { BoardStrip } from "@/features/board-editor/components/board-strip"
 import { getDailyDoubleOps } from "@/lib/daily-doubles"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
@@ -160,46 +158,16 @@ export default function BoardEditor({ game }: BoardEditorProps) {
 
       {importError && <p className="text-sm text-destructive">{importError}</p>}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <BoardTabs
-          boardCount={boardCount}
-          boardIndex={boardIndex}
-          onSelect={setBoardIndex}
-        />
-        <Button
-          variant="outline"
-          disabled={boardCount >= MAX_BOARD_COUNT}
-          onClick={handleAddBoard}
-        >
-          <PlusIcon />
-          Add board
-        </Button>
-        <FileButton
-          variant="outline"
-          accept={GAME_FILE_ACCEPT}
-          disabled={boardCount >= MAX_BOARD_COUNT}
-          onFile={handleImportBoards}
-        >
-          <UploadIcon />
-          Import boards
-        </FileButton>
-        <Button
-          variant="ghost"
-          className="ml-auto"
-          disabled={boardCount <= 1}
-          onClick={() => handleRemove({ index: boardIndex, type: "board" })}
-        >
-          <XIcon />
-          Remove board {boardIndex + 1}
-        </Button>
-      </div>
-
-      <DailyDoubleSettings
+      <BoardStrip
         boardIndex={boardIndex}
-        dailyDoubles={board.dailyDoubles}
-        onChange={(dailyDoubles) =>
+        draft={draft}
+        onAddBoard={handleAddBoard}
+        onDailyDoublesChange={(dailyDoubles) =>
           updateCurrentBoard({ ...board, dailyDoubles })
         }
+        onImportBoards={handleImportBoards}
+        onRemoveBoard={() => handleRemove({ index: boardIndex, type: "board" })}
+        onSelectBoard={setBoardIndex}
       />
 
       <div

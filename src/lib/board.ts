@@ -348,16 +348,17 @@ export const removeBoard = ({
   boards: draft.boards.filter((_, index) => index !== boardIndex),
 })
 
-const listQuestions = (draft: GameDraft): Array<Question> =>
-  draft.boards.flatMap((board) =>
+const listQuestions = ({ boards }: { boards: Array<Board> }): Array<Question> =>
+  boards.flatMap((board) =>
     board.categories.flatMap((category) => category.questions)
   )
 
-export const countQuestions = (draft: GameDraft): number =>
-  listQuestions(draft).length
+export const countQuestions = (game: { boards: Array<Board> }): number =>
+  listQuestions(game).length
 
-export const countCompleteQuestions = (draft: GameDraft): number =>
-  listQuestions(draft).filter(isQuestionComplete).length
+export const countCompleteQuestions = (game: {
+  boards: Array<Board>
+}): number => listQuestions(game).filter(isQuestionComplete).length
 
 export const isDraftComplete = (draft: GameDraft): boolean =>
   draft.title.trim() !== "" &&

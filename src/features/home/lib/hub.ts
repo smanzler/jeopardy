@@ -50,7 +50,7 @@ export const formatGameProgress = ({
     boardIndex,
     usedKeys: session.usedKeys,
   })
-  const total = countQuestions({ boards: [board], title: "" })
+  const total = countQuestions({ boards: [board] })
   const progress = `${left} of ${total} questions left`
   return game.boards.length > 1
     ? `Board ${boardIndex + 1} · ${progress}`
