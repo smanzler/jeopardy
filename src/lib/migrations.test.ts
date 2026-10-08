@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { toGameV3, toGameV4, toSessionV3, toSessionV4 } from "@/lib/migrations"
+import {
+  toGameV3,
+  toGameV4,
+  toSessionV3,
+  toSessionV4,
+  toSessionV5,
+} from "@/lib/migrations"
 
 const categories = [
   {
@@ -91,6 +97,25 @@ describe("toSessionV4", () => {
       ...session,
       dailyDoubleKeys: [],
       wager: null,
+    })
+  })
+})
+
+describe("toSessionV5", () => {
+  it("names each team by its number", () => {
+    const session = {
+      boardIndex: 0,
+      dailyDoubleKeys: [],
+      gameId: "g1",
+      isAnswerShown: false,
+      openPosition: null,
+      scores: [300, -100, 0],
+      usedKeys: [],
+      wager: null,
+    }
+    expect(toSessionV5(session)).toEqual({
+      ...session,
+      teamNames: ["Team 1", "Team 2", "Team 3"],
     })
   })
 })

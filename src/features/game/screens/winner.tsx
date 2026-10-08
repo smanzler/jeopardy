@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import { formatValue } from "@/lib/board"
 import { getGame } from "@/lib/games"
-import { buildStandings, formatTeamName, formatWinners } from "@/lib/score"
+import { buildStandings, formatWinners } from "@/lib/score"
 import { endSession, getSession } from "@/lib/sessions"
 import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
@@ -51,7 +51,7 @@ export default function Winner({ gameId }: { gameId: string }) {
         {game === null ? "The board is gone" : game.title || "Untitled board"}
       </p>
       <h1 className="font-heading text-6xl font-medium tracking-wide text-balance text-primary uppercase">
-        {formatWinners(session.scores)}
+        {formatWinners(session)}
       </h1>
       <ol className="flex w-full max-w-sm flex-col gap-2">
         {buildStandings(session.scores).map((standing) => (
@@ -62,7 +62,9 @@ export default function Winner({ gameId }: { gameId: string }) {
             <span className="w-6 text-center text-lg font-semibold text-muted-foreground tabular-nums">
               {standing.rank}
             </span>
-            <span className="flex-1">{formatTeamName(standing.teamIndex)}</span>
+            <span className="flex-1">
+              {session.teamNames[standing.teamIndex]}
+            </span>
             <span className="font-heading text-2xl font-medium tabular-nums">
               {formatValue(standing.score)}
             </span>

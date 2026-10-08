@@ -59,6 +59,7 @@ describe("db", () => {
       isAnswerShown: false,
       openPosition: { boardIndex: 0, categoryIndex: 1, rowIndex: 0 },
       scores: [600, -200],
+      teamNames: ["Team 1", "Team 2"],
       usedKeys: ["0-0-0", "0-0-1", "0-1-0"],
       wager: null,
     })

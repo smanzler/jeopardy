@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   adjustScore,
   buildScores,
+  buildTeamNames,
   buildStandings,
   formatTeamName,
   formatWinners,
@@ -43,6 +44,16 @@ describe("formatTeamName", () => {
   })
 })
 
+describe("buildTeamNames", () => {
+  it("keeps the names and numbers the blank ones", () => {
+    expect(buildTeamNames([" Owls ", "", "  "])).toEqual([
+      "Owls",
+      "Team 2",
+      "Team 3",
+    ])
+  })
+})
+
 describe("buildStandings", () => {
   it("puts the best score first", () => {
     expect(buildStandings([200, 1000, 600])).toEqual([
@@ -67,13 +78,19 @@ describe("buildStandings", () => {
 })
 
 describe("formatWinners", () => {
+  const teamNames = ["Owls", "Foxes", "Bears"]
+
   it("names one winner", () => {
-    expect(formatWinners([200, 1000])).toBe("Team 2 wins")
+    expect(formatWinners({ scores: [200, 1000], teamNames })).toBe("Foxes wins")
   })
 
   it("names every team that draws", () => {
-    expect(formatWinners([400, 400, 100])).toBe("Team 1 and Team 2 draw")
-    expect(formatWinners([0, 0, 0])).toBe("Team 1, Team 2, and Team 3 draw")
+    expect(formatWinners({ scores: [400, 400, 100], teamNames })).toBe(
+      "Owls and Foxes draw"
+    )
+    expect(formatWinners({ scores: [0, 0, 0], teamNames })).toBe(
+      "Owls, Foxes, and Bears draw"
+    )
   })
 })
 

@@ -1,6 +1,5 @@
 import { MinusIcon, PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { formatTeamName } from "@/lib/score"
 import { TeamScore } from "@/features/game/components/team-score"
 
 type ScoreBarProps = {
@@ -13,6 +12,8 @@ type ScoreBarProps = {
     teamIndex: number
   }) => void
   scores: Array<number>
+  /** One name for each entry of `scores`. */
+  teamNames: Array<string>
   /** The value of the open question. No value hides the buttons. */
   value: number | undefined
 }
@@ -21,6 +22,7 @@ export function ScoreBar({
   onAdjust,
   onSetScore,
   scores,
+  teamNames,
   value,
 }: ScoreBarProps) {
   const handleAdjust = ({
@@ -46,19 +48,19 @@ export function ScoreBar({
               variant="outline"
               size="icon"
               className="rounded-full"
-              aria-label={`Take points from ${formatTeamName(teamIndex)}`}
+              aria-label={`Take points from ${teamNames[teamIndex]}`}
               onClick={() => handleAdjust({ sign: -1, teamIndex })}
             >
               <MinusIcon />
             </Button>
           )}
           <div className="flex flex-col items-center">
-            <span className="text-xs text-muted-foreground">
-              {formatTeamName(teamIndex)}
+            <span className="max-w-32 truncate text-xs text-muted-foreground">
+              {teamNames[teamIndex]}
             </span>
             <TeamScore
               score={score}
-              teamName={formatTeamName(teamIndex)}
+              teamName={teamNames[teamIndex]}
               onChange={(next) => onSetScore({ score: next, teamIndex })}
             />
           </div>
@@ -67,7 +69,7 @@ export function ScoreBar({
               variant="outline"
               size="icon"
               className="rounded-full"
-              aria-label={`Give points to ${formatTeamName(teamIndex)}`}
+              aria-label={`Give points to ${teamNames[teamIndex]}`}
               onClick={() => handleAdjust({ sign: 1, teamIndex })}
             >
               <PlusIcon />

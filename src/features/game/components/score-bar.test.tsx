@@ -11,6 +11,7 @@ describe("ScoreBar", () => {
     render(
       <ScoreBar
         scores={[600, -300]}
+        teamNames={["Team 1", "Team 2"]}
         value={200}
         onAdjust={vi.fn()}
         onSetScore={vi.fn()}
@@ -27,6 +28,7 @@ describe("ScoreBar", () => {
     render(
       <ScoreBar
         scores={[0, 0]}
+        teamNames={["Team 1", "Team 2"]}
         value={400}
         onAdjust={onAdjust}
         onSetScore={vi.fn()}
@@ -42,6 +44,7 @@ describe("ScoreBar", () => {
     render(
       <ScoreBar
         scores={[0, 0]}
+        teamNames={["Team 1", "Team 2"]}
         value={undefined}
         onAdjust={vi.fn()}
         onSetScore={vi.fn()}
@@ -56,6 +59,7 @@ describe("ScoreBar", () => {
     render(
       <ScoreBar
         scores={[0, 0]}
+        teamNames={["Team 1", "Team 2"]}
         value={200}
         onAdjust={vi.fn()}
         onSetScore={vi.fn()}
@@ -69,6 +73,7 @@ describe("ScoreBar", () => {
     render(
       <ScoreBar
         scores={[0, 0]}
+        teamNames={["Team 1", "Team 2"]}
         value={undefined}
         onAdjust={vi.fn()}
         onSetScore={onSetScore}
