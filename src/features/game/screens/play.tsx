@@ -154,13 +154,17 @@ export default function Play({ gameId }: { gameId: string }) {
       )}
       {!openQuestionView && (
         <>
-          <div className="flex items-center justify-between gap-4 p-4">
-            <h1 className="text-xl font-semibold">{title}</h1>
+          <div className="flex items-center justify-between gap-4 px-5 py-3">
+            <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
+              {title}
+            </h1>
             {game.boards.length > 1 && (
-              <div className="flex gap-2">
+              <div className="flex gap-1 rounded-full bg-secondary p-1">
                 <BoardTabs
                   boardCount={game.boards.length}
                   boardIndex={boardIndex}
+                  className="rounded-full px-4 font-heading tracking-wider uppercase"
+                  inactiveVariant="ghost"
                   onSelect={(index) => showBoard({ boardIndex: index, gameId })}
                 />
               </div>
@@ -168,17 +172,22 @@ export default function Play({ gameId }: { gameId: string }) {
             <div className="flex gap-2">
               <ButtonLink
                 variant="outline"
+                className="font-heading tracking-wider uppercase"
                 to="/play/$gameId/winner"
                 params={{ gameId }}
               >
                 End the game
               </ButtonLink>
-              <ButtonLink variant="outline" to="/play">
+              <ButtonLink
+                variant="outline"
+                className="font-heading tracking-wider uppercase"
+                to="/play"
+              >
                 Boards
               </ButtonLink>
             </div>
           </div>
-          <div className="flex flex-1 flex-col px-4 pb-2">
+          <div className="flex flex-1 flex-col px-5 pb-3">
             <GameBoard
               board={game.boards[boardIndex]}
               boardIndex={boardIndex}

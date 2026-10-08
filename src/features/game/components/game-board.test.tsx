@@ -51,13 +51,19 @@ describe("GameBoard", () => {
     })
   })
 
-  it("dims a question that the game showed already", () => {
+  it("hides the value of a question that the game showed already", () => {
     const usedKeys = [
       buildQuestionKey({ boardIndex: 1, categoryIndex: 0, rowIndex: 0 }),
     ]
-    renderBoard({ usedKeys })
-    const [used, unused] = screen.getAllByText("$200")
-    expect(used.className).toContain("text-primary/20")
-    expect(unused.className).not.toContain("text-primary/20")
+    const { onSelect } = renderBoard({ usedKeys })
+    expect(screen.getAllByText("$200")).toHaveLength(1)
+    const used = screen.getByLabelText("History $200, played")
+    expect(used.textContent).toBe("")
+    fireEvent.click(used)
+    expect(onSelect).toHaveBeenCalledWith({
+      boardIndex: 1,
+      categoryIndex: 0,
+      rowIndex: 0,
+    })
   })
 })

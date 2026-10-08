@@ -37,11 +37,11 @@ export function ScoreBar({
   }
 
   return (
-    <div className="flex flex-wrap justify-center gap-3 border-t p-4">
+    <div className="flex flex-wrap justify-center gap-3 border-t-2 border-card bg-shade px-5 py-3">
       {scores.map((score, teamIndex) => (
         <div
           key={teamIndex}
-          className="flex items-center gap-3 rounded-lg border px-3 py-2"
+          className="flex min-w-44 items-center justify-center gap-3 rounded-md bg-secondary px-3 py-1.5"
         >
           {value !== undefined && (
             <Button
@@ -55,7 +55,7 @@ export function ScoreBar({
             </Button>
           )}
           <div className="flex flex-col items-center">
-            <span className="max-w-32 truncate text-xs text-muted-foreground">
+            <span className="max-w-32 truncate font-heading text-sm tracking-widest text-muted-foreground uppercase">
               {teamNames[teamIndex]}
             </span>
             <TeamScore
