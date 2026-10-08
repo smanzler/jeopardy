@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { Game } from "@/lib/db"
-import { getRowCount } from "@/lib/board"
+import { formatBoardCount } from "@/lib/board"
 import { deleteGame, listGames } from "@/lib/games"
 import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
@@ -40,8 +40,7 @@ export default function BoardPicker() {
           <div key={game.id} className="flex items-center gap-3 border-b pb-3">
             <span className="flex-1">{game.title || "Untitled board"}</span>
             <span className="text-sm text-muted-foreground">
-              {game.categories.length} categories,{" "}
-              {getRowCount(game.categories)} rows
+              {formatBoardCount(game.boards.length)}
             </span>
             <Button
               variant="destructive"

@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon, XIcon } from "lucide-react"
-import type { Game, GameDraft, Question } from "@/lib/db"
+import type { Board, Game, GameDraft, Question } from "@/lib/db"
 import {
   MAX_CATEGORY_COUNT,
   MAX_ROW_COUNT,
@@ -10,13 +10,15 @@ import {
   buildEmptyDraft,
   countCompleteQuestions,
   countQuestions,
-  formatRowValue,
+  formatBoardCount,
+  formatValue,
   getRowCount,
   hasCategoryContent,
   hasRowContent,
   isDraftComplete,
   removeCategory,
   removeRow,
+  setBoard,
   setCategoryName,
   setQuestion,
 } from "@/lib/board"
@@ -46,9 +48,7 @@ type BoardEditorProps = {
 
 export default function BoardEditor({ game }: BoardEditorProps) {
   const [draft, setDraft] = useState<GameDraft>(() =>
-    game
-      ? { categories: game.categories, title: game.title }
-      : buildEmptyDraft()
+    game ? { boards: game.boards, title: game.title } : buildEmptyDraft()
   )
   // The board claims its key before the first write, so quick changes cannot
   // race each other into two rows. A new board reaches the database when the
@@ -59,13 +59,15 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const [hasSaveFailed, setHasSaveFailed] = useState(false)
   const savedGames = useLiveQuery(listGames, [], [])
 
-  const categoryCount = draft.categories.length
-  const rowCount = getRowCount(draft.categories)
+  const boardIndex = 0
+  const board = draft.boards[boardIndex]
+  const categoryCount = board.categories.length
+  const rowCount = getRowCount(board)
   const otherGames = savedGames.filter((savedGame) => savedGame.id !== gameId)
 
   const selectedQuestion =
     selection &&
-    draft.categories[selection.categoryIndex].questions[selection.rowIndex]
+    board.categories[selection.categoryIndex].questions[selection.rowIndex]
 
   /**
    * Holds the change for the screen and writes it to the database. The screen
@@ -79,6 +81,9 @@ export default function BoardEditor({ game }: BoardEditorProps) {
     )
   }
 
+  const updateCurrentBoard = (next: Board) =>
+    updateBoard(setBoard({ board: next, boardIndex, draft }))
+
   const buildConfirmPrompt = (action: PendingRemoval): ConfirmPrompt => {
     switch (action.type) {
       case "category":
@@ -86,45 +91,45 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           cancelLabel: "Keep it",
           confirmLabel: "Remove",
           description: REMOVAL_WARNING,
-          title: `Remove ${draft.categories[action.categoryIndex].name || `category ${action.categoryIndex + 1}`}?`,
+          title: `Remove ${board.categories[action.categoryIndex].name || `category ${action.categoryIndex + 1}`}?`,
         }
       case "row":
         return {
           cancelLabel: "Keep it",
           confirmLabel: "Remove",
           description: REMOVAL_WARNING,
-          title: `Remove the ${formatRowValue(action.rowIndex)} row?`,
+          title: `Remove the ${formatValue(board.values[action.rowIndex])} row?`,
         }
     }
   }
 
   // A removal that throws no work away runs with no confirmation.
   const handleRemoveCategory = (categoryIndex: number) => {
-    if (hasCategoryContent(draft.categories[categoryIndex])) {
+    if (hasCategoryContent(board.categories[categoryIndex])) {
       setRemoval({ categoryIndex, type: "category" })
       return
     }
-    updateBoard(removeCategory({ categoryIndex, draft }))
+    updateCurrentBoard(removeCategory({ board, categoryIndex }))
   }
 
   const handleRemoveRow = (rowIndex: number) => {
-    if (hasRowContent({ draft, rowIndex })) {
+    if (hasRowContent({ board, rowIndex })) {
       setRemoval({ rowIndex, type: "row" })
       return
     }
-    updateBoard(removeRow({ draft, rowIndex }))
+    updateCurrentBoard(removeRow({ board, rowIndex }))
   }
 
   const handleConfirm = () => {
     if (!removal) return
     switch (removal.type) {
       case "category":
-        updateBoard(
-          removeCategory({ categoryIndex: removal.categoryIndex, draft })
+        updateCurrentBoard(
+          removeCategory({ board, categoryIndex: removal.categoryIndex })
         )
         break
       case "row":
-        updateBoard(removeRow({ draft, rowIndex: removal.rowIndex }))
+        updateCurrentBoard(removeRow({ board, rowIndex: removal.rowIndex }))
         break
     }
     setRemoval(undefined)
@@ -132,7 +137,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
 
   const handleQuestionChange = (question: Question) => {
     if (!selection) return
-    updateBoard(setQuestion({ ...selection, draft, question }))
+    updateCurrentBoard(setQuestion({ ...selection, board, question }))
   }
 
   // The board that the editor holds stays in the database, so a new board only
@@ -194,17 +199,17 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           gridTemplateColumns: `repeat(${categoryCount}, minmax(0, 1fr)) auto`,
         }}
       >
-        {draft.categories.map((category, categoryIndex) => (
+        {board.categories.map((category, categoryIndex) => (
           <div key={categoryIndex} className="flex items-center gap-1">
             <Input
               aria-label={`Category ${categoryIndex + 1} name`}
               placeholder={`Category ${categoryIndex + 1}`}
               value={category.name}
               onChange={(event) =>
-                updateBoard(
+                updateCurrentBoard(
                   setCategoryName({
+                    board,
                     categoryIndex,
-                    draft,
                     name: event.target.value,
                   })
                 )
@@ -226,7 +231,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           size="icon"
           aria-label="Add category"
           disabled={categoryCount >= MAX_CATEGORY_COUNT}
-          onClick={() => updateBoard(addCategory(draft))}
+          onClick={() => updateCurrentBoard(addCategory(board))}
         >
           <PlusIcon />
         </Button>
@@ -234,18 +239,18 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         {/* Rows read across the categories, so the cells iterate by row. */}
         {Array.from({ length: rowCount }, (_, rowIndex) => (
           <Fragment key={rowIndex}>
-            {draft.categories.map((category, categoryIndex) => (
+            {board.categories.map((category, categoryIndex) => (
               <QuestionCell
                 key={categoryIndex}
                 question={category.questions[rowIndex]}
-                value={formatRowValue(rowIndex)}
+                value={formatValue(board.values[rowIndex])}
                 onSelect={() => setSelection({ categoryIndex, rowIndex })}
               />
             ))}
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={`Remove the ${formatRowValue(rowIndex)} row`}
+              aria-label={`Remove the ${formatValue(board.values[rowIndex])} row`}
               disabled={rowCount <= 1}
               onClick={() => handleRemoveRow(rowIndex)}
             >
@@ -259,7 +264,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         variant="outline"
         className="self-start"
         disabled={rowCount >= MAX_ROW_COUNT}
-        onClick={() => updateBoard(addRow(draft))}
+        onClick={() => updateCurrentBoard(addRow(board))}
       >
         <PlusIcon />
         Add row
@@ -267,10 +272,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
 
       <QuestionDialog
         categoryName={
-          selection ? draft.categories[selection.categoryIndex].name : ""
+          selection ? board.categories[selection.categoryIndex].name : ""
         }
         question={selectedQuestion}
-        value={selection ? formatRowValue(selection.rowIndex) : ""}
+        value={selection ? formatValue(board.values[selection.rowIndex]) : ""}
         onChange={handleQuestionChange}
         onClose={() => setSelection(undefined)}
       />
@@ -288,8 +293,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             <div key={savedGame.id} className="flex items-center gap-2 text-sm">
               <span>{savedGame.title || "Untitled board"}</span>
               <span className="text-muted-foreground">
-                {savedGame.categories.length} categories,{" "}
-                {getRowCount(savedGame.categories)} rows
+                {formatBoardCount(savedGame.boards.length)}
               </span>
               <ButtonLink
                 variant="ghost"

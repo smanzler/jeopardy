@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition } from "@/lib/db"
-import { formatRowValue, getRowValue, isEveryQuestionUsed } from "@/lib/board"
+import { findQuestion, formatValue, isGameDone } from "@/lib/board"
 import { getGame } from "@/lib/games"
 import {
   adjustTeamScore,
@@ -40,15 +40,12 @@ export default function Play({ gameId }: { gameId: string }) {
     onReveal: () => revealAnswer(gameId),
   })
 
-  // The game ends when the host shuts the last question that the board holds.
+  // The game ends when the host shuts the last question that the game holds.
   const isFinished = Boolean(
     game &&
     session &&
     !session.openPosition &&
-    isEveryQuestionUsed({
-      categories: game.categories,
-      usedKeys: session.usedKeys,
-    })
+    isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
   )
 
   useEffect(() => {
@@ -94,23 +91,19 @@ export default function Play({ gameId }: { gameId: string }) {
   const handleSelect = (position: QuestionPosition) =>
     openQuestion({ gameId, position })
 
-  const openValue = openPosition
-    ? getRowValue(openPosition.rowIndex)
-    : undefined
+  const openQuestionView =
+    openPosition &&
+    findQuestion({ boards: game.boards, position: openPosition })
 
   return (
     <div className="flex h-svh flex-col">
-      {openPosition ? (
+      {openQuestionView ? (
         <QuestionView
-          categoryName={game.categories[openPosition.categoryIndex].name}
+          categoryName={openQuestionView.categoryName}
           isAnswerShown={session.isAnswerShown}
           onClose={() => closeQuestion(gameId)}
-          question={
-            game.categories[openPosition.categoryIndex].questions[
-              openPosition.rowIndex
-            ]
-          }
-          value={formatRowValue(openPosition.rowIndex)}
+          question={openQuestionView.question}
+          value={formatValue(openQuestionView.value)}
         />
       ) : (
         <>
@@ -131,7 +124,8 @@ export default function Play({ gameId }: { gameId: string }) {
           </div>
           <div className="flex flex-1 flex-col px-4 pb-2">
             <GameBoard
-              categories={game.categories}
+              board={game.boards[session.boardIndex]}
+              boardIndex={session.boardIndex}
               usedKeys={session.usedKeys}
               onSelect={handleSelect}
             />
@@ -140,7 +134,7 @@ export default function Play({ gameId }: { gameId: string }) {
       )}
       <ScoreBar
         scores={session.scores}
-        value={openValue}
+        value={openQuestionView?.value}
         onAdjust={({ delta, teamIndex }) =>
           adjustTeamScore({ delta, gameId, teamIndex })
         }
