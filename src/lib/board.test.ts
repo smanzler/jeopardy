@@ -14,6 +14,7 @@ import {
   findQuestion,
   formatBoardCount,
   formatValue,
+  getNextBoardIndex,
   getQuestionStatus,
   getRowCount,
   hasBoardContent,
@@ -496,5 +497,43 @@ describe("hasBoardContent", () => {
     expect(
       hasBoardContent(setCategoryName({ board, categoryIndex: 3, name: "Art" }))
     ).toBe(true)
+  })
+})
+
+describe("getNextBoardIndex", () => {
+  const boards = [buildEmptyBoard(0), buildEmptyBoard(1), buildEmptyBoard(2)]
+  const firstKeys = buildAllKeys({ board: boards[0], boardIndex: 0 })
+  const secondKeys = buildAllKeys({ board: boards[1], boardIndex: 1 })
+
+  it("stays on a board that still holds a question", () => {
+    expect(
+      getNextBoardIndex({ boardIndex: 0, boards, usedKeys: firstKeys.slice(1) })
+    ).toBe(0)
+  })
+
+  it("moves on when the board is done", () => {
+    expect(
+      getNextBoardIndex({ boardIndex: 0, boards, usedKeys: firstKeys })
+    ).toBe(1)
+  })
+
+  it("skips a later board that is done", () => {
+    expect(
+      getNextBoardIndex({
+        boardIndex: 0,
+        boards,
+        usedKeys: [...firstKeys, ...secondKeys],
+      })
+    ).toBe(2)
+  })
+
+  it("does not go back to an earlier board", () => {
+    expect(
+      getNextBoardIndex({
+        boardIndex: 1,
+        boards: boards.slice(0, 2),
+        usedKeys: secondKeys,
+      })
+    ).toBe(1)
   })
 })
