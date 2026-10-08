@@ -1,6 +1,17 @@
 export const buildScores = (teamCount: number): Array<number> =>
   Array.from({ length: teamCount }, () => 0)
 
+export const setScore = ({
+  score,
+  scores,
+  teamIndex,
+}: {
+  score: number
+  scores: Array<number>
+  teamIndex: number
+}): Array<number> =>
+  scores.map((existing, index) => (index === teamIndex ? score : existing))
+
 export const adjustScore = ({
   delta,
   scores,
@@ -10,7 +21,13 @@ export const adjustScore = ({
   scores: Array<number>
   teamIndex: number
 }): Array<number> =>
-  scores.map((score, index) => (index === teamIndex ? score + delta : score))
+  setScore({ score: scores[teamIndex] + delta, scores, teamIndex })
+
+/** A whole number of points, below 0 too, or `undefined` for other text. */
+export const toScore = (text: string): number | undefined => {
+  if (!/^-?\d+$/.test(text.trim())) return
+  return Number(text)
+}
 
 export const formatTeamName = (teamIndex: number): string =>
   `Team ${teamIndex + 1}`

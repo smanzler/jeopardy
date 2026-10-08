@@ -5,6 +5,8 @@ import {
   buildStandings,
   formatTeamName,
   formatWinners,
+  setScore,
+  toScore,
 } from "@/lib/score"
 
 describe("buildScores", () => {
@@ -72,5 +74,28 @@ describe("formatWinners", () => {
   it("names every team that draws", () => {
     expect(formatWinners([400, 400, 100])).toBe("Team 1 and Team 2 draw")
     expect(formatWinners([0, 0, 0])).toBe("Team 1, Team 2, and Team 3 draw")
+  })
+})
+
+describe("setScore", () => {
+  it("puts the score on one team and leaves the others", () => {
+    expect(setScore({ score: -500, scores: [200, 400], teamIndex: 0 })).toEqual(
+      [-500, 400]
+    )
+  })
+})
+
+describe("toScore", () => {
+  it("reads a whole number of points, below 0 too", () => {
+    expect(toScore("1200")).toBe(1200)
+    expect(toScore(" -300 ")).toBe(-300)
+    expect(toScore("0")).toBe(0)
+  })
+
+  it("refuses other text", () => {
+    expect(toScore("")).toBeUndefined()
+    expect(toScore("-")).toBeUndefined()
+    expect(toScore("12.5")).toBeUndefined()
+    expect(toScore("$200")).toBeUndefined()
   })
 })

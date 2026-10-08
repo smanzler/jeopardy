@@ -1,16 +1,28 @@
 import { MinusIcon, PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { formatValue } from "@/lib/board"
 import { formatTeamName } from "@/lib/score"
+import { TeamScore } from "@/features/game/components/team-score"
 
 type ScoreBarProps = {
   onAdjust: ({ delta, teamIndex }: { delta: number; teamIndex: number }) => void
+  onSetScore: ({
+    score,
+    teamIndex,
+  }: {
+    score: number
+    teamIndex: number
+  }) => void
   scores: Array<number>
   /** The value of the open question. No value hides the buttons. */
   value: number | undefined
 }
 
-export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
+export function ScoreBar({
+  onAdjust,
+  onSetScore,
+  scores,
+  value,
+}: ScoreBarProps) {
   const handleAdjust = ({
     sign,
     teamIndex,
@@ -44,9 +56,11 @@ export function ScoreBar({ onAdjust, scores, value }: ScoreBarProps) {
             <span className="text-xs text-muted-foreground">
               {formatTeamName(teamIndex)}
             </span>
-            <span className="font-heading text-2xl font-medium text-primary tabular-nums">
-              {formatValue(score)}
-            </span>
+            <TeamScore
+              score={score}
+              teamName={formatTeamName(teamIndex)}
+              onChange={(next) => onSetScore({ score: next, teamIndex })}
+            />
           </div>
           {value !== undefined && (
             <Button
