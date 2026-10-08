@@ -67,73 +67,76 @@ export default function Winner({ gameId }: { gameId: string }) {
           {formatWinners(session)}
         </h1>
       </div>
-      <ol className="mt-auto flex items-end border-b-2 border-card">
-        {podium.map((standing) => {
-          const isWinner = standing.rank === 1
-          const block =
-            PODIUM_BLOCKS[Math.min(standing.rank, PODIUM_BLOCKS.length) - 1]
-          return (
-            <li key={standing.teamIndex} className="flex w-52 flex-col">
-              <span
-                className={cn(
-                  "mb-2 self-center bg-primary px-3 py-0.5 font-heading text-sm font-semibold tracking-widest text-primary-foreground uppercase",
-                  !isWinner && "invisible"
-                )}
-              >
-                Winner
-              </span>
-              <div className="mx-3.5">
-                <Lectern
+      {/* The automatic margins put the scores in the middle of the free space. */}
+      <div className="my-auto flex flex-col items-center gap-6">
+        <ol className="flex items-end border-b-2 border-card">
+          {podium.map((standing) => {
+            const isWinner = standing.rank === 1
+            const block =
+              PODIUM_BLOCKS[Math.min(standing.rank, PODIUM_BLOCKS.length) - 1]
+            return (
+              <li key={standing.teamIndex} className="flex w-52 flex-col">
+                <span
                   className={cn(
-                    isWinner ? "ring-4 ring-primary" : "bg-secondary"
+                    "mb-2 self-center bg-primary px-3 py-0.5 font-heading text-sm font-semibold tracking-widest text-primary-foreground uppercase",
+                    !isWinner && "invisible"
                   )}
-                  score={formatValue(standing.score)}
-                  scoreClassName={cn(
-                    !isWinner && "text-card-foreground/85",
+                >
+                  Winner
+                </span>
+                <div className="mx-3.5">
+                  <Lectern
+                    className={cn(
+                      isWinner ? "ring-4 ring-primary" : "bg-secondary"
+                    )}
+                    score={formatValue(standing.score)}
+                    scoreClassName={cn(
+                      !isWinner && "text-card-foreground/85",
+                      standing.score < 0 && "text-destructive"
+                    )}
+                    plate={
+                      <span className={cn(PLATE_CLASS, "truncate px-2")}>
+                        {session.teamNames[standing.teamIndex]}
+                      </span>
+                    }
+                  />
+                </div>
+                <span
+                  className={cn(
+                    "flex justify-center pt-2.5 font-heading text-5xl leading-none font-bold shadow-[inset_0_-5px_0_var(--shade)]",
+                    block
+                  )}
+                >
+                  {standing.rank}
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+        {rest.length > 0 && (
+          <ol className="flex flex-wrap justify-center gap-2">
+            {rest.map((standing) => (
+              <li
+                key={standing.teamIndex}
+                className="flex items-baseline gap-3 bg-secondary px-4 py-2 font-heading"
+              >
+                <span className="text-muted-foreground">{standing.rank}</span>
+                <span className="tracking-wider uppercase">
+                  {session.teamNames[standing.teamIndex]}
+                </span>
+                <span
+                  className={cn(
+                    "text-xl font-bold text-primary tabular-nums",
                     standing.score < 0 && "text-destructive"
                   )}
-                  plate={
-                    <span className={cn(PLATE_CLASS, "truncate px-2")}>
-                      {session.teamNames[standing.teamIndex]}
-                    </span>
-                  }
-                />
-              </div>
-              <span
-                className={cn(
-                  "flex justify-center pt-2.5 font-heading text-5xl leading-none font-bold shadow-[inset_0_-5px_0_var(--shade)]",
-                  block
-                )}
-              >
-                {standing.rank}
-              </span>
-            </li>
-          )
-        })}
-      </ol>
-      {rest.length > 0 && (
-        <ol className="flex flex-wrap justify-center gap-2">
-          {rest.map((standing) => (
-            <li
-              key={standing.teamIndex}
-              className="flex items-baseline gap-3 bg-secondary px-4 py-2 font-heading"
-            >
-              <span className="text-muted-foreground">{standing.rank}</span>
-              <span className="tracking-wider uppercase">
-                {session.teamNames[standing.teamIndex]}
-              </span>
-              <span
-                className={cn(
-                  "text-xl font-bold text-primary tabular-nums",
-                  standing.score < 0 && "text-destructive"
-                )}
-              >
-                {formatValue(standing.score)}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
+                >
+                  {formatValue(standing.score)}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
       <div className="flex gap-2.5">
         <Button
           size="xl"
