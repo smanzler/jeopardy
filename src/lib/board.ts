@@ -225,6 +225,27 @@ export const addRow = (board: Board): Board => ({
   ],
 })
 
+export const setRowValue = ({
+  board,
+  rowIndex,
+  value,
+}: {
+  board: Board
+  rowIndex: number
+  value: number
+}): Board => ({
+  ...board,
+  values: board.values.map((existing, index) =>
+    index === rowIndex ? value : existing
+  ),
+})
+
+/** A whole number of points from 0 up, or `undefined` for other text. */
+export const toRowValue = (text: string): number | undefined => {
+  if (!/^\d+$/.test(text.trim())) return
+  return Number(text)
+}
+
 export const removeRow = ({
   board,
   rowIndex,
