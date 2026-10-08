@@ -3,7 +3,6 @@ import {
   countCompleteQuestions,
   countQuestions,
   countQuestionsLeft,
-  formatBoardCount,
   isGameDone,
 } from "@/lib/board"
 import { formatLeaders } from "@/lib/score"
@@ -28,9 +27,6 @@ export const findGamesInProgress = ({
       return []
     return [{ game, session }]
   })
-
-export const formatGameSummary = (game: Game): string =>
-  `${formatBoardCount(game.boards.length)} · ${countQuestions(game)} questions`
 
 export type CardState = "in-progress" | "ready" | "unfinished"
 

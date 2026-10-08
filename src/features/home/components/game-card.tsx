@@ -10,7 +10,8 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { ButtonLink } from "@/components/button-link"
 import { cn } from "@/lib/utils"
-import { buildCardStatus, formatGameSummary } from "@/features/home/lib/hub"
+import { formatGameSummary } from "@/lib/board"
+import { buildCardStatus } from "@/features/home/lib/hub"
 import type { CardState } from "@/features/home/lib/hub"
 
 type StateView = {

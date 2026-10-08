@@ -5,6 +5,7 @@ import type { QuestionPosition } from "@/lib/db"
 import {
   buildQuestionKey,
   findQuestion,
+  formatGameSummary,
   formatValue,
   getNextBoardIndex,
   isGameDone,
@@ -111,6 +112,7 @@ export default function Play({ gameId }: { gameId: string }) {
     return (
       <div className="flex h-svh flex-col">
         <TeamSetup
+          summary={formatGameSummary(game)}
           title={title}
           onStart={(teamNames) =>
             startSession({ boards: game.boards, gameId, teamNames })
