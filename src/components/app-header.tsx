@@ -14,7 +14,8 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const buildNewBoardState = () => ({ newBoardId: crypto.randomUUID() })
+/** Give a link to `/create` this state, so it opens an empty board each time. */
+export const buildNewBoardState = () => ({ newBoardId: crypto.randomUUID() })
 
 type NavItem = {
   isActive: (pathname: string) => boolean

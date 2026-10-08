@@ -11,6 +11,7 @@ import {
   buildRowValues,
   countCompleteQuestions,
   countQuestions,
+  countQuestionsLeft,
   findQuestion,
   formatBoardCount,
   formatValue,
@@ -438,6 +439,19 @@ describe("isBoardDone", () => {
         usedKeys: buildAllKeys({ board, boardIndex: 0 }),
       })
     ).toBe(true)
+  })
+})
+
+describe("countQuestionsLeft", () => {
+  it("counts the questions of a board that the game has not shown", () => {
+    const board = buildEmptyBoard(0)
+    const usedKeys = [
+      buildQuestionKey({ boardIndex: 0, categoryIndex: 0, rowIndex: 0 }),
+      buildQuestionKey({ boardIndex: 0, categoryIndex: 4, rowIndex: 4 }),
+      // A key of another board does not count.
+      buildQuestionKey({ boardIndex: 1, categoryIndex: 1, rowIndex: 1 }),
+    ]
+    expect(countQuestionsLeft({ board, boardIndex: 0, usedKeys })).toBe(23)
   })
 })
 

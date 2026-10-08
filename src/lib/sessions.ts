@@ -7,6 +7,8 @@ import { adjustScore, buildScores, setScore } from "@/lib/score"
 export const getSession = (gameId: string): Promise<Session | undefined> =>
   db.sessions.get(gameId)
 
+export const listSessions = (): Promise<Array<Session>> => db.sessions.toArray()
+
 export const startSession = async ({
   boards,
   gameId,
