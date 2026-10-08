@@ -4,6 +4,7 @@ import {
   buildScores,
   buildTeamNames,
   buildStandings,
+  formatLeaders,
   formatTeamName,
   formatWinners,
   setScore,
@@ -114,5 +115,27 @@ describe("toScore", () => {
     expect(toScore("-")).toBeUndefined()
     expect(toScore("12.5")).toBeUndefined()
     expect(toScore("$200")).toBeUndefined()
+  })
+})
+
+describe("formatLeaders", () => {
+  const teamNames = ["Owls", "Foxes", "Bears"]
+
+  it("names the team ahead and its score", () => {
+    expect(formatLeaders({ scores: [1200, 800, -300], teamNames })).toBe(
+      "Owls ahead · $1,200"
+    )
+  })
+
+  it("names every team that shares the top score", () => {
+    expect(formatLeaders({ scores: [800, 800, 200], teamNames })).toBe(
+      "Owls and Foxes tied · $800"
+    )
+  })
+
+  it("says that no team has points at the start", () => {
+    expect(formatLeaders({ scores: [0, 0, 0], teamNames })).toBe(
+      "No points yet"
+    )
   })
 })

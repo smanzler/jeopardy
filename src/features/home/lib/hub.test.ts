@@ -4,6 +4,7 @@ import type { Board, Game, Session } from "@/lib/db"
 import {
   findGamesInProgress,
   formatGameProgress,
+  buildCardStatus,
   formatGameSummary,
 } from "@/features/home/lib/hub"
 
@@ -64,34 +65,73 @@ describe("findGamesInProgress", () => {
   })
 })
 
+const buildFullBoard = (boardIndex: number): Board => {
+  const board = buildEmptyBoard(boardIndex)
+  return {
+    ...board,
+    categories: board.categories.map((category) => ({
+      ...category,
+      questions: category.questions.map(() => ({ answer: "a", question: "q" })),
+    })),
+  }
+}
+
 describe("formatGameSummary", () => {
-  it("counts the questions of a complete game", () => {
-    const board = buildEmptyBoard(0)
-    const full = {
-      ...board,
-      categories: board.categories.map((category) => ({
-        ...category,
-        questions: category.questions.map(() => ({
-          answer: "a",
-          question: "q",
-        })),
-      })),
-    }
+  it("counts the boards and the questions", () => {
     expect(
-      formatGameSummary(buildGame({ boards: [full, full], id: "g" }))
+      formatGameSummary(
+        buildGame({ boards: [buildFullBoard(0), buildEmptyBoard(1)], id: "g" })
+      )
     ).toBe("2 boards · 50 questions")
   })
+})
 
-  it("says how many questions are written while the game is not complete", () => {
+describe("buildCardStatus", () => {
+  it("shows the leader and the questions played of a game in progress", () => {
+    const game = buildGame({
+      boards: [buildFullBoard(0), buildFullBoard(1)],
+      id: "g",
+    })
+    const session = {
+      ...buildSession({ gameId: "g", usedKeys: allKeys(0).slice(0, 14) }),
+      scores: [1200, 800],
+      teamNames: ["Owls", "Foxes"],
+    }
+    expect(buildCardStatus({ game, session })).toEqual({
+      detail: "Owls ahead · $1,200",
+      progress: { label: "14 of 50 played", value: 28 },
+      state: "in-progress",
+    })
+  })
+
+  it("calls a complete game with no session ready", () => {
+    const game = buildGame({ boards: [buildFullBoard(0)], id: "g" })
+    expect(buildCardStatus({ game, session: undefined })).toEqual({
+      detail: "All 25 written",
+      progress: { label: "25 of 25 written", value: 100 },
+      state: "ready",
+    })
+  })
+
+  it("counts the questions written of a game that is not complete", () => {
     const board = setQuestion({
       board: buildEmptyBoard(0),
       categoryIndex: 0,
       question: { answer: "a", question: "q" },
       rowIndex: 0,
     })
-    expect(formatGameSummary(buildGame({ boards: [board], id: "g" }))).toBe(
-      "1 board · 1 of 25 written"
-    )
+    const game = buildGame({ boards: [board], id: "g" })
+    expect(buildCardStatus({ game, session: undefined })).toEqual({
+      detail: "1 of 25 written",
+      progress: { label: "1 of 25 written", value: 4 },
+      state: "unfinished",
+    })
+  })
+
+  it("treats a finished game as one with no session", () => {
+    const game = buildGame({ boards: [buildFullBoard(0)], id: "g" })
+    const session = buildSession({ gameId: "g", usedKeys: allKeys(0) })
+    expect(buildCardStatus({ game, session }).state).toBe("ready")
   })
 })
 

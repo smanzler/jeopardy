@@ -6,6 +6,7 @@ import {
   formatBoardCount,
   isGameDone,
 } from "@/lib/board"
+import { formatLeaders } from "@/lib/score"
 
 export type GameInProgress = { game: Game; session: Session }
 
@@ -28,14 +29,67 @@ export const findGamesInProgress = ({
     return [{ game, session }]
   })
 
-export const formatGameSummary = (game: Game): string => {
+export const formatGameSummary = (game: Game): string =>
+  `${formatBoardCount(game.boards.length)} · ${countQuestions(game)} questions`
+
+export type CardState = "in-progress" | "ready" | "unfinished"
+
+/** What the card of a game says about it. `value` runs from 0 to 100. */
+export type CardStatus = {
+  detail: string
+  progress: { label: string; value: number }
+  state: CardState
+}
+
+const toPercent = ({ count, total }: { count: number; total: number }) =>
+  total === 0 ? 0 : Math.round((count / total) * 100)
+
+/**
+ * A game in progress shows the questions that it played, and any other game
+ * shows the questions that the editor holds.
+ */
+export const buildCardStatus = ({
+  game,
+  session,
+}: {
+  game: Game
+  session: Session | undefined
+}): CardStatus => {
   const total = countQuestions(game)
+  if (
+    session &&
+    !isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
+  ) {
+    const left = game.boards.reduce(
+      (sum, board, boardIndex) =>
+        sum +
+        countQuestionsLeft({ board, boardIndex, usedKeys: session.usedKeys }),
+      0
+    )
+    const played = total - left
+    return {
+      detail: formatLeaders(session),
+      progress: {
+        label: `${played} of ${total} played`,
+        value: toPercent({ count: played, total }),
+      },
+      state: "in-progress",
+    }
+  }
   const complete = countCompleteQuestions(game)
-  const questions =
-    complete === total
-      ? `${total} questions`
-      : `${complete} of ${total} written`
-  return `${formatBoardCount(game.boards.length)} · ${questions}`
+  const written = `${complete} of ${total} written`
+  if (complete === total) {
+    return {
+      detail: `All ${total} written`,
+      progress: { label: written, value: 100 },
+      state: "ready",
+    }
+  }
+  return {
+    detail: written,
+    progress: { label: written, value: toPercent({ count: complete, total }) },
+    state: "unfinished",
+  }
 }
 
 export const formatGameProgress = ({

@@ -1,3 +1,5 @@
+import { formatValue } from "@/lib/board"
+
 export const buildScores = (teamCount: number): Array<number> =>
   Array.from({ length: teamCount }, () => 0)
 
@@ -53,17 +55,25 @@ const nameFormat = new Intl.ListFormat("en", {
   type: "conjunction",
 })
 
-/** Names the teams on the top rank, and says if they win or draw. */
-export const formatWinners = ({
-  scores,
-  teamNames,
-}: {
-  scores: Array<number>
-  teamNames: Array<string>
-}): string => {
-  const names = buildStandings(scores)
+type Teams = { scores: Array<number>; teamNames: Array<string> }
+
+const listLeaders = ({ scores, teamNames }: Teams): Array<string> =>
+  buildStandings(scores)
     .filter((standing) => standing.rank === 1)
     .map((standing) => teamNames[standing.teamIndex])
+
+/** Names the teams on the top rank, and says if they win or draw. */
+export const formatWinners = (teams: Teams): string => {
+  const names = listLeaders(teams)
   if (names.length === 1) return `${names[0]} wins`
   return `${nameFormat.format(names)} draw`
+}
+
+/** Names the teams on the top rank of a game that still runs, and their score. */
+export const formatLeaders = (teams: Teams): string => {
+  const top = Math.max(...teams.scores)
+  if (teams.scores.every((score) => score === 0)) return "No points yet"
+  const names = listLeaders(teams)
+  const standing = names.length === 1 ? "ahead" : "tied"
+  return `${nameFormat.format(names)} ${standing} · ${formatValue(top)}`
 }

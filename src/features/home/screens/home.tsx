@@ -18,7 +18,11 @@ export default function Home() {
   // Dexie holds the boards in the browser, so the load waits for the client.
   const hub = useLiveQuery(async () => {
     const [games, sessions] = await Promise.all([listGames(), listSessions()])
-    return { games, inProgress: findGamesInProgress({ games, sessions }) }
+    return {
+      games,
+      inProgress: findGamesInProgress({ games, sessions }),
+      sessions,
+    }
   }, [])
   const [pendingDelete, setPendingDelete] = useState<Game>()
 
@@ -58,11 +62,14 @@ export default function Home() {
         >
           Your boards
         </h2>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3.5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-3.5">
           {hub.games.map((game) => (
             <GameCard
               key={game.id}
               game={game}
+              session={hub.sessions.find(
+                (session) => session.gameId === game.id
+              )}
               onDelete={() => setPendingDelete(game)}
               onExport={() => downloadGameFile(game)}
             />
