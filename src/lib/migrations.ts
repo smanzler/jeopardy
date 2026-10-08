@@ -19,9 +19,14 @@ type GameV3 = Omit<Game, "boards"> & {
   boards: Array<Omit<Board, "dailyDoubles">>
 }
 
-type SessionV3 = Omit<Session, "dailyDoubleKeys" | "teamNames" | "wager">
+type SessionV3 = Omit<
+  Session,
+  "dailyDoubleKeys" | "questionResults" | "teamNames" | "wager"
+>
 
-type SessionV4 = Omit<Session, "teamNames">
+type SessionV4 = Omit<Session, "questionResults" | "teamNames">
+
+type SessionV5 = Omit<Session, "questionResults">
 
 /** Version 2 gave each row 200 points more than the row above it. */
 const V2_ROW_VALUE_STEP = 200
@@ -69,7 +74,13 @@ export const toSessionV4 = (session: SessionV3): SessionV4 => ({
 })
 
 /** Version 4 showed each team as "Team" and its number. */
-export const toSessionV5 = (session: SessionV4): Session => ({
+export const toSessionV5 = (session: SessionV4): SessionV5 => ({
   ...session,
   teamNames: session.scores.map((_, teamIndex) => `Team ${teamIndex + 1}`),
+})
+
+/** Version 5 kept no results for the open question. */
+export const toSessionV6 = (session: SessionV5): Session => ({
+  ...session,
+  questionResults: [],
 })

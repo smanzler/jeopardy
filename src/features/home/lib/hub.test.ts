@@ -34,6 +34,7 @@ const buildSession = ({
   gameId,
   isAnswerShown: false,
   openPosition: null,
+  questionResults: [],
   scores: [0, 0],
   teamNames: ["Team 1", "Team 2"],
   usedKeys,

@@ -5,6 +5,7 @@ import {
   toSessionV3,
   toSessionV4,
   toSessionV5,
+  toSessionV6,
 } from "@/lib/migrations"
 
 const categories = [
@@ -117,5 +118,22 @@ describe("toSessionV5", () => {
       ...session,
       teamNames: ["Team 1", "Team 2", "Team 3"],
     })
+  })
+})
+
+describe("toSessionV6", () => {
+  it("starts the open question with no results", () => {
+    const session = {
+      boardIndex: 0,
+      dailyDoubleKeys: [],
+      gameId: "g1",
+      isAnswerShown: true,
+      openPosition: { boardIndex: 0, categoryIndex: 1, rowIndex: 2 },
+      scores: [300, -100],
+      teamNames: ["Owls", "Foxes"],
+      usedKeys: ["0-1-2"],
+      wager: null,
+    }
+    expect(toSessionV6(session)).toEqual({ ...session, questionResults: [] })
   })
 })

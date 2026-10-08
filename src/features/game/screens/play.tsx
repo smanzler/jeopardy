@@ -14,15 +14,16 @@ import {
 } from "@/lib/board"
 import { getGame } from "@/lib/games"
 import {
-  adjustTeamScore,
   closeQuestion,
   getSession,
   openQuestion,
   revealAnswer,
+  scoreTeam,
   setTeamScore,
   setWager,
   showBoard,
   startSession,
+  undoTeamScore,
 } from "@/lib/sessions"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
@@ -184,15 +185,15 @@ export default function Play({ gameId }: { gameId: string }) {
         </>
       )}
       <ScoreBar
+        questionResults={session.questionResults}
         scores={session.scores}
         teamNames={session.teamNames}
         value={stake}
-        onAdjust={({ delta, teamIndex }) =>
-          adjustTeamScore({ delta, gameId, teamIndex })
-        }
+        onScore={(result) => scoreTeam({ gameId, result })}
         onSetScore={({ score, teamIndex }) =>
           setTeamScore({ gameId, score, teamIndex })
         }
+        onUndo={(teamIndex) => undoTeamScore({ gameId, teamIndex })}
       />
     </div>
   )

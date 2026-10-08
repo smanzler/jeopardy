@@ -1,4 +1,5 @@
 import { formatValue } from "@/lib/board"
+import type { QuestionResult } from "@/lib/db"
 
 export const buildScores = (teamCount: number): Array<number> =>
   Array.from({ length: teamCount }, () => 0)
@@ -24,6 +25,51 @@ export const adjustScore = ({
   teamIndex: number
 }): Array<number> =>
   setScore({ score: scores[teamIndex] + delta, scores, teamIndex })
+
+type ScoredQuestion = {
+  questionResults: Array<QuestionResult>
+  scores: Array<number>
+}
+
+export const findResult = ({
+  questionResults,
+  teamIndex,
+}: {
+  questionResults: Array<QuestionResult>
+  teamIndex: number
+}): QuestionResult | undefined =>
+  questionResults.find((result) => result.teamIndex === teamIndex)
+
+/** Scores one team on the open question. A team that has a result keeps it. */
+export const applyResult = ({
+  result,
+  ...question
+}: ScoredQuestion & { result: QuestionResult }): ScoredQuestion => {
+  if (findResult({ ...question, teamIndex: result.teamIndex })) return question
+  return {
+    questionResults: [...question.questionResults, result],
+    scores: adjustScore({ ...result, scores: question.scores }),
+  }
+}
+
+/** Takes back the result of one team on the open question. */
+export const undoResult = ({
+  teamIndex,
+  ...question
+}: ScoredQuestion & { teamIndex: number }): ScoredQuestion => {
+  const result = findResult({ ...question, teamIndex })
+  if (!result) return question
+  return {
+    questionResults: question.questionResults.filter(
+      (other) => other !== result
+    ),
+    scores: adjustScore({
+      delta: -result.delta,
+      scores: question.scores,
+      teamIndex,
+    }),
+  }
+}
 
 /** A whole number of points, below 0 too, or `undefined` for other text. */
 export const toScore = (text: string): number | undefined => {
