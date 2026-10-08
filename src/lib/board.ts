@@ -1,4 +1,10 @@
-import type { Category, GameDraft, Question, QuestionPosition } from "@/lib/db"
+import type {
+  Board,
+  Category,
+  GameDraft,
+  Question,
+  QuestionPosition,
+} from "@/lib/db"
 
 export const DEFAULT_CATEGORY_COUNT = 5
 
@@ -8,7 +14,8 @@ export const MAX_CATEGORY_COUNT = 8
 
 export const MAX_ROW_COUNT = 8
 
-const ROW_VALUE_STEP = 200
+/** The first board goes up by 100 for each row, the second by 200, and so on. */
+const ROW_VALUE_STEP = 100
 
 const currencyFormat = new Intl.NumberFormat("en-US", {
   currency: "USD",
@@ -16,18 +23,20 @@ const currencyFormat = new Intl.NumberFormat("en-US", {
   style: "currency",
 })
 
-/**
- * The value of a row comes from its position, so the values stay correct after
- * the editor adds or removes a row.
- */
-export const getRowValue = (rowIndex: number): number =>
-  (rowIndex + 1) * ROW_VALUE_STEP
-
 export const formatValue = (value: number): string =>
   currencyFormat.format(value)
 
-export const formatRowValue = (rowIndex: number): string =>
-  formatValue(getRowValue(rowIndex))
+export const buildRowValues = ({
+  boardIndex,
+  rowCount,
+}: {
+  boardIndex: number
+  rowCount: number
+}): Array<number> =>
+  Array.from(
+    { length: rowCount },
+    (_, rowIndex) => (rowIndex + 1) * (boardIndex + 1) * ROW_VALUE_STEP
+  )
 
 const buildEmptyQuestion = (): Question => ({ answer: "", question: "" })
 
@@ -36,39 +45,59 @@ const buildEmptyCategory = (rowCount: number): Category => ({
   questions: Array.from({ length: rowCount }, buildEmptyQuestion),
 })
 
-export const buildEmptyDraft = (): GameDraft => ({
+export const buildEmptyBoard = (boardIndex: number): Board => ({
   categories: Array.from({ length: DEFAULT_CATEGORY_COUNT }, () =>
     buildEmptyCategory(DEFAULT_ROW_COUNT)
   ),
+  values: buildRowValues({ boardIndex, rowCount: DEFAULT_ROW_COUNT }),
+})
+
+export const buildEmptyDraft = (): GameDraft => ({
+  boards: [buildEmptyBoard(0)],
   title: "",
 })
 
 export const buildQuestionKey = ({
+  boardIndex,
   categoryIndex,
   rowIndex,
-}: QuestionPosition): string => `${categoryIndex}-${rowIndex}`
+}: QuestionPosition): string => `${boardIndex}-${categoryIndex}-${rowIndex}`
 
 /**
  * True when `usedKeys` holds a key for every question that the board has now.
  * The keys carry positions, so a board that changed after the game started
  * counts only the positions that it still holds.
  */
-export const isEveryQuestionUsed = ({
-  categories,
+export const isBoardDone = ({
+  board,
+  boardIndex,
   usedKeys,
 }: {
-  categories: Array<Category>
+  board: Board
+  boardIndex: number
   usedKeys: Array<string>
 }): boolean =>
-  categories.every((category, categoryIndex) =>
+  board.categories.every((category, categoryIndex) =>
     category.questions.every((_, rowIndex) =>
-      usedKeys.includes(buildQuestionKey({ categoryIndex, rowIndex }))
+      usedKeys.includes(
+        buildQuestionKey({ boardIndex, categoryIndex, rowIndex })
+      )
     )
   )
 
+export const isGameDone = ({
+  boards,
+  usedKeys,
+}: {
+  boards: Array<Board>
+  usedKeys: Array<string>
+}): boolean =>
+  boards.every((board, boardIndex) =>
+    isBoardDone({ board, boardIndex, usedKeys })
+  )
+
 /** Every category holds the same number of questions, one for each row. */
-export const getRowCount = (categories: Array<Category>): number =>
-  categories[0].questions.length
+export const getRowCount = (board: Board): number => board.values.length
 
 export const isQuestionComplete = (question: Question): boolean =>
   question.answer.trim() !== "" && question.question.trim() !== ""
@@ -93,44 +122,44 @@ export const hasCategoryContent = (category: Category): boolean =>
   category.name.trim() !== "" || category.questions.some(hasQuestionContent)
 
 export const hasRowContent = ({
-  draft,
+  board,
   rowIndex,
 }: {
-  draft: GameDraft
+  board: Board
   rowIndex: number
 }): boolean =>
-  draft.categories.some((category) =>
+  board.categories.some((category) =>
     hasQuestionContent(category.questions[rowIndex])
   )
 
 export const setCategoryName = ({
+  board,
   categoryIndex,
-  draft,
   name,
 }: {
+  board: Board
   categoryIndex: number
-  draft: GameDraft
   name: string
-}): GameDraft => ({
-  ...draft,
-  categories: draft.categories.map((category, index) =>
+}): Board => ({
+  ...board,
+  categories: board.categories.map((category, index) =>
     index === categoryIndex ? { ...category, name } : category
   ),
 })
 
 export const setQuestion = ({
+  board,
   categoryIndex,
-  draft,
   question,
   rowIndex,
 }: {
+  board: Board
   categoryIndex: number
-  draft: GameDraft
   question: Question
   rowIndex: number
-}): GameDraft => ({
-  ...draft,
-  categories: draft.categories.map((category, index) =>
+}): Board => ({
+  ...board,
+  categories: board.categories.map((category, index) =>
     index === categoryIndex
       ? {
           ...category,
@@ -142,56 +171,96 @@ export const setQuestion = ({
   ),
 })
 
-export const addCategory = (draft: GameDraft): GameDraft => ({
-  ...draft,
-  categories: [
-    ...draft.categories,
-    buildEmptyCategory(getRowCount(draft.categories)),
-  ],
+export const addCategory = (board: Board): Board => ({
+  ...board,
+  categories: [...board.categories, buildEmptyCategory(getRowCount(board))],
 })
 
 export const removeCategory = ({
+  board,
   categoryIndex,
-  draft,
 }: {
+  board: Board
   categoryIndex: number
-  draft: GameDraft
-}): GameDraft => ({
-  ...draft,
-  categories: draft.categories.filter((_, index) => index !== categoryIndex),
+}): Board => ({
+  ...board,
+  categories: board.categories.filter((_, index) => index !== categoryIndex),
 })
 
-export const addRow = (draft: GameDraft): GameDraft => ({
-  ...draft,
-  categories: draft.categories.map((category) => ({
+/** The new row is worth the last row plus the first row. */
+export const addRow = (board: Board): Board => ({
+  categories: board.categories.map((category) => ({
     ...category,
     questions: [...category.questions, buildEmptyQuestion()],
   })),
+  values: [
+    ...board.values,
+    board.values[board.values.length - 1] + board.values[0],
+  ],
 })
 
 export const removeRow = ({
-  draft,
+  board,
   rowIndex,
 }: {
-  draft: GameDraft
+  board: Board
   rowIndex: number
-}): GameDraft => ({
-  ...draft,
-  categories: draft.categories.map((category) => ({
+}): Board => ({
+  categories: board.categories.map((category) => ({
     ...category,
     questions: category.questions.filter((_, index) => index !== rowIndex),
   })),
+  values: board.values.filter((_, index) => index !== rowIndex),
 })
 
+export const setBoard = ({
+  board,
+  boardIndex,
+  draft,
+}: {
+  board: Board
+  boardIndex: number
+  draft: GameDraft
+}): GameDraft => ({
+  ...draft,
+  boards: draft.boards.map((existing, index) =>
+    index === boardIndex ? board : existing
+  ),
+})
+
+const listQuestions = (draft: GameDraft): Array<Question> =>
+  draft.boards.flatMap((board) =>
+    board.categories.flatMap((category) => category.questions)
+  )
+
 export const countQuestions = (draft: GameDraft): number =>
-  draft.categories.flatMap((category) => category.questions).length
+  listQuestions(draft).length
 
 export const countCompleteQuestions = (draft: GameDraft): number =>
-  draft.categories
-    .flatMap((category) => category.questions)
-    .filter(isQuestionComplete).length
+  listQuestions(draft).filter(isQuestionComplete).length
 
 export const isDraftComplete = (draft: GameDraft): boolean =>
   draft.title.trim() !== "" &&
-  draft.categories.every((category) => category.name.trim() !== "") &&
+  draft.boards.every((board) =>
+    board.categories.every((category) => category.name.trim() !== "")
+  ) &&
   countCompleteQuestions(draft) === countQuestions(draft)
+
+export const formatBoardCount = (boardCount: number): string =>
+  boardCount === 1 ? "1 board" : `${boardCount} boards`
+
+/** The question at a position, or `undefined` when the game no longer holds it. */
+export const findQuestion = ({
+  boards,
+  position,
+}: {
+  boards: Array<Board>
+  position: QuestionPosition
+}): { categoryName: string; question: Question; value: number } | undefined => {
+  const board = boards.at(position.boardIndex)
+  const category = board?.categories.at(position.categoryIndex)
+  const question = category?.questions.at(position.rowIndex)
+  const value = board?.values.at(position.rowIndex)
+  if (!category || !question || value === undefined) return
+  return { categoryName: category.name, question, value }
+}

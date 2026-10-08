@@ -3,25 +3,28 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { GameBoard } from "@/features/game/components/game-board"
 import { buildQuestionKey } from "@/lib/board"
-import type { Category } from "@/lib/db"
+import type { Board } from "@/lib/db"
 
 // Vitest runs with no globals, so Testing Library cannot clean up on its own.
 afterEach(cleanup)
 
-const buildCategories = (): Array<Category> =>
-  ["History", "Science"].map((name) => ({
+const buildBoard = (): Board => ({
+  categories: ["History", "Science"].map((name) => ({
     name,
     questions: [
       { answer: "a1", question: "q1" },
       { answer: "a2", question: "q2" },
     ],
-  }))
+  })),
+  values: [200, 400],
+})
 
 const renderBoard = ({ usedKeys }: { usedKeys: Array<string> }) => {
   const onSelect = vi.fn()
   render(
     <GameBoard
-      categories={buildCategories()}
+      board={buildBoard()}
+      boardIndex={1}
       usedKeys={usedKeys}
       onSelect={onSelect}
     />
@@ -40,11 +43,17 @@ describe("GameBoard", () => {
   it("gives the position of the cell that the host presses", () => {
     const { onSelect } = renderBoard({ usedKeys: [] })
     fireEvent.click(screen.getAllByText("$400")[1])
-    expect(onSelect).toHaveBeenCalledWith({ categoryIndex: 1, rowIndex: 1 })
+    expect(onSelect).toHaveBeenCalledWith({
+      boardIndex: 1,
+      categoryIndex: 1,
+      rowIndex: 1,
+    })
   })
 
   it("dims a question that the game showed already", () => {
-    const usedKeys = [buildQuestionKey({ categoryIndex: 0, rowIndex: 0 })]
+    const usedKeys = [
+      buildQuestionKey({ boardIndex: 1, categoryIndex: 0, rowIndex: 0 }),
+    ]
     renderBoard({ usedKeys })
     const [used, unused] = screen.getAllByText("$200")
     expect(used.className).toContain("text-primary/20")

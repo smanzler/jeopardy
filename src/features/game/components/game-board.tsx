@@ -1,17 +1,23 @@
-import type { Category, QuestionPosition } from "@/lib/db"
-import { buildQuestionKey, formatRowValue, getRowCount } from "@/lib/board"
+import type { Board, QuestionPosition } from "@/lib/db"
+import { buildQuestionKey, formatValue } from "@/lib/board"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 type GameBoardProps = {
-  categories: Array<Category>
+  board: Board
+  boardIndex: number
   onSelect: (position: QuestionPosition) => void
   /** Keys of the questions that the game has already shown. */
   usedKeys: Array<string>
 }
 
-export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
-  const rowIndexes = [...Array(getRowCount(categories)).keys()]
+export function GameBoard({
+  board,
+  boardIndex,
+  onSelect,
+  usedKeys,
+}: GameBoardProps) {
+  const { categories, values } = board
   const categoryIndexes = [...categories.keys()]
 
   return (
@@ -20,7 +26,7 @@ export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
       // The board size comes from the saved game, so Tailwind cannot name it.
       style={{
         gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))`,
-        gridTemplateRows: `auto repeat(${rowIndexes.length}, minmax(0, 1fr))`,
+        gridTemplateRows: `auto repeat(${values.length}, minmax(0, 1fr))`,
       }}
     >
       {categories.map((category, categoryIndex) => (
@@ -31,11 +37,10 @@ export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
           {category.name}
         </div>
       ))}
-      {rowIndexes.map((rowIndex) =>
+      {values.map((value, rowIndex) =>
         categoryIndexes.map((categoryIndex) => {
-          const isUsed = usedKeys.includes(
-            buildQuestionKey({ categoryIndex, rowIndex })
-          )
+          const position = { boardIndex, categoryIndex, rowIndex }
+          const isUsed = usedKeys.includes(buildQuestionKey(position))
           return (
             <Button
               key={`${categoryIndex}-${rowIndex}`}
@@ -46,9 +51,9 @@ export function GameBoard({ categories, onSelect, usedKeys }: GameBoardProps) {
                 // which hides which questions the game showed already.
                 isUsed && "text-primary/20 hover:text-primary/20"
               )}
-              onClick={() => onSelect({ categoryIndex, rowIndex })}
+              onClick={() => onSelect(position)}
             >
-              {formatRowValue(rowIndex)}
+              {formatValue(value)}
             </Button>
           )
         })

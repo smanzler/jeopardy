@@ -14,6 +14,7 @@ export const startSession = async ({
   teamCount: number
 }): Promise<void> => {
   await db.sessions.put({
+    boardIndex: 0,
     gameId,
     isAnswerShown: false,
     openPosition: null,
