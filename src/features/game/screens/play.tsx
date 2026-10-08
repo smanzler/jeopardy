@@ -112,8 +112,8 @@ export default function Play({ gameId }: { gameId: string }) {
       <div className="flex h-svh flex-col">
         <TeamSetup
           title={title}
-          onStart={(teamCount) =>
-            startSession({ boards: game.boards, gameId, teamCount })
+          onStart={(teamNames) =>
+            startSession({ boards: game.boards, gameId, teamNames })
           }
         />
       </div>
@@ -190,6 +190,7 @@ export default function Play({ gameId }: { gameId: string }) {
       )}
       <ScoreBar
         scores={session.scores}
+        teamNames={session.teamNames}
         value={stake}
         onAdjust={({ delta, teamIndex }) =>
           adjustTeamScore({ delta, gameId, teamIndex })

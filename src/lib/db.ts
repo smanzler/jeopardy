@@ -1,6 +1,12 @@
 import Dexie from "dexie"
 import type { EntityTable } from "dexie"
-import { toGameV3, toGameV4, toSessionV3, toSessionV4 } from "@/lib/migrations"
+import {
+  toGameV3,
+  toGameV4,
+  toSessionV3,
+  toSessionV4,
+  toSessionV5,
+} from "@/lib/migrations"
 
 export type Question = { answer: string; question: string }
 
@@ -48,6 +54,8 @@ export type Session = {
   isAnswerShown: boolean
   openPosition: QuestionPosition | null
   scores: Array<number>
+  /** One name for each entry of `scores`. */
+  teamNames: Array<string>
   /** Keys from `buildQuestionKey`, for the questions that the game showed. */
   usedKeys: Array<string>
   /** The points that a team stakes on the open daily double, once it is set. */
@@ -91,6 +99,16 @@ db.version(4)
       .toCollection()
       .modify((session, ref) => {
         ref.value = toSessionV4(session)
+      })
+  })
+db.version(5)
+  .stores({ games: "id, updatedAt", sessions: "gameId" })
+  .upgrade(async (tx) => {
+    await tx
+      .table("sessions")
+      .toCollection()
+      .modify((session, ref) => {
+        ref.value = toSessionV5(session)
       })
   })
 

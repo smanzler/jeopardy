@@ -34,9 +34,18 @@ describe("TeamSetup", () => {
     expect(screen.getByText("2 teams")).toBeTruthy()
   })
 
-  it("starts the game on the count that the picker holds", async () => {
+  it("starts the game with a numbered team for each blank name", async () => {
     const { onStart } = await renderSetup()
     fireEvent.click(screen.getByText("Play"))
-    expect(onStart).toHaveBeenCalledWith(2)
+    expect(onStart).toHaveBeenCalledWith(["Team 1", "Team 2"])
+  })
+
+  it("starts the game with the names that the host types", async () => {
+    const { onStart } = await renderSetup()
+    fireEvent.change(screen.getByLabelText("Name of team 2"), {
+      target: { value: "Foxes" },
+    })
+    fireEvent.click(screen.getByText("Play"))
+    expect(onStart).toHaveBeenCalledWith(["Team 1", "Foxes"])
   })
 })

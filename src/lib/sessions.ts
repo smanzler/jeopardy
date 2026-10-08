@@ -10,11 +10,11 @@ export const getSession = (gameId: string): Promise<Session | undefined> =>
 export const startSession = async ({
   boards,
   gameId,
-  teamCount,
+  teamNames,
 }: {
   boards: Array<Board>
   gameId: string
-  teamCount: number
+  teamNames: Array<string>
 }): Promise<void> => {
   await db.sessions.put({
     boardIndex: 0,
@@ -22,7 +22,8 @@ export const startSession = async ({
     gameId,
     isAnswerShown: false,
     openPosition: null,
-    scores: buildScores(teamCount),
+    scores: buildScores(teamNames.length),
+    teamNames,
     usedKeys: [],
     wager: null,
   })
