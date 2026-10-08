@@ -5,6 +5,8 @@ import {
   buildDailyDoubles,
 } from "@/lib/daily-doubles"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { cn } from "@/lib/utils"
+import { POPUP_FIELD_CLASS } from "@/features/board-editor/lib/popup-field"
 import {
   Select,
   SelectContent,
@@ -47,7 +49,10 @@ export function DailyDoubleSettings({
             type && onChange(buildDailyDoubles({ boardIndex, type }))
           }
         >
-          <SelectTrigger id="daily-double-type" className="w-full">
+          <SelectTrigger
+            id="daily-double-type"
+            className={cn("w-full", POPUP_FIELD_CLASS)}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -69,7 +74,10 @@ export function DailyDoubleSettings({
               count !== null && onChange({ ...dailyDoubles, count })
             }
           >
-            <SelectTrigger id="daily-double-count" className="w-24">
+            <SelectTrigger
+              id="daily-double-count"
+              className={cn("w-24", POPUP_FIELD_CLASS)}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
