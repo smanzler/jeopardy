@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
 import { formatValue } from "@/lib/board"
 import { buildTeamNames, formatTeamName } from "@/lib/score"
+import { cn } from "@/lib/utils"
+import { Lectern, PLATE_CLASS } from "@/features/game/components/lectern"
 
 const MIN_TEAM_COUNT = 2
 
@@ -68,22 +70,23 @@ export function TeamSetup({ onStart, summary, title }: TeamSetupProps) {
                 <XIcon />
               </Button>
             )}
-            <div className="flex flex-col gap-2.5 bg-card px-2.5 pt-2.5 shadow-[inset_0_-5px_0_var(--shade)]">
-              <span className="bg-shade py-2 text-center font-heading text-4xl font-bold text-primary tabular-nums">
-                {formatValue(0)}
-              </span>
-              <input
-                aria-label={`Name of team ${teamIndex + 1}`}
-                placeholder={formatTeamName(teamIndex)}
-                value={team.name}
-                className="mx-3 mb-3 h-10 min-w-0 bg-foreground text-center font-heading text-xl font-semibold tracking-wider text-background uppercase outline-none placeholder:text-background/50 focus-visible:ring-3 focus-visible:ring-ring"
-                onChange={(event) =>
-                  handleNameChange({ id: team.id, name: event.target.value })
-                }
-              />
-            </div>
-            {/* The stand under the desk. */}
-            <span aria-hidden className="mx-5 h-8 bg-shade" />
+            <Lectern
+              score={formatValue(0)}
+              plate={
+                <input
+                  aria-label={`Name of team ${teamIndex + 1}`}
+                  placeholder={formatTeamName(teamIndex)}
+                  value={team.name}
+                  className={cn(
+                    PLATE_CLASS,
+                    "outline-none placeholder:text-background/50 focus-visible:ring-3 focus-visible:ring-ring"
+                  )}
+                  onChange={(event) =>
+                    handleNameChange({ id: team.id, name: event.target.value })
+                  }
+                />
+              }
+            />
           </li>
         ))}
         {teams.length < MAX_TEAM_COUNT && (
