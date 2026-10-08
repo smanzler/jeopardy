@@ -49,10 +49,12 @@ export function DailyDoubleWager({
           <Input
             id="daily-double-wager"
             autoFocus
+            autoComplete="off"
             inputMode="numeric"
             className="h-12 text-center font-heading text-2xl tabular-nums md:text-2xl"
             value={text}
-            onChange={(event) => setText(event.target.value)}
+            // The field keeps only the digits that the host types.
+            onChange={(event) => setText(event.target.value.replace(/\D/g, ""))}
           />
         </Field>
         <Button size="lg" type="submit" disabled={wager === undefined}>
