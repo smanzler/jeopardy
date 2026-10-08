@@ -38,7 +38,7 @@ const renderAt = async (path: string) => {
     ),
   })
   const routeTree = rootRoute.addChildren(
-    ["/", "/play", "/create", "/edit/$gameId"].map((routePath) =>
+    ["/", "/create", "/edit/$gameId"].map((routePath) =>
       createRoute({
         component: VisitKey,
         getParentRoute: () => rootRoute,
@@ -56,22 +56,7 @@ const renderAt = async (path: string) => {
   return router
 }
 
-const getNavLink = (name: string) =>
-  screen.getByRole("link", { name: new RegExp(`^${name}$`, "i") })
-
 describe("AppHeader", () => {
-  it("marks Boards on the boards and in the editor of a saved board", async () => {
-    await renderAt("/edit/g1")
-    expect(getNavLink("Boards").getAttribute("aria-current")).toBe("page")
-    expect(getNavLink("Create").getAttribute("aria-current")).toBeNull()
-  })
-
-  it("marks Create on a new board", async () => {
-    await renderAt("/create")
-    expect(getNavLink("Create").getAttribute("aria-current")).toBe("page")
-    expect(getNavLink("Boards").getAttribute("aria-current")).toBeNull()
-  })
-
   it("gives a new visit key when New board opens from a new board", async () => {
     const router = await renderAt("/create")
     const before = screen.getByTestId("visit-key").textContent

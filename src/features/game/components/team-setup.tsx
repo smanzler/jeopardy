@@ -87,9 +87,6 @@ export function TeamSetup({ onStart, title }: TeamSetupProps) {
         Play
       </Button>
       <div className="flex gap-2">
-        <ButtonLink variant="ghost" to="/play">
-          Boards
-        </ButtonLink>
         <ButtonLink variant="ghost" to="/">
           Home
         </ButtonLink>
