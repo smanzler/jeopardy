@@ -98,6 +98,27 @@ export const isGameDone = ({
     isBoardDone({ board, boardIndex, usedKeys })
   )
 
+/**
+ * The board to show after a question closes: the same board while it holds a
+ * question that the game did not show, else the next board that does.
+ */
+export const getNextBoardIndex = ({
+  boardIndex,
+  boards,
+  usedKeys,
+}: {
+  boardIndex: number
+  boards: Array<Board>
+  usedKeys: Array<string>
+}): number => {
+  const nextIndex = boards.findIndex(
+    (board, index) =>
+      index >= boardIndex &&
+      !isBoardDone({ board, boardIndex: index, usedKeys })
+  )
+  return nextIndex === -1 ? boardIndex : nextIndex
+}
+
 /** Every category holds the same number of questions, one for each row. */
 export const getRowCount = (board: Board): number => board.values.length
 

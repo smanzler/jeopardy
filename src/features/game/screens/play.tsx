@@ -2,7 +2,12 @@ import { useEffect } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition } from "@/lib/db"
-import { findQuestion, formatValue, isGameDone } from "@/lib/board"
+import {
+  findQuestion,
+  formatValue,
+  getNextBoardIndex,
+  isGameDone,
+} from "@/lib/board"
 import { getGame } from "@/lib/games"
 import {
   adjustTeamScore,
@@ -10,8 +15,10 @@ import {
   getSession,
   openQuestion,
   revealAnswer,
+  showBoard,
   startSession,
 } from "@/lib/sessions"
+import { BoardTabs } from "@/components/board-tabs"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 import { GameBoard } from "@/features/game/components/game-board"
@@ -34,9 +41,21 @@ export default function Play({ gameId }: { gameId: string }) {
   )
   const openPosition = session?.openPosition
 
+  const handleClose = () => {
+    if (!game || !session) return
+    return closeQuestion({
+      boardIndex: getNextBoardIndex({
+        boardIndex: session.boardIndex,
+        boards: game.boards,
+        usedKeys: session.usedKeys,
+      }),
+      gameId,
+    })
+  }
+
   useQuestionKeys({
     isOpen: Boolean(openPosition),
-    onClose: () => closeQuestion(gameId),
+    onClose: handleClose,
     onReveal: () => revealAnswer(gameId),
   })
 
@@ -88,6 +107,9 @@ export default function Play({ gameId }: { gameId: string }) {
     )
   }
 
+  // The editor can remove the board that the game shows.
+  const boardIndex = Math.min(session.boardIndex, game.boards.length - 1)
+
   const handleSelect = (position: QuestionPosition) =>
     openQuestion({ gameId, position })
 
@@ -101,7 +123,7 @@ export default function Play({ gameId }: { gameId: string }) {
         <QuestionView
           categoryName={openQuestionView.categoryName}
           isAnswerShown={session.isAnswerShown}
-          onClose={() => closeQuestion(gameId)}
+          onClose={handleClose}
           question={openQuestionView.question}
           value={formatValue(openQuestionView.value)}
         />
@@ -109,6 +131,15 @@ export default function Play({ gameId }: { gameId: string }) {
         <>
           <div className="flex items-center justify-between gap-4 p-4">
             <h1 className="text-xl font-semibold">{title}</h1>
+            {game.boards.length > 1 && (
+              <div className="flex gap-2">
+                <BoardTabs
+                  boardCount={game.boards.length}
+                  boardIndex={boardIndex}
+                  onSelect={(index) => showBoard({ boardIndex: index, gameId })}
+                />
+              </div>
+            )}
             <div className="flex gap-2">
               <ButtonLink
                 variant="outline"
@@ -124,8 +155,8 @@ export default function Play({ gameId }: { gameId: string }) {
           </div>
           <div className="flex flex-1 flex-col px-4 pb-2">
             <GameBoard
-              board={game.boards[session.boardIndex]}
-              boardIndex={session.boardIndex}
+              board={game.boards[boardIndex]}
+              boardIndex={boardIndex}
               usedKeys={session.usedKeys}
               onSelect={handleSelect}
             />

@@ -24,6 +24,7 @@ import { listGames, saveGame } from "@/lib/games"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { BoardTabs } from "@/components/board-tabs"
 import { ButtonLink } from "@/components/button-link"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
@@ -162,16 +163,11 @@ export default function BoardEditor({ game }: BoardEditorProps) {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        {draft.boards.map((_, index) => (
-          <Button
-            key={index}
-            variant={index === boardIndex ? "default" : "outline"}
-            aria-pressed={index === boardIndex}
-            onClick={() => setBoardIndex(index)}
-          >
-            Board {index + 1}
-          </Button>
-        ))}
+        <BoardTabs
+          boardCount={boardCount}
+          boardIndex={boardIndex}
+          onSelect={setBoardIndex}
+        />
         <Button
           variant="outline"
           disabled={boardCount >= MAX_BOARD_COUNT}

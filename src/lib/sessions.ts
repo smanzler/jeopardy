@@ -63,11 +63,31 @@ export const openQuestion = ({
 export const revealAnswer = (gameId: string): Promise<void> =>
   changeSession({ buildChanges: () => ({ isAnswerShown: true }), gameId })
 
-export const closeQuestion = (gameId: string): Promise<void> =>
+/** Closes the open question and shows the board at `boardIndex`. */
+export const closeQuestion = ({
+  boardIndex,
+  gameId,
+}: {
+  boardIndex: number
+  gameId: string
+}): Promise<void> =>
   changeSession({
-    buildChanges: () => ({ isAnswerShown: false, openPosition: null }),
+    buildChanges: () => ({
+      boardIndex,
+      isAnswerShown: false,
+      openPosition: null,
+    }),
     gameId,
   })
+
+export const showBoard = ({
+  boardIndex,
+  gameId,
+}: {
+  boardIndex: number
+  gameId: string
+}): Promise<void> =>
+  changeSession({ buildChanges: () => ({ boardIndex }), gameId })
 
 export const adjustTeamScore = ({
   delta,
