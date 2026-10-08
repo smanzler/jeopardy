@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
-import type { QuestionPosition, Session } from "@/lib/db"
+import type { Board, QuestionPosition, Session } from "@/lib/db"
+import { buildDailyDoubleKeys } from "@/lib/daily-doubles"
 import { buildQuestionKey } from "@/lib/board"
 import { adjustScore, buildScores } from "@/lib/score"
 
@@ -7,19 +8,23 @@ export const getSession = (gameId: string): Promise<Session | undefined> =>
   db.sessions.get(gameId)
 
 export const startSession = async ({
+  boards,
   gameId,
   teamCount,
 }: {
+  boards: Array<Board>
   gameId: string
   teamCount: number
 }): Promise<void> => {
   await db.sessions.put({
     boardIndex: 0,
+    dailyDoubleKeys: buildDailyDoubleKeys({ boards, random: Math.random }),
     gameId,
     isAnswerShown: false,
     openPosition: null,
     scores: buildScores(teamCount),
     usedKeys: [],
+    wager: null,
   })
 }
 
@@ -55,6 +60,7 @@ export const openQuestion = ({
     buildChanges: (session) => ({
       isAnswerShown: false,
       openPosition: position,
+      wager: null,
       usedKeys: [...new Set([...session.usedKeys, buildQuestionKey(position)])],
     }),
     gameId,
@@ -76,6 +82,7 @@ export const closeQuestion = ({
       boardIndex,
       isAnswerShown: false,
       openPosition: null,
+      wager: null,
     }),
     gameId,
   })
@@ -104,3 +111,11 @@ export const adjustTeamScore = ({
     }),
     gameId,
   })
+
+export const setWager = ({
+  gameId,
+  wager,
+}: {
+  gameId: string
+  wager: number
+}): Promise<void> => changeSession({ buildChanges: () => ({ wager }), gameId })

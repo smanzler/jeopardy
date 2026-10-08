@@ -12,12 +12,18 @@ const STATUS_LABEL: Record<QuestionStatus, string> = {
 }
 
 type QuestionCellProps = {
+  isDailyDouble: boolean
   onSelect: () => void
   question: Question
   value: string
 }
 
-export function QuestionCell({ onSelect, question, value }: QuestionCellProps) {
+export function QuestionCell({
+  isDailyDouble,
+  onSelect,
+  question,
+  value,
+}: QuestionCellProps) {
   const status = getQuestionStatus(question)
 
   return (
@@ -34,7 +40,12 @@ export function QuestionCell({ onSelect, question, value }: QuestionCellProps) {
       )}
       onClick={onSelect}
     >
-      <span className="font-semibold">{value}</span>
+      <span className="flex w-full items-center justify-between gap-1">
+        <span className="font-semibold">{value}</span>
+        {isDailyDouble && (
+          <span className="text-xs font-medium text-primary">Daily double</span>
+        )}
+      </span>
       {status === "complete" ? (
         <span className="w-full truncate text-xs text-muted-foreground">
           {question.question}

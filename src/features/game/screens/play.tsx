@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition } from "@/lib/db"
 import {
+  buildQuestionKey,
   findQuestion,
   formatValue,
   getNextBoardIndex,
@@ -15,12 +16,14 @@ import {
   getSession,
   openQuestion,
   revealAnswer,
+  setWager,
   showBoard,
   startSession,
 } from "@/lib/sessions"
 import { BoardTabs } from "@/components/board-tabs"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
+import { DailyDoubleWager } from "@/features/game/components/daily-double-wager"
 import { GameBoard } from "@/features/game/components/game-board"
 import { QuestionView } from "@/features/game/components/question-view"
 import { ScoreBar } from "@/features/game/components/score-bar"
@@ -40,6 +43,12 @@ export default function Play({ gameId }: { gameId: string }) {
     [gameId]
   )
   const openPosition = session?.openPosition
+  const isDailyDouble = Boolean(
+    openPosition &&
+    session.dailyDoubleKeys.includes(buildQuestionKey(openPosition))
+  )
+  // The question of a daily double waits for the wager of the team.
+  const isWagering = isDailyDouble && session?.wager === null
 
   const handleClose = () => {
     if (!game || !session) return
@@ -54,7 +63,8 @@ export default function Play({ gameId }: { gameId: string }) {
   }
 
   useQuestionKeys({
-    isOpen: Boolean(openPosition),
+    // The keys stay free while the host types the wager.
+    isOpen: Boolean(openPosition) && !isWagering,
     onClose: handleClose,
     onReveal: () => revealAnswer(gameId),
   })
@@ -101,7 +111,9 @@ export default function Play({ gameId }: { gameId: string }) {
       <div className="flex h-svh flex-col">
         <TeamSetup
           title={title}
-          onStart={(teamCount) => startSession({ gameId, teamCount })}
+          onStart={(teamCount) =>
+            startSession({ boards: game.boards, gameId, teamCount })
+          }
         />
       </div>
     )
@@ -116,18 +128,30 @@ export default function Play({ gameId }: { gameId: string }) {
   const openQuestionView =
     openPosition &&
     findQuestion({ boards: game.boards, position: openPosition })
+  // A daily double scores the wager in place of the value of its row.
+  const stake = isDailyDouble
+    ? (session.wager ?? undefined)
+    : openQuestionView?.value
 
   return (
     <div className="flex h-svh flex-col">
-      {openQuestionView ? (
+      {openQuestionView && isWagering && (
+        <DailyDoubleWager
+          categoryName={openQuestionView.categoryName}
+          onClose={handleClose}
+          onWager={(wager) => setWager({ gameId, wager })}
+        />
+      )}
+      {openQuestionView && !isWagering && stake !== undefined && (
         <QuestionView
           categoryName={openQuestionView.categoryName}
           isAnswerShown={session.isAnswerShown}
           onClose={handleClose}
           question={openQuestionView.question}
-          value={formatValue(openQuestionView.value)}
+          value={formatValue(stake)}
         />
-      ) : (
+      )}
+      {!openQuestionView && (
         <>
           <div className="flex items-center justify-between gap-4 p-4">
             <h1 className="text-xl font-semibold">{title}</h1>
@@ -165,7 +189,7 @@ export default function Play({ gameId }: { gameId: string }) {
       )}
       <ScoreBar
         scores={session.scores}
-        value={openQuestionView?.value}
+        value={stake}
         onAdjust={({ delta, teamIndex }) =>
           adjustTeamScore({ delta, gameId, teamIndex })
         }

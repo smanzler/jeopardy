@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
-import { toRowValue } from "@/lib/board"
+import { toPoints } from "@/lib/board"
 
 type RowValueInputProps = {
   label: string
@@ -15,14 +15,14 @@ export function RowValueInput({ label, onChange, value }: RowValueInputProps) {
 
   const handleChange = (next: string) => {
     setText(next)
-    const parsed = toRowValue(next)
+    const parsed = toPoints(next)
     if (parsed !== undefined) onChange(parsed)
   }
 
   return (
     <Input
       aria-label={label}
-      aria-invalid={text !== undefined && toRowValue(text) === undefined}
+      aria-invalid={text !== undefined && toPoints(text) === undefined}
       className="w-24 tabular-nums"
       inputMode="numeric"
       value={text ?? String(value)}

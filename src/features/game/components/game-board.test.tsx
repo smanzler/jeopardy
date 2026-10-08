@@ -16,6 +16,7 @@ const buildBoard = (): Board => ({
       { answer: "a2", question: "q2" },
     ],
   })),
+  dailyDoubles: { positions: [], type: "chosen" },
   values: [200, 400],
 })
 

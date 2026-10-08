@@ -1,3 +1,4 @@
+import { buildDailyDoubles, getDailyDoubleOps } from "@/lib/daily-doubles"
 import type {
   Board,
   Category,
@@ -51,6 +52,7 @@ export const buildEmptyBoard = (boardIndex: number): Board => ({
   categories: Array.from({ length: DEFAULT_CATEGORY_COUNT }, () =>
     buildEmptyCategory(DEFAULT_ROW_COUNT)
   ),
+  dailyDoubles: buildDailyDoubles({ boardIndex, type: "random" }),
   values: buildRowValues({ boardIndex, rowCount: DEFAULT_ROW_COUNT }),
 })
 
@@ -211,10 +213,14 @@ export const removeCategory = ({
 }): Board => ({
   ...board,
   categories: board.categories.filter((_, index) => index !== categoryIndex),
+  dailyDoubles: getDailyDoubleOps(board.dailyDoubles).removeCategory(
+    categoryIndex
+  ),
 })
 
 /** The new row is worth the last row plus the first row. */
 export const addRow = (board: Board): Board => ({
+  ...board,
   categories: board.categories.map((category) => ({
     ...category,
     questions: [...category.questions, buildEmptyQuestion()],
@@ -241,7 +247,7 @@ export const setRowValue = ({
 })
 
 /** A whole number of points from 0 up, or `undefined` for other text. */
-export const toRowValue = (text: string): number | undefined => {
+export const toPoints = (text: string): number | undefined => {
   if (!/^\d+$/.test(text.trim())) return
   return Number(text)
 }
@@ -253,10 +259,12 @@ export const removeRow = ({
   board: Board
   rowIndex: number
 }): Board => ({
+  ...board,
   categories: board.categories.map((category) => ({
     ...category,
     questions: category.questions.filter((_, index) => index !== rowIndex),
   })),
+  dailyDoubles: getDailyDoubleOps(board.dailyDoubles).removeRow(rowIndex),
   values: board.values.filter((_, index) => index !== rowIndex),
 })
 

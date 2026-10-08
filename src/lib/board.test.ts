@@ -31,7 +31,7 @@ import {
   setCategoryName,
   setQuestion,
   setRowValue,
-  toRowValue,
+  toPoints,
 } from "@/lib/board"
 import type { Board, GameDraft } from "@/lib/db"
 
@@ -550,17 +550,17 @@ describe("setRowValue", () => {
   })
 })
 
-describe("toRowValue", () => {
+describe("toPoints", () => {
   it("reads a whole number of points", () => {
-    expect(toRowValue("250")).toBe(250)
-    expect(toRowValue(" 0 ")).toBe(0)
+    expect(toPoints("250")).toBe(250)
+    expect(toPoints(" 0 ")).toBe(0)
   })
 
   it("rejects text that is not a whole number from 0 up", () => {
-    expect(toRowValue("")).toBeUndefined()
-    expect(toRowValue("-100")).toBeUndefined()
-    expect(toRowValue("1.5")).toBeUndefined()
-    expect(toRowValue("1e3")).toBeUndefined()
-    expect(toRowValue("abc")).toBeUndefined()
+    expect(toPoints("")).toBeUndefined()
+    expect(toPoints("-100")).toBeUndefined()
+    expect(toPoints("1.5")).toBeUndefined()
+    expect(toPoints("1e3")).toBeUndefined()
+    expect(toPoints("abc")).toBeUndefined()
   })
 })
