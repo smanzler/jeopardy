@@ -370,6 +370,9 @@ export const isDraftComplete = (draft: GameDraft): boolean =>
 export const formatBoardCount = (boardCount: number): string =>
   boardCount === 1 ? "1 board" : `${boardCount} boards`
 
+export const formatGameSummary = (game: { boards: Array<Board> }): string =>
+  `${formatBoardCount(game.boards.length)} · ${countQuestions(game)} questions`
+
 /** The question at a position, or `undefined` when the game no longer holds it. */
 export const findQuestion = ({
   boards,

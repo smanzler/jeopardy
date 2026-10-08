@@ -14,6 +14,7 @@ import {
   countQuestionsLeft,
   findQuestion,
   formatBoardCount,
+  formatGameSummary,
   formatValue,
   getNextBoardIndex,
   getQuestionStatus,
@@ -596,5 +597,13 @@ describe("toPoints", () => {
     expect(toPoints("1.5")).toBeUndefined()
     expect(toPoints("1e3")).toBeUndefined()
     expect(toPoints("abc")).toBeUndefined()
+  })
+})
+
+describe("formatGameSummary", () => {
+  it("counts the boards and the questions", () => {
+    expect(
+      formatGameSummary({ boards: [buildEmptyBoard(0), buildEmptyBoard(1)] })
+    ).toBe("2 boards · 50 questions")
   })
 })

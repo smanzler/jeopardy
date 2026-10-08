@@ -5,7 +5,6 @@ import {
   findGamesInProgress,
   formatGameProgress,
   buildCardStatus,
-  formatGameSummary,
 } from "@/features/home/lib/hub"
 
 const buildGame = ({
@@ -75,16 +74,6 @@ const buildFullBoard = (boardIndex: number): Board => {
     })),
   }
 }
-
-describe("formatGameSummary", () => {
-  it("counts the boards and the questions", () => {
-    expect(
-      formatGameSummary(
-        buildGame({ boards: [buildFullBoard(0), buildEmptyBoard(1)], id: "g" })
-      )
-    ).toBe("2 boards · 50 questions")
-  })
-})
 
 describe("buildCardStatus", () => {
   it("shows the leader and the questions played of a game in progress", () => {
