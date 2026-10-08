@@ -37,7 +37,7 @@ export function HostStrip({
             activeVariant="ghost"
             boardCount={boardCount}
             boardIndex={boardIndex}
-            className="h-11 rounded-none border-b-2 border-transparent px-3.5 font-heading text-sm tracking-widest text-muted-foreground uppercase aria-pressed:border-primary aria-pressed:text-foreground"
+            className="h-11 rounded-none border-0 border-b-2 border-transparent px-3.5 font-heading text-sm tracking-widest text-muted-foreground uppercase aria-pressed:border-b-primary aria-pressed:text-foreground"
             inactiveVariant="ghost"
             onSelect={onSelectBoard}
           />
