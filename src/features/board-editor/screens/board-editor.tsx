@@ -171,20 +171,24 @@ export default function BoardEditor({ game }: BoardEditorProps) {
       />
 
       <div
-        className="grid gap-2"
+        className="grid gap-1.5"
         // The column count changes at runtime, so Tailwind cannot name it.
         style={{
           gridTemplateColumns: `auto repeat(${categoryCount}, minmax(0, 1fr)) auto`,
         }}
       >
-        <span className="self-center text-sm text-muted-foreground">
+        <span className="self-end px-1 pb-2 text-xs text-muted-foreground">
           Points
         </span>
         {board.categories.map((category, categoryIndex) => (
-          <div key={categoryIndex} className="flex items-center gap-1">
+          <div
+            key={categoryIndex}
+            className="flex min-w-0 items-center bg-card shadow-[inset_0_-4px_0_var(--shade)]"
+          >
             <Input
               aria-label={`Category ${categoryIndex + 1} name`}
               placeholder={`Category ${categoryIndex + 1}`}
+              className="h-14 min-w-0 rounded-none border-0 bg-transparent text-center font-heading text-base font-semibold tracking-wider text-card-foreground uppercase placeholder:text-card-foreground/50 md:text-base dark:bg-transparent"
               value={category.name}
               onChange={(event) =>
                 updateCurrentBoard(
@@ -199,6 +203,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             <Button
               variant="ghost"
               size="icon-sm"
+              className="mr-1 shrink-0 text-card-foreground/70 hover:bg-shade/40 hover:text-card-foreground"
               aria-label={`Remove category ${categoryIndex + 1}`}
               disabled={categoryCount <= 1}
               onClick={() =>
@@ -212,6 +217,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         <Button
           variant="outline"
           size="icon"
+          className="h-14 border-dashed"
           aria-label="Add category"
           disabled={categoryCount >= MAX_CATEGORY_COUNT}
           onClick={() => updateCurrentBoard(addCategory(board))}
@@ -253,6 +259,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             <Button
               variant="ghost"
               size="icon-sm"
+              className="self-center text-muted-foreground"
               aria-label={`Remove the ${formatValue(board.values[rowIndex])} row`}
               disabled={rowCount <= 1}
               onClick={() => handleRemove({ index: rowIndex, type: "row" })}
@@ -265,7 +272,8 @@ export default function BoardEditor({ game }: BoardEditorProps) {
 
       <Button
         variant="outline"
-        className="self-start"
+        size="lg"
+        className="self-start border-dashed font-heading tracking-wider uppercase"
         disabled={rowCount >= MAX_ROW_COUNT}
         onClick={() => updateCurrentBoard(addRow(board))}
       >
