@@ -3,8 +3,12 @@ import type { Standing } from "@/lib/score"
 
 const PODIUM_SIZE = 3
 
-/** The podium puts first in the middle, second on its left and third on its right. */
-const PODIUM_ORDER = [1, 0, 2]
+/** Three teams stand second, first, third. Two teams stand first, second. */
+const PODIUM_ORDERS: Record<number, Array<number>> = {
+  1: [0],
+  2: [0, 1],
+  3: [1, 0, 2],
+}
 
 /**
  * Splits the standings into the teams on the podium, in the order that it
@@ -16,9 +20,7 @@ export const buildPodium = (
   const standings = buildStandings(scores)
   const top = standings.slice(0, PODIUM_SIZE)
   return {
-    podium: PODIUM_ORDER.filter((index) => index < top.length).map(
-      (index) => top[index]
-    ),
+    podium: PODIUM_ORDERS[top.length].map((index) => top[index]),
     rest: standings.slice(PODIUM_SIZE),
   }
 }

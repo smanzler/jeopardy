@@ -11,9 +11,9 @@ describe("buildPodium", () => {
     expect(toTeams(rest)).toEqual([4, 2])
   })
 
-  it("shows second and first for two teams", () => {
+  it("puts second on the right of first for two teams", () => {
     const { podium, rest } = buildPodium([200, 600])
-    expect(toTeams(podium)).toEqual([0, 1])
+    expect(toTeams(podium)).toEqual([1, 0])
     expect(rest).toEqual([])
   })
 
