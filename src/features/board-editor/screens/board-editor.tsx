@@ -30,6 +30,8 @@ import { ButtonLink } from "@/components/button-link"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
+import { DailyDoubleSettings } from "@/features/board-editor/components/daily-double-settings"
+import { getDailyDoubleOps } from "@/lib/daily-doubles"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
 import type { Removal } from "@/features/board-editor/lib/removals"
@@ -60,6 +62,8 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const categoryCount = board.categories.length
   const rowCount = getRowCount(board)
   const otherGames = savedGames.filter((savedGame) => savedGame.id !== gameId)
+
+  const dailyDoubleOps = getDailyDoubleOps(board.dailyDoubles)
 
   const selectedQuestion =
     selection &&
@@ -104,6 +108,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const handleAddBoard = () => {
     updateBoard(addBoard(draft))
     setBoardIndex(boardCount)
+  }
+
+  const handleToggleDailyDouble = () => {
+    if (!selection) return
+    updateCurrentBoard({
+      ...board,
+      dailyDoubles: dailyDoubleOps.togglePosition(selection),
+    })
   }
 
   const handleQuestionChange = (question: Question) => {
@@ -189,6 +201,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         </Button>
       </div>
 
+      <DailyDoubleSettings
+        boardIndex={boardIndex}
+        dailyDoubles={board.dailyDoubles}
+        onChange={(dailyDoubles) =>
+          updateCurrentBoard({ ...board, dailyDoubles })
+        }
+      />
+
       <div
         className="grid gap-2"
         // The column count changes at runtime, so Tailwind cannot name it.
@@ -251,6 +271,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             {board.categories.map((category, categoryIndex) => (
               <QuestionCell
                 key={categoryIndex}
+                isDailyDouble={dailyDoubleOps.hasPosition({
+                  categoryIndex,
+                  rowIndex,
+                })}
                 question={category.questions[rowIndex]}
                 value={formatValue(board.values[rowIndex])}
                 onSelect={() => setSelection({ categoryIndex, rowIndex })}
@@ -285,8 +309,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         }
         question={selectedQuestion}
         value={selection ? formatValue(board.values[selection.rowIndex]) : ""}
+        isDailyDouble={Boolean(
+          selection && dailyDoubleOps.hasPosition(selection)
+        )}
         onChange={handleQuestionChange}
         onClose={() => setSelection(undefined)}
+        onToggleDailyDouble={
+          dailyDoubleOps.isChoosable ? handleToggleDailyDouble : undefined
+        }
       />
 
       <ConfirmDialog

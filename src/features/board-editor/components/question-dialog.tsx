@@ -9,20 +9,26 @@ import {
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 
 type QuestionDialogProps = {
   categoryName: string
+  isDailyDouble: boolean
   onChange: (question: Question) => void
   onClose: () => void
+  /** No handler hides the daily double switch. */
+  onToggleDailyDouble: (() => void) | undefined
   question: Question | undefined
   value: string
 }
 
 export function QuestionDialog({
   categoryName,
+  isDailyDouble,
   onChange,
   onClose,
+  onToggleDailyDouble,
   question,
   value,
 }: QuestionDialogProps) {
@@ -60,6 +66,18 @@ export function QuestionDialog({
                   }
                 />
               </Field>
+              {onToggleDailyDouble && (
+                <Field orientation="horizontal">
+                  <Switch
+                    id="question-daily-double"
+                    checked={isDailyDouble}
+                    onCheckedChange={onToggleDailyDouble}
+                  />
+                  <FieldLabel htmlFor="question-daily-double">
+                    Daily double
+                  </FieldLabel>
+                </Field>
+              )}
             </FieldGroup>
             <DialogClose render={<Button>Done</Button>} />
           </>

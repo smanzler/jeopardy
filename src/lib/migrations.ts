@@ -1,4 +1,4 @@
-import type { Category, Game, Session } from "@/lib/db"
+import type { Board, Category, Game, Session } from "@/lib/db"
 
 type GameV2 = {
   categories: Array<Category>
@@ -15,11 +15,17 @@ type SessionV2 = {
   usedKeys: Array<string>
 }
 
+type GameV3 = Omit<Game, "boards"> & {
+  boards: Array<Omit<Board, "dailyDoubles">>
+}
+
+type SessionV3 = Omit<Session, "dailyDoubleKeys" | "wager">
+
 /** Version 2 gave each row 200 points more than the row above it. */
 const V2_ROW_VALUE_STEP = 200
 
 /** Puts the one board of a version 2 game in the first round, at its old values. */
-export const toGameV3 = ({ categories, ...game }: GameV2): Game => ({
+export const toGameV3 = ({ categories, ...game }: GameV2): GameV3 => ({
   ...game,
   boards: [
     {
@@ -37,10 +43,25 @@ export const toSessionV3 = ({
   openPosition,
   usedKeys,
   ...session
-}: SessionV2): Session => ({
+}: SessionV2): SessionV3 => ({
   ...session,
   boardIndex: 0,
   openPosition: openPosition && { ...openPosition, boardIndex: 0 },
   // A version 2 key is "category-row". Version 3 puts the board in front.
   usedKeys: usedKeys.map((key) => `0-${key}`),
+})
+
+/** Gives a version 3 board no daily doubles, so its game plays as before. */
+export const toGameV4 = (game: GameV3): Game => ({
+  ...game,
+  boards: game.boards.map((board) => ({
+    ...board,
+    dailyDoubles: { positions: [], type: "chosen" },
+  })),
+})
+
+export const toSessionV4 = (session: SessionV3): Session => ({
+  ...session,
+  dailyDoubleKeys: [],
+  wager: null,
 })

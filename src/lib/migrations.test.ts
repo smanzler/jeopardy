@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { toGameV3, toSessionV3 } from "@/lib/migrations"
+import { toGameV3, toGameV4, toSessionV3, toSessionV4 } from "@/lib/migrations"
 
 const categories = [
   {
@@ -55,5 +55,42 @@ describe("toSessionV3", () => {
         usedKeys: [],
       }).openPosition
     ).toBeNull()
+  })
+})
+
+describe("toGameV4", () => {
+  it("gives every board no daily doubles", () => {
+    const game = toGameV4({
+      boards: [
+        { categories, values: [100, 200, 300] },
+        { categories, values: [200, 400, 600] },
+      ],
+      id: "g1",
+      title: "Quiz",
+      updatedAt: 5,
+    })
+    expect(game.boards.map((board) => board.dailyDoubles)).toEqual([
+      { positions: [], type: "chosen" },
+      { positions: [], type: "chosen" },
+    ])
+    expect(game.boards[1].values).toEqual([200, 400, 600])
+  })
+})
+
+describe("toSessionV4", () => {
+  it("keeps the session and adds no daily doubles and no wager", () => {
+    const session = {
+      boardIndex: 1,
+      gameId: "g1",
+      isAnswerShown: false,
+      openPosition: null,
+      scores: [300],
+      usedKeys: ["0-0-0"],
+    }
+    expect(toSessionV4(session)).toEqual({
+      ...session,
+      dailyDoubleKeys: [],
+      wager: null,
+    })
   })
 })

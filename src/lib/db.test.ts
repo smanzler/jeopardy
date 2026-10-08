@@ -41,18 +41,26 @@ describe("db", () => {
     const session = await db.sessions.get("g1")
 
     expect(game).toEqual({
-      boards: [{ categories, values: [200, 400] }],
+      boards: [
+        {
+          categories,
+          dailyDoubles: { positions: [], type: "chosen" },
+          values: [200, 400],
+        },
+      ],
       id: "g1",
       title: "Quiz night",
       updatedAt: 1,
     })
     expect(session).toEqual({
       boardIndex: 0,
+      dailyDoubleKeys: [],
       gameId: "g1",
       isAnswerShown: false,
       openPosition: { boardIndex: 0, categoryIndex: 1, rowIndex: 0 },
       scores: [600, -200],
       usedKeys: ["0-0-0", "0-0-1", "0-1-0"],
+      wager: null,
     })
     if (!game || !session?.openPosition) throw new Error("No migrated rows")
     expect(
