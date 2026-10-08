@@ -24,6 +24,7 @@ import {
   isDraftComplete,
   isGameDone,
   isQuestionComplete,
+  moveQuestion,
   removeBoard,
   removeCategory,
   removeRow,
@@ -213,6 +214,25 @@ describe("removeRow", () => {
     for (const category of next.categories) {
       expect(category.questions).toHaveLength(DEFAULT_ROW_COUNT - 1)
     }
+  })
+})
+
+describe("moveQuestion", () => {
+  it("moves a question in its category and keeps the values on the rows", () => {
+    const question = { answer: "An answer", question: "A question" }
+    const board = setQuestion({
+      board: buildEmptyBoard(0),
+      categoryIndex: 1,
+      question,
+      rowIndex: 0,
+    })
+    const next = moveQuestion({ board, categoryIndex: 1, from: 0, to: 3 })
+    expect(next.categories[1].questions[3]).toEqual(question)
+    expect(next.categories[1].questions[0]).toEqual(
+      board.categories[1].questions[1]
+    )
+    expect(next.categories[0]).toEqual(board.categories[0])
+    expect(next.values).toEqual(board.values)
   })
 })
 

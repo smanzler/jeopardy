@@ -4,7 +4,12 @@ import {
   buildDailyDoubles,
   getDailyDoubleOps,
 } from "@/lib/daily-doubles"
-import { buildEmptyBoard, removeCategory, removeRow } from "@/lib/board"
+import {
+  buildEmptyBoard,
+  moveQuestion,
+  removeCategory,
+  removeRow,
+} from "@/lib/board"
 import type { Board, DailyDoubles } from "@/lib/db"
 
 const chosen: DailyDoubles = {
@@ -90,6 +95,35 @@ describe("removeRow and removeCategory", () => {
       ],
       type: "chosen",
     })
+  })
+})
+
+describe("moveQuestion", () => {
+  it("keeps the chosen positions on their questions in that category", () => {
+    const board = moveQuestion({
+      board: withDailyDoubles(chosen),
+      categoryIndex: 1,
+      from: 0,
+      to: 2,
+    })
+    expect(board.dailyDoubles).toEqual({
+      positions: [
+        { categoryIndex: 1, rowIndex: 0 },
+        { categoryIndex: 3, rowIndex: 4 },
+      ],
+      type: "chosen",
+    })
+  })
+
+  it("keeps random daily doubles", () => {
+    const random = buildDailyDoubles({ boardIndex: 0, type: "random" })
+    const board = moveQuestion({
+      board: withDailyDoubles(random),
+      categoryIndex: 0,
+      from: 0,
+      to: 4,
+    })
+    expect(board.dailyDoubles).toEqual(random)
   })
 })
 

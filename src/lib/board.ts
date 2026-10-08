@@ -2,10 +2,12 @@ import { buildDailyDoubles, getDailyDoubleOps } from "@/lib/daily-doubles"
 import type {
   Board,
   Category,
+  CellPosition,
   GameDraft,
   Question,
   QuestionPosition,
 } from "@/lib/db"
+import { moveItem } from "@/lib/move"
 
 export const DEFAULT_CATEGORY_COUNT = 5
 
@@ -122,6 +124,9 @@ export const getNextBoardIndex = ({
 }
 
 /** Every category holds the same number of questions, one for each row. */
+export const isSamePosition = (a: CellPosition, b: CellPosition): boolean =>
+  a.categoryIndex === b.categoryIndex && a.rowIndex === b.rowIndex
+
 export const getRowCount = (board: Board): number => board.values.length
 
 export const isQuestionComplete = (question: Question): boolean =>
@@ -197,6 +202,32 @@ export const setQuestion = ({
         }
       : category
   ),
+})
+
+/** Moves the question at row `from` to row `to` of one category. */
+export type QuestionMove = { categoryIndex: number; from: number; to: number }
+
+/** The values stay with the rows. */
+export const moveQuestion = ({
+  board,
+  categoryIndex,
+  from,
+  to,
+}: QuestionMove & { board: Board }): Board => ({
+  ...board,
+  categories: board.categories.map((category, index) =>
+    index === categoryIndex
+      ? {
+          ...category,
+          questions: moveItem({ from, items: category.questions, to }),
+        }
+      : category
+  ),
+  dailyDoubles: getDailyDoubleOps(board.dailyDoubles).moveQuestion({
+    categoryIndex,
+    from,
+    to,
+  }),
 })
 
 export const addCategory = (board: Board): Board => ({
