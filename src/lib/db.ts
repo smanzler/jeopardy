@@ -18,10 +18,11 @@ export type CellPosition = { categoryIndex: number; rowIndex: number }
 
 /**
  * The daily doubles of a board. The editor picks `chosen` positions. A game
- * picks `count` random positions when it starts.
+ * picks `count` random positions when it starts. A `none` board has none.
  */
 export type DailyDoubles =
   | { positions: Array<CellPosition>; type: "chosen" }
+  | { type: "none" }
   | { count: number; type: "random" }
 
 /**

@@ -29,6 +29,7 @@ const boardSchema = z
         ),
         type: z.literal("chosen"),
       }),
+      z.object({ type: z.literal("none") }),
       z.object({
         count: z.number().int().min(0).max(MAX_RANDOM_DAILY_DOUBLES),
         type: z.literal("random"),
@@ -45,7 +46,7 @@ const boardSchema = z
   )
   .refine(
     (board) =>
-      board.dailyDoubles.type === "random" ||
+      board.dailyDoubles.type !== "chosen" ||
       board.dailyDoubles.positions.every(
         (position) =>
           position.categoryIndex < board.categories.length &&

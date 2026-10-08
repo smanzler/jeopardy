@@ -37,6 +37,15 @@ describe("renderGameFile and parseGameFile", () => {
     }
     expect(parseGameFile(renderGameFile(custom))).toEqual(custom)
   })
+
+  it("keep a board with no daily doubles", () => {
+    const [first, second] = draft.boards
+    const custom: GameDraft = {
+      ...draft,
+      boards: [{ ...first, dailyDoubles: { type: "none" } }, second],
+    }
+    expect(parseGameFile(renderGameFile(custom))).toEqual(custom)
+  })
 })
 
 describe("parseGameFile", () => {
