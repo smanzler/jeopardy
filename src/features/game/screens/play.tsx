@@ -16,6 +16,7 @@ import {
   getSession,
   openQuestion,
   revealAnswer,
+  setTeamScore,
   setWager,
   showBoard,
   startSession,
@@ -192,6 +193,9 @@ export default function Play({ gameId }: { gameId: string }) {
         value={stake}
         onAdjust={({ delta, teamIndex }) =>
           adjustTeamScore({ delta, gameId, teamIndex })
+        }
+        onSetScore={({ score, teamIndex }) =>
+          setTeamScore({ gameId, score, teamIndex })
         }
       />
     </div>

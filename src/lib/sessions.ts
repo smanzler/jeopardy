@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import type { Board, QuestionPosition, Session } from "@/lib/db"
 import { buildDailyDoubleKeys } from "@/lib/daily-doubles"
 import { buildQuestionKey } from "@/lib/board"
-import { adjustScore, buildScores } from "@/lib/score"
+import { adjustScore, buildScores, setScore } from "@/lib/score"
 
 export const getSession = (gameId: string): Promise<Session | undefined> =>
   db.sessions.get(gameId)
@@ -108,6 +108,22 @@ export const adjustTeamScore = ({
   changeSession({
     buildChanges: (session) => ({
       scores: adjustScore({ delta, scores: session.scores, teamIndex }),
+    }),
+    gameId,
+  })
+
+export const setTeamScore = ({
+  gameId,
+  score,
+  teamIndex,
+}: {
+  gameId: string
+  score: number
+  teamIndex: number
+}): Promise<void> =>
+  changeSession({
+    buildChanges: (session) => ({
+      scores: setScore({ score, scores: session.scores, teamIndex }),
     }),
     gameId,
   })

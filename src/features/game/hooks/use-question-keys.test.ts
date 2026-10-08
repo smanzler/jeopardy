@@ -32,6 +32,20 @@ describe("useQuestionKeys", () => {
     expect(pressKey(" ").defaultPrevented).toBe(true)
   })
 
+  it("leaves the keys that the host types in a field", () => {
+    const { onClose, onReveal } = renderKeys({ isOpen: true })
+    const input = document.body.appendChild(document.createElement("input"))
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, key: "Escape" })
+    )
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, key: " " })
+    )
+    expect(onClose).not.toHaveBeenCalled()
+    expect(onReveal).not.toHaveBeenCalled()
+    input.remove()
+  })
+
   it("goes back to the board on Esc", () => {
     const { onClose, onReveal } = renderKeys({ isOpen: true })
     pressKey("Escape")

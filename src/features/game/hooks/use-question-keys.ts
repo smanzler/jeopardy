@@ -16,6 +16,8 @@ export const useQuestionKeys = ({
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Keys that the host types in a field belong to that field.
+      if (event.target instanceof HTMLInputElement) return
       // The default action of Space presses the button that holds the focus.
       if (event.key === " ") {
         event.preventDefault()
