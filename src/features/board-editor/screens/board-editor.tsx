@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { parseGameFile } from "@/lib/game-file"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
+import { getStepPosition } from "@/features/board-editor/lib/question-order"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
 import { EditorHeader } from "@/features/board-editor/components/editor-header"
 import type { SaveState } from "@/features/board-editor/components/editor-header"
@@ -66,6 +67,19 @@ export default function BoardEditor({ game }: BoardEditorProps) {
     selection &&
     board.categories[selection.categoryIndex].questions[selection.rowIndex]
 
+  const getStep = (step: -1 | 1) => {
+    const next =
+      selection &&
+      getStepPosition({ categoryCount, position: selection, rowCount, step })
+    return next && (() => setSelection(next))
+  }
+
+  // The open question closes when its cell can move or go away.
+  const showBoard = (index: number) => {
+    setBoardIndex(index)
+    setSelection(undefined)
+  }
+
   /**
    * Holds the change for the screen and writes it to the database. The screen
    * keeps its own copy, so the text of an input does not wait for the write.
@@ -86,8 +100,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const updateCurrentBoard = (next: Board) =>
     updateBoard(setBoard({ board: next, boardIndex, draft }))
 
-  const applyRemoval = ({ index, type }: Removal) =>
+  const applyRemoval = ({ index, type }: Removal) => {
+    setSelection(undefined)
     updateBoard(removalDispatches[type].remove({ boardIndex, draft, index }))
+  }
 
   // A removal that throws no work away runs with no confirmation.
   const handleRemove = (next: Removal) => {
@@ -107,7 +123,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
 
   const handleAddBoard = () => {
     updateBoard(addBoard(draft))
-    setBoardIndex(boardCount)
+    showBoard(boardCount)
   }
 
   // The boards of the file go after the boards that the game holds.
@@ -119,7 +135,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         return
       }
       updateBoard({ ...draft, boards: [...draft.boards, ...boards] })
-      setBoardIndex(boardCount)
+      showBoard(boardCount)
       setImportError(undefined)
     } catch (error) {
       setImportError(
@@ -128,9 +144,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
     }
   }
 
-  const questionDrag = useQuestionDrag((move) =>
+  const questionDrag = useQuestionDrag((move) => {
+    setSelection(undefined)
     updateCurrentBoard(moveQuestion({ ...move, board }))
-  )
+  })
 
   const handleToggleDailyDouble = () => {
     if (!selection) return
@@ -167,7 +184,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         }
         onImportBoards={handleImportBoards}
         onRemoveBoard={() => handleRemove({ index: boardIndex, type: "board" })}
-        onSelectBoard={setBoardIndex}
+        onSelectBoard={showBoard}
       />
 
       <div
@@ -242,7 +259,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
                   categoryIndex,
                   rowIndex,
                 })}
-                isDragged={questionDrag.isDragged({ categoryIndex, rowIndex })}
+                isDragged={questionDrag.isDragged({
+                  categoryIndex,
+                  rowIndex,
+                })}
                 isDropTarget={questionDrag.isDropTarget({
                   categoryIndex,
                   rowIndex,
@@ -251,6 +271,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
                   categoryIndex,
                   rowIndex,
                 })}
+                isSelected={
+                  selection?.categoryIndex === categoryIndex &&
+                  selection.rowIndex === rowIndex
+                }
                 question={category.questions[rowIndex]}
                 value={formatValue(board.values[rowIndex])}
                 onSelect={() => setSelection({ categoryIndex, rowIndex })}
@@ -280,18 +304,22 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         <PlusIcon />
         Add row
       </Button>
-
       <QuestionDialog
         categoryName={
           selection ? board.categories[selection.categoryIndex].name : ""
         }
         question={selectedQuestion}
+        questionKey={
+          selection ? `${selection.categoryIndex}-${selection.rowIndex}` : ""
+        }
         value={selection ? formatValue(board.values[selection.rowIndex]) : ""}
         isDailyDouble={Boolean(
           selection && dailyDoubleOps.hasPosition(selection)
         )}
         onChange={handleQuestionChange}
         onClose={() => setSelection(undefined)}
+        onNext={getStep(1)}
+        onPrevious={getStep(-1)}
         onToggleDailyDouble={
           dailyDoubleOps.isChoosable ? handleToggleDailyDouble : undefined
         }

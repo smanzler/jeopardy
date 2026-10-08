@@ -40,6 +40,7 @@ type QuestionCellProps = {
   isDailyDouble: boolean
   isDragged: boolean
   isDropTarget: boolean
+  isSelected: boolean
   onSelect: () => void
   question: Question
   value: string
@@ -50,6 +51,7 @@ export function QuestionCell({
   isDailyDouble,
   isDragged,
   isDropTarget,
+  isSelected,
   onSelect,
   question,
   value,
@@ -63,9 +65,11 @@ export function QuestionCell({
         "flex h-24 w-full flex-col items-start justify-start gap-1 overflow-hidden rounded-none border-0 p-2.5 text-left whitespace-normal text-card-foreground hover:bg-card/85 hover:text-card-foreground dark:bg-transparent",
         view.className,
         isDragged && "opacity-30",
-        isDropTarget && "ring-2 ring-primary"
+        isDropTarget && "ring-2 ring-primary",
+        isSelected && "ring-3 ring-primary ring-offset-2 ring-offset-background"
       )}
       {...dragProps}
+      aria-pressed={isSelected}
       onClick={onSelect}
     >
       <span className="flex w-full items-center justify-between gap-1">
