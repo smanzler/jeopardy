@@ -14,6 +14,8 @@ export const MAX_CATEGORY_COUNT = 8
 
 export const MAX_ROW_COUNT = 8
 
+export const MAX_BOARD_COUNT = 3
+
 /** The first board goes up by 100 for each row, the second by 200, and so on. */
 const ROW_VALUE_STEP = 100
 
@@ -121,6 +123,9 @@ const hasQuestionContent = (question: Question): boolean =>
 export const hasCategoryContent = (category: Category): boolean =>
   category.name.trim() !== "" || category.questions.some(hasQuestionContent)
 
+export const hasBoardContent = (board: Board): boolean =>
+  board.categories.some(hasCategoryContent)
+
 export const hasRowContent = ({
   board,
   rowIndex,
@@ -226,6 +231,23 @@ export const setBoard = ({
   boards: draft.boards.map((existing, index) =>
     index === boardIndex ? board : existing
   ),
+})
+
+/** The new board starts on the values of its place in the game. */
+export const addBoard = (draft: GameDraft): GameDraft => ({
+  ...draft,
+  boards: [...draft.boards, buildEmptyBoard(draft.boards.length)],
+})
+
+export const removeBoard = ({
+  boardIndex,
+  draft,
+}: {
+  boardIndex: number
+  draft: GameDraft
+}): GameDraft => ({
+  ...draft,
+  boards: draft.boards.filter((_, index) => index !== boardIndex),
 })
 
 const listQuestions = (draft: GameDraft): Array<Question> =>

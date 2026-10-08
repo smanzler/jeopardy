@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   DEFAULT_CATEGORY_COUNT,
   DEFAULT_ROW_COUNT,
+  addBoard,
   addCategory,
   addRow,
   buildEmptyBoard,
@@ -15,12 +16,14 @@ import {
   formatValue,
   getQuestionStatus,
   getRowCount,
+  hasBoardContent,
   hasCategoryContent,
   hasRowContent,
   isBoardDone,
   isDraftComplete,
   isGameDone,
   isQuestionComplete,
+  removeBoard,
   removeCategory,
   removeRow,
   setBoard,
@@ -467,5 +470,31 @@ describe("findQuestion", () => {
         position: { boardIndex: 0, categoryIndex: 0, rowIndex: 9 },
       })
     ).toBeUndefined()
+  })
+})
+
+describe("addBoard", () => {
+  it("adds an empty board on the values of its place", () => {
+    const draft = addBoard(buildEmptyDraft())
+    expect(draft.boards).toHaveLength(2)
+    expect(draft.boards[1]).toEqual(buildEmptyBoard(1))
+  })
+})
+
+describe("removeBoard", () => {
+  it("drops that board and keeps the others in order", () => {
+    const draft = buildFilledDraft(addBoard(addBoard(buildEmptyDraft())))
+    const next = removeBoard({ boardIndex: 1, draft })
+    expect(next.boards).toEqual([draft.boards[0], draft.boards[2]])
+  })
+})
+
+describe("hasBoardContent", () => {
+  it("is false for an empty board and true for one category name", () => {
+    const board = buildEmptyBoard(0)
+    expect(hasBoardContent(board)).toBe(false)
+    expect(
+      hasBoardContent(setCategoryName({ board, categoryIndex: 3, name: "Art" }))
+    ).toBe(true)
   })
 })
