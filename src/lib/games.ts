@@ -31,3 +31,10 @@ export const deleteGame = (id: string): Promise<void> =>
     await db.games.delete(id)
     await db.sessions.delete(id)
   })
+
+/** Writes a draft under a new key, and gives that key. */
+export const createGame = async (draft: GameDraft): Promise<string> => {
+  const id = crypto.randomUUID()
+  await saveGame({ draft, id })
+  return id
+}
