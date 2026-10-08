@@ -16,6 +16,7 @@
     "@base-ui/react": "^1.7.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/oswald": "^5.3.0",
+    "@fontsource/libre-baskerville": "^5.3.0",
     "@tailwindcss/vite": "^4",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
