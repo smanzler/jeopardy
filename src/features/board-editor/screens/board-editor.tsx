@@ -18,6 +18,7 @@ import {
   setRowValue,
 } from "@/lib/board"
 import { saveGame } from "@/lib/games"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { parseGameFile } from "@/lib/game-file"
@@ -34,6 +35,9 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
 import type { Removal } from "@/features/board-editor/lib/removals"
 import { useQuestionDrag } from "@/features/board-editor/hooks/use-question-drag"
+
+const REMOVE_BUTTON_CLASS =
+  "rounded-full text-muted-foreground hover:bg-destructive hover:text-foreground"
 
 type Selection = { categoryIndex: number; rowIndex: number }
 
@@ -192,18 +196,18 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           gridTemplateColumns: `auto repeat(${categoryCount}, minmax(0, 1fr)) auto`,
         }}
       >
-        <span className="self-end px-1 pb-2 text-xs text-muted-foreground">
+        <span className="flex h-14 items-center justify-center rounded-md bg-shade px-2 font-heading text-xs tracking-widest text-muted-foreground uppercase">
           Points
         </span>
         {board.categories.map((category, categoryIndex) => (
           <div
             key={categoryIndex}
-            className="flex min-w-0 items-center bg-card shadow-[inset_0_-4px_0_var(--shade)]"
+            className="group relative min-w-0 bg-card shadow-[inset_0_-4px_0_var(--shade)]"
           >
             <Input
               aria-label={`Category ${categoryIndex + 1} name`}
               placeholder={`Category ${categoryIndex + 1}`}
-              className="h-14 min-w-0 rounded-none border-0 bg-transparent text-center font-heading text-base font-semibold tracking-wider text-card-foreground uppercase placeholder:text-card-foreground/50 md:text-base dark:bg-transparent"
+              className="h-14 min-w-0 rounded-none border-0 bg-transparent px-7 text-center font-heading text-base font-semibold tracking-wider text-card-foreground uppercase placeholder:text-card-foreground/50 md:text-base dark:bg-transparent"
               value={category.name}
               onChange={(event) =>
                 updateCurrentBoard(
@@ -217,8 +221,13 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             />
             <Button
               variant="ghost"
-              size="icon-sm"
-              className="mr-1 shrink-0 text-card-foreground/70 hover:bg-shade/40 hover:text-card-foreground"
+              size="icon-xs"
+              // The button shows on hover and focus, and always on a touch
+              // screen, which has no hover.
+              className={cn(
+                REMOVE_BUTTON_CLASS,
+                "absolute top-1 right-1 bg-shade/60 text-card-foreground opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 disabled:hidden pointer-coarse:opacity-100"
+              )}
               aria-label={`Remove category ${categoryIndex + 1}`}
               disabled={categoryCount <= 1}
               onClick={() =>
@@ -230,9 +239,9 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           </div>
         ))}
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="h-14 border-dashed"
+          className="size-14 rounded-none border-2 border-dashed border-card text-primary hover:border-primary hover:bg-card/30 hover:text-primary"
           aria-label="Add category"
           disabled={categoryCount >= MAX_CATEGORY_COUNT}
           onClick={() => updateCurrentBoard(addCategory(board))}
@@ -281,7 +290,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             <Button
               variant="ghost"
               size="icon-sm"
-              className="self-center text-muted-foreground"
+              className={cn(REMOVE_BUTTON_CLASS, "self-center")}
               aria-label={`Remove the ${formatValue(board.values[rowIndex])} row`}
               disabled={rowCount <= 1}
               onClick={() => handleRemove({ index: rowIndex, type: "row" })}
