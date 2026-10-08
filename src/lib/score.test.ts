@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   adjustScore,
+  applyResult,
   buildScores,
   buildTeamNames,
   buildStandings,
@@ -10,6 +11,7 @@ import {
   listLeaderIndexes,
   setScore,
   toScore,
+  undoResult,
 } from "@/lib/score"
 
 describe("buildScores", () => {
@@ -152,5 +154,53 @@ describe("listLeaderIndexes", () => {
 
   it("finds none while every team has the same score", () => {
     expect(listLeaderIndexes([0, 0, 0])).toEqual([])
+  })
+})
+
+describe("applyResult", () => {
+  it("adds the points and keeps the result", () => {
+    expect(
+      applyResult({
+        questionResults: [],
+        result: { delta: -400, teamIndex: 1 },
+        scores: [0, 1000],
+      })
+    ).toEqual({
+      questionResults: [{ delta: -400, teamIndex: 1 }],
+      scores: [0, 600],
+    })
+  })
+
+  it("scores a team once on the open question", () => {
+    const question = {
+      questionResults: [{ delta: 400, teamIndex: 0 }],
+      scores: [400, 0],
+    }
+    expect(
+      applyResult({ ...question, result: { delta: -400, teamIndex: 0 } })
+    ).toEqual(question)
+  })
+})
+
+describe("undoResult", () => {
+  it("takes back the points of that team only", () => {
+    expect(
+      undoResult({
+        questionResults: [
+          { delta: 400, teamIndex: 0 },
+          { delta: -400, teamIndex: 1 },
+        ],
+        scores: [400, -400],
+        teamIndex: 1,
+      })
+    ).toEqual({
+      questionResults: [{ delta: 400, teamIndex: 0 }],
+      scores: [400, 0],
+    })
+  })
+
+  it("changes nothing for a team with no result", () => {
+    const question = { questionResults: [], scores: [200, 0] }
+    expect(undoResult({ ...question, teamIndex: 1 })).toEqual(question)
   })
 })

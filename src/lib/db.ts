@@ -6,6 +6,7 @@ import {
   toSessionV3,
   toSessionV4,
   toSessionV5,
+  toSessionV6,
 } from "@/lib/migrations"
 
 export type Question = { answer: string; question: string }
@@ -33,6 +34,9 @@ export type Board = {
   values: Array<number>
 }
 
+/** The points that one team got on the open question, so the host can undo them. */
+export type QuestionResult = { delta: number; teamIndex: number }
+
 /** Where a question sits in a game. */
 export type QuestionPosition = CellPosition & { boardIndex: number }
 
@@ -53,6 +57,8 @@ export type Session = {
   gameId: string
   isAnswerShown: boolean
   openPosition: QuestionPosition | null
+  /** At most one result for each team, for the open question only. */
+  questionResults: Array<QuestionResult>
   scores: Array<number>
   /** One name for each entry of `scores`. */
   teamNames: Array<string>
@@ -109,6 +115,16 @@ db.version(5)
       .toCollection()
       .modify((session, ref) => {
         ref.value = toSessionV5(session)
+      })
+  })
+db.version(6)
+  .stores({ games: "id, updatedAt", sessions: "gameId" })
+  .upgrade(async (tx) => {
+    await tx
+      .table("sessions")
+      .toCollection()
+      .modify((session, ref) => {
+        ref.value = toSessionV6(session)
       })
   })
 

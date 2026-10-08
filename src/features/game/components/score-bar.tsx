@@ -1,11 +1,11 @@
-import { MinusIcon, PlusIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { listLeaderIndexes } from "@/lib/score"
+import type { QuestionResult } from "@/lib/db"
+import { findResult, listLeaderIndexes } from "@/lib/score"
 import { cn } from "@/lib/utils"
+import { ScoreActions } from "@/features/game/components/score-actions"
 import { TeamScore } from "@/features/game/components/team-score"
 
 type ScoreBarProps = {
-  onAdjust: ({ delta, teamIndex }: { delta: number; teamIndex: number }) => void
+  onScore: (result: QuestionResult) => void
   onSetScore: ({
     score,
     teamIndex,
@@ -13,31 +13,25 @@ type ScoreBarProps = {
     score: number
     teamIndex: number
   }) => void
+  onUndo: (teamIndex: number) => void
+  /** What each team got on the open question. */
+  questionResults: Array<QuestionResult>
   scores: Array<number>
   /** One name for each entry of `scores`. */
   teamNames: Array<string>
-  /** The value of the open question. No value hides the buttons. */
+  /** The points of the open question. No value hides the actions. */
   value: number | undefined
 }
 
 export function ScoreBar({
-  onAdjust,
+  onScore,
   onSetScore,
+  onUndo,
+  questionResults,
   scores,
   teamNames,
   value,
 }: ScoreBarProps) {
-  const handleAdjust = ({
-    sign,
-    teamIndex,
-  }: {
-    sign: number
-    teamIndex: number
-  }) => {
-    if (value === undefined) return
-    onAdjust({ delta: sign * value, teamIndex })
-  }
-
   const leaderIndexes = listLeaderIndexes(scores)
 
   return (
@@ -52,21 +46,10 @@ export function ScoreBar({
         <div
           key={teamIndex}
           className={cn(
-            "flex min-w-0 items-center justify-center gap-3 border-b-4 border-l border-b-transparent border-l-secondary px-3 py-2 first:border-l-0",
+            "flex min-w-0 flex-col items-center justify-center gap-1.5 border-b-4 border-l border-b-transparent border-l-secondary px-3 py-2 first:border-l-0",
             leaderIndexes.includes(teamIndex) && "border-b-primary bg-secondary"
           )}
         >
-          {value !== undefined && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="shrink-0 rounded-full"
-              aria-label={`Take points from ${teamNames[teamIndex]}`}
-              onClick={() => handleAdjust({ sign: -1, teamIndex })}
-            >
-              <MinusIcon />
-            </Button>
-          )}
           <div className="flex min-w-0 items-baseline gap-3">
             <span className="truncate font-heading text-lg tracking-widest text-muted-foreground uppercase">
               {teamNames[teamIndex]}
@@ -78,15 +61,13 @@ export function ScoreBar({
             />
           </div>
           {value !== undefined && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="shrink-0 rounded-full"
-              aria-label={`Give points to ${teamNames[teamIndex]}`}
-              onClick={() => handleAdjust({ sign: 1, teamIndex })}
-            >
-              <PlusIcon />
-            </Button>
+            <ScoreActions
+              result={findResult({ questionResults, teamIndex })}
+              teamName={teamNames[teamIndex]}
+              value={value}
+              onScore={(delta) => onScore({ delta, teamIndex })}
+              onUndo={() => onUndo(teamIndex)}
+            />
           )}
         </div>
       ))}

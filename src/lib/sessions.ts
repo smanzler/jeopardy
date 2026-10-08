@@ -1,8 +1,8 @@
 import { db } from "@/lib/db"
-import type { Board, QuestionPosition, Session } from "@/lib/db"
+import type { Board, QuestionPosition, QuestionResult, Session } from "@/lib/db"
 import { buildDailyDoubleKeys } from "@/lib/daily-doubles"
 import { buildQuestionKey } from "@/lib/board"
-import { adjustScore, buildScores, setScore } from "@/lib/score"
+import { applyResult, buildScores, setScore, undoResult } from "@/lib/score"
 
 export const getSession = (gameId: string): Promise<Session | undefined> =>
   db.sessions.get(gameId)
@@ -24,6 +24,7 @@ export const startSession = async ({
     gameId,
     isAnswerShown: false,
     openPosition: null,
+    questionResults: [],
     scores: buildScores(teamNames.length),
     teamNames,
     usedKeys: [],
@@ -63,6 +64,7 @@ export const openQuestion = ({
     buildChanges: (session) => ({
       isAnswerShown: false,
       openPosition: position,
+      questionResults: [],
       wager: null,
       usedKeys: [...new Set([...session.usedKeys, buildQuestionKey(position)])],
     }),
@@ -85,6 +87,7 @@ export const closeQuestion = ({
       boardIndex,
       isAnswerShown: false,
       openPosition: null,
+      questionResults: [],
       wager: null,
     }),
     gameId,
@@ -99,19 +102,27 @@ export const showBoard = ({
 }): Promise<void> =>
   changeSession({ buildChanges: () => ({ boardIndex }), gameId })
 
-export const adjustTeamScore = ({
-  delta,
+export const scoreTeam = ({
+  gameId,
+  result,
+}: {
+  gameId: string
+  result: QuestionResult
+}): Promise<void> =>
+  changeSession({
+    buildChanges: (session) => applyResult({ ...session, result }),
+    gameId,
+  })
+
+export const undoTeamScore = ({
   gameId,
   teamIndex,
 }: {
-  delta: number
   gameId: string
   teamIndex: number
 }): Promise<void> =>
   changeSession({
-    buildChanges: (session) => ({
-      scores: adjustScore({ delta, scores: session.scores, teamIndex }),
-    }),
+    buildChanges: (session) => undoResult({ ...session, teamIndex }),
     gameId,
   })
 
