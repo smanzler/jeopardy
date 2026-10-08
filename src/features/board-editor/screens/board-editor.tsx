@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { parseGameFile } from "@/lib/game-file"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
-import { QuestionPanel } from "@/features/board-editor/components/question-panel"
+import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { getStepPosition } from "@/features/board-editor/lib/question-order"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
 import { EditorHeader } from "@/features/board-editor/components/editor-header"
@@ -74,7 +74,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
     return next && (() => setSelection(next))
   }
 
-  // The open question must close when its cell can move or go away.
+  // The open question closes when its cell can move or go away.
   const showBoard = (index: number) => {
     setBoardIndex(index)
     setSelection(undefined)
@@ -187,146 +187,143 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         onSelectBoard={showBoard}
       />
 
-      <div className="flex flex-wrap items-start gap-5">
-        <div className="flex min-w-0 flex-[999_1_40rem] flex-col gap-4">
+      <div
+        className="grid gap-1.5"
+        // The column count changes at runtime, so Tailwind cannot name it.
+        style={{
+          gridTemplateColumns: `auto repeat(${categoryCount}, minmax(0, 1fr)) auto`,
+        }}
+      >
+        <span className="self-end px-1 pb-2 text-xs text-muted-foreground">
+          Points
+        </span>
+        {board.categories.map((category, categoryIndex) => (
           <div
-            className="grid gap-1.5"
-            // The column count changes at runtime, so Tailwind cannot name it.
-            style={{
-              gridTemplateColumns: `auto repeat(${categoryCount}, minmax(0, 1fr)) auto`,
-            }}
+            key={categoryIndex}
+            className="flex min-w-0 items-center bg-card shadow-[inset_0_-4px_0_var(--shade)]"
           >
-            <span className="self-end px-1 pb-2 text-xs text-muted-foreground">
-              Points
-            </span>
-            {board.categories.map((category, categoryIndex) => (
-              <div
-                key={categoryIndex}
-                className="flex min-w-0 items-center bg-card shadow-[inset_0_-4px_0_var(--shade)]"
-              >
-                <Input
-                  aria-label={`Category ${categoryIndex + 1} name`}
-                  placeholder={`Category ${categoryIndex + 1}`}
-                  className="h-14 min-w-0 rounded-none border-0 bg-transparent text-center font-heading text-base font-semibold tracking-wider text-card-foreground uppercase placeholder:text-card-foreground/50 md:text-base dark:bg-transparent"
-                  value={category.name}
-                  onChange={(event) =>
-                    updateCurrentBoard(
-                      setCategoryName({
-                        board,
-                        categoryIndex,
-                        name: event.target.value,
-                      })
-                    )
-                  }
-                />
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="mr-1 shrink-0 text-card-foreground/70 hover:bg-shade/40 hover:text-card-foreground"
-                  aria-label={`Remove category ${categoryIndex + 1}`}
-                  disabled={categoryCount <= 1}
-                  onClick={() =>
-                    handleRemove({ index: categoryIndex, type: "category" })
-                  }
-                >
-                  <XIcon />
-                </Button>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-14 border-dashed"
-              aria-label="Add category"
-              disabled={categoryCount >= MAX_CATEGORY_COUNT}
-              onClick={() => updateCurrentBoard(addCategory(board))}
-            >
-              <PlusIcon />
-            </Button>
-
-            {/* Rows read across the categories, so the cells iterate by row. */}
-            {Array.from({ length: rowCount }, (_, rowIndex) => (
-              <Fragment key={rowIndex}>
-                <RowValueInput
-                  label={`Points for row ${rowIndex + 1}`}
-                  value={board.values[rowIndex]}
-                  onChange={(value) =>
-                    updateCurrentBoard(setRowValue({ board, rowIndex, value }))
-                  }
-                />
-                {board.categories.map((category, categoryIndex) => (
-                  <QuestionCell
-                    key={categoryIndex}
-                    dragProps={questionDrag.getDragProps({
-                      categoryIndex,
-                      rowIndex,
-                    })}
-                    isDragged={questionDrag.isDragged({
-                      categoryIndex,
-                      rowIndex,
-                    })}
-                    isDropTarget={questionDrag.isDropTarget({
-                      categoryIndex,
-                      rowIndex,
-                    })}
-                    isDailyDouble={dailyDoubleOps.hasPosition({
-                      categoryIndex,
-                      rowIndex,
-                    })}
-                    isSelected={
-                      selection?.categoryIndex === categoryIndex &&
-                      selection.rowIndex === rowIndex
-                    }
-                    question={category.questions[rowIndex]}
-                    value={formatValue(board.values[rowIndex])}
-                    onSelect={() => setSelection({ categoryIndex, rowIndex })}
-                  />
-                ))}
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="self-center text-muted-foreground"
-                  aria-label={`Remove the ${formatValue(board.values[rowIndex])} row`}
-                  disabled={rowCount <= 1}
-                  onClick={() => handleRemove({ index: rowIndex, type: "row" })}
-                >
-                  <XIcon />
-                </Button>
-              </Fragment>
-            ))}
-          </div>
-
-          <Button
-            variant="outline"
-            size="lg"
-            className="self-start border-dashed font-heading tracking-wider uppercase"
-            disabled={rowCount >= MAX_ROW_COUNT}
-            onClick={() => updateCurrentBoard(addRow(board))}
-          >
-            <PlusIcon />
-            Add row
-          </Button>
-        </div>
-        {selection && selectedQuestion && (
-          <div className="flex-[1_1_20rem]">
-            <QuestionPanel
-              // A new key per cell puts the focus back on the question field.
-              key={`${boardIndex}-${selection.categoryIndex}-${selection.rowIndex}`}
-              categoryName={board.categories[selection.categoryIndex].name}
-              question={selectedQuestion}
-              value={formatValue(board.values[selection.rowIndex])}
-              isDailyDouble={dailyDoubleOps.hasPosition(selection)}
-              onChange={handleQuestionChange}
-              onClose={() => setSelection(undefined)}
-              onNext={getStep(1)}
-              onPrevious={getStep(-1)}
-              onToggleDailyDouble={
-                dailyDoubleOps.isChoosable ? handleToggleDailyDouble : undefined
+            <Input
+              aria-label={`Category ${categoryIndex + 1} name`}
+              placeholder={`Category ${categoryIndex + 1}`}
+              className="h-14 min-w-0 rounded-none border-0 bg-transparent text-center font-heading text-base font-semibold tracking-wider text-card-foreground uppercase placeholder:text-card-foreground/50 md:text-base dark:bg-transparent"
+              value={category.name}
+              onChange={(event) =>
+                updateCurrentBoard(
+                  setCategoryName({
+                    board,
+                    categoryIndex,
+                    name: event.target.value,
+                  })
+                )
               }
             />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="mr-1 shrink-0 text-card-foreground/70 hover:bg-shade/40 hover:text-card-foreground"
+              aria-label={`Remove category ${categoryIndex + 1}`}
+              disabled={categoryCount <= 1}
+              onClick={() =>
+                handleRemove({ index: categoryIndex, type: "category" })
+              }
+            >
+              <XIcon />
+            </Button>
           </div>
-        )}
+        ))}
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-14 border-dashed"
+          aria-label="Add category"
+          disabled={categoryCount >= MAX_CATEGORY_COUNT}
+          onClick={() => updateCurrentBoard(addCategory(board))}
+        >
+          <PlusIcon />
+        </Button>
+
+        {/* Rows read across the categories, so the cells iterate by row. */}
+        {Array.from({ length: rowCount }, (_, rowIndex) => (
+          <Fragment key={rowIndex}>
+            <RowValueInput
+              label={`Points for row ${rowIndex + 1}`}
+              value={board.values[rowIndex]}
+              onChange={(value) =>
+                updateCurrentBoard(setRowValue({ board, rowIndex, value }))
+              }
+            />
+            {board.categories.map((category, categoryIndex) => (
+              <QuestionCell
+                key={categoryIndex}
+                dragProps={questionDrag.getDragProps({
+                  categoryIndex,
+                  rowIndex,
+                })}
+                isDragged={questionDrag.isDragged({
+                  categoryIndex,
+                  rowIndex,
+                })}
+                isDropTarget={questionDrag.isDropTarget({
+                  categoryIndex,
+                  rowIndex,
+                })}
+                isDailyDouble={dailyDoubleOps.hasPosition({
+                  categoryIndex,
+                  rowIndex,
+                })}
+                isSelected={
+                  selection?.categoryIndex === categoryIndex &&
+                  selection.rowIndex === rowIndex
+                }
+                question={category.questions[rowIndex]}
+                value={formatValue(board.values[rowIndex])}
+                onSelect={() => setSelection({ categoryIndex, rowIndex })}
+              />
+            ))}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="self-center text-muted-foreground"
+              aria-label={`Remove the ${formatValue(board.values[rowIndex])} row`}
+              disabled={rowCount <= 1}
+              onClick={() => handleRemove({ index: rowIndex, type: "row" })}
+            >
+              <XIcon />
+            </Button>
+          </Fragment>
+        ))}
       </div>
+
+      <Button
+        variant="outline"
+        size="lg"
+        className="self-start border-dashed font-heading tracking-wider uppercase"
+        disabled={rowCount >= MAX_ROW_COUNT}
+        onClick={() => updateCurrentBoard(addRow(board))}
+      >
+        <PlusIcon />
+        Add row
+      </Button>
+      <QuestionDialog
+        categoryName={
+          selection ? board.categories[selection.categoryIndex].name : ""
+        }
+        question={selectedQuestion}
+        questionKey={
+          selection ? `${selection.categoryIndex}-${selection.rowIndex}` : ""
+        }
+        value={selection ? formatValue(board.values[selection.rowIndex]) : ""}
+        isDailyDouble={Boolean(
+          selection && dailyDoubleOps.hasPosition(selection)
+        )}
+        onChange={handleQuestionChange}
+        onClose={() => setSelection(undefined)}
+        onNext={getStep(1)}
+        onPrevious={getStep(-1)}
+        onToggleDailyDouble={
+          dailyDoubleOps.isChoosable ? handleToggleDailyDouble : undefined
+        }
+      />
 
       <ConfirmDialog
         prompt={
