@@ -38,8 +38,8 @@ export default function Winner({ gameId }: { gameId: string }) {
     return (
       <div className="flex flex-col items-start gap-4 p-6">
         <p>No game runs on this board.</p>
-        <ButtonLink variant="outline" to="/play">
-          Boards
+        <ButtonLink variant="outline" to="/">
+          Home
         </ButtonLink>
       </div>
     )
@@ -75,10 +75,7 @@ export default function Winner({ gameId }: { gameId: string }) {
         <Button size="lg" onClick={handleNewGame}>
           New game
         </Button>
-        <ButtonLink size="lg" variant="outline" to="/play">
-          Boards
-        </ButtonLink>
-        <ButtonLink size="lg" variant="ghost" to="/">
+        <ButtonLink size="lg" variant="outline" to="/">
           Home
         </ButtonLink>
       </div>

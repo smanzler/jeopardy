@@ -12,8 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCreateRouteImport } from './routes/_app.create'
+import { Route as PlayIndexRouteImport } from './routes/play.index'
 import { Route as AppEditGameIdRouteImport } from './routes/_app.edit.$gameId'
-import { Route as AppPlayIndexRouteImport } from './routes/_app.play.index'
 import { Route as PlayGameIdIndexRouteImport } from './routes/play.$gameId.index'
 import { Route as PlayGameIdWinnerRouteImport } from './routes/play.$gameId.winner'
 
@@ -31,14 +31,14 @@ const AppCreateRoute = AppCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => AppRoute,
 } as any)
+const PlayIndexRoute = PlayIndexRouteImport.update({
+  id: '/play/',
+  path: '/play/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppEditGameIdRoute = AppEditGameIdRouteImport.update({
   id: '/edit/$gameId',
   path: '/edit/$gameId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPlayIndexRoute = AppPlayIndexRouteImport.update({
-  id: '/play/',
-  path: '/play/',
   getParentRoute: () => AppRoute,
 } as any)
 const PlayGameIdIndexRoute = PlayGameIdIndexRouteImport.update({
@@ -55,17 +55,17 @@ const PlayGameIdWinnerRoute = PlayGameIdWinnerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/create': typeof AppCreateRoute
+  '/play/': typeof PlayIndexRoute
   '/edit/$gameId': typeof AppEditGameIdRoute
   '/play/$gameId/winner': typeof PlayGameIdWinnerRoute
-  '/play/': typeof AppPlayIndexRoute
   '/play/$gameId/': typeof PlayGameIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/create': typeof AppCreateRoute
   '/': typeof AppIndexRoute
+  '/play': typeof PlayIndexRoute
   '/edit/$gameId': typeof AppEditGameIdRoute
   '/play/$gameId/winner': typeof PlayGameIdWinnerRoute
-  '/play': typeof AppPlayIndexRoute
   '/play/$gameId': typeof PlayGameIdIndexRoute
 }
 export interface FileRoutesById {
@@ -73,9 +73,9 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/create': typeof AppCreateRoute
   '/_app/': typeof AppIndexRoute
+  '/play/': typeof PlayIndexRoute
   '/_app/edit/$gameId': typeof AppEditGameIdRoute
   '/play/$gameId/winner': typeof PlayGameIdWinnerRoute
-  '/_app/play/': typeof AppPlayIndexRoute
   '/play/$gameId/': typeof PlayGameIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -83,31 +83,32 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/create'
+    | '/play/'
     | '/edit/$gameId'
     | '/play/$gameId/winner'
-    | '/play/'
     | '/play/$gameId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/create'
     | '/'
+    | '/play'
     | '/edit/$gameId'
     | '/play/$gameId/winner'
-    | '/play'
     | '/play/$gameId'
   id:
     | '__root__'
     | '/_app'
     | '/_app/create'
     | '/_app/'
+    | '/play/'
     | '/_app/edit/$gameId'
     | '/play/$gameId/winner'
-    | '/_app/play/'
     | '/play/$gameId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  PlayIndexRoute: typeof PlayIndexRoute
   PlayGameIdWinnerRoute: typeof PlayGameIdWinnerRoute
   PlayGameIdIndexRoute: typeof PlayGameIdIndexRoute
 }
@@ -135,18 +136,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCreateRouteImport
       parentRoute: typeof AppRoute
     }
+    '/play/': {
+      id: '/play/'
+      path: '/play'
+      fullPath: '/play/'
+      preLoaderRoute: typeof PlayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/edit/$gameId': {
       id: '/_app/edit/$gameId'
       path: '/edit/$gameId'
       fullPath: '/edit/$gameId'
       preLoaderRoute: typeof AppEditGameIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/play/': {
-      id: '/_app/play/'
-      path: '/play'
-      fullPath: '/play/'
-      preLoaderRoute: typeof AppPlayIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/play/$gameId/': {
@@ -170,20 +171,19 @@ interface AppRouteChildren {
   AppCreateRoute: typeof AppCreateRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditGameIdRoute: typeof AppEditGameIdRoute
-  AppPlayIndexRoute: typeof AppPlayIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCreateRoute: AppCreateRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditGameIdRoute: AppEditGameIdRoute,
-  AppPlayIndexRoute: AppPlayIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  PlayIndexRoute: PlayIndexRoute,
   PlayGameIdWinnerRoute: PlayGameIdWinnerRoute,
   PlayGameIdIndexRoute: PlayGameIdIndexRoute,
 }

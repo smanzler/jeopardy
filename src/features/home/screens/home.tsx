@@ -1,17 +1,19 @@
+import { useState } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon } from "lucide-react"
 import { Link } from "@tanstack/react-router"
-import { listGames } from "@/lib/games"
+import type { Game } from "@/lib/db"
+import { deleteGame, listGames } from "@/lib/games"
+import { buildGameFileName, renderGameFile } from "@/lib/game-file"
 import { listSessions } from "@/lib/sessions"
 import { Spinner } from "@/components/ui/spinner"
 import { buildNewBoardState } from "@/components/app-header"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 import { GameCard } from "@/features/home/components/game-card"
 import { ResumePanel } from "@/features/home/components/resume-panel"
 import { TitleCard } from "@/features/home/components/title-card"
+import { downloadFile } from "@/features/home/lib/download-file"
 import { findGamesInProgress } from "@/features/home/lib/hub"
-
-/** The hub shows this many boards, and the boards page shows them all. */
-const MAX_HUB_GAMES = 6
 
 export default function Home() {
   // Dexie holds the boards in the browser, so the load waits for the client.
@@ -19,6 +21,19 @@ export default function Home() {
     const [games, sessions] = await Promise.all([listGames(), listSessions()])
     return { games, inProgress: findGamesInProgress({ games, sessions }) }
   }, [])
+  const [pendingDelete, setPendingDelete] = useState<Game>()
+
+  const handleDelete = async () => {
+    if (!pendingDelete) return
+    await deleteGame(pendingDelete.id)
+    setPendingDelete(undefined)
+  }
+
+  const handleExport = (game: Game) =>
+    downloadFile({
+      name: buildGameFileName(game.title),
+      text: renderGameFile(game),
+    })
 
   if (!hub) {
     return (
@@ -44,20 +59,20 @@ export default function Home() {
         <ResumePanel key={entry.game.id} {...entry} />
       ))}
       <section aria-labelledby="your-boards" className="flex flex-col gap-3.5">
-        <div className="flex items-baseline justify-between">
-          <h2
-            id="your-boards"
-            className="font-heading text-2xl font-semibold tracking-wider uppercase"
-          >
-            Your boards
-          </h2>
-          <Link to="/play" className="text-sm text-primary hover:underline">
-            See all
-          </Link>
-        </div>
+        <h2
+          id="your-boards"
+          className="font-heading text-2xl font-semibold tracking-wider uppercase"
+        >
+          Your boards
+        </h2>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3.5">
-          {hub.games.slice(0, MAX_HUB_GAMES).map((game) => (
-            <GameCard key={game.id} game={game} />
+          {hub.games.map((game) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              onDelete={() => setPendingDelete(game)}
+              onExport={() => handleExport(game)}
+            />
           ))}
           <Link
             to="/create"
@@ -69,6 +84,19 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <ConfirmDialog
+        prompt={
+          pendingDelete && {
+            cancelLabel: "Keep it",
+            confirmLabel: "Delete it",
+            description:
+              "This deletes the board, its questions and the game that runs on it. You cannot undo it.",
+            title: `Delete ${pendingDelete.title || "the untitled board"}?`,
+          }
+        }
+        onCancel={() => setPendingDelete(undefined)}
+        onConfirm={handleDelete}
+      />
     </main>
   )
 }

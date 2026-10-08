@@ -19,8 +19,8 @@ export default function EditBoard({ gameId }: { gameId: string }) {
     return (
       <div className="flex flex-col items-start gap-4 p-6">
         <p>That board is not in this browser.</p>
-        <ButtonLink variant="outline" to="/play">
-          Boards
+        <ButtonLink variant="outline" to="/">
+          Home
         </ButtonLink>
       </div>
     )

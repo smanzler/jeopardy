@@ -84,9 +84,6 @@ function NotFound() {
         <Button size="lg" render={<Link to="/" />}>
           Home
         </Button>
-        <Button size="lg" variant="outline" render={<Link to="/play" />}>
-          Boards
-        </Button>
       </div>
     </main>
   )
