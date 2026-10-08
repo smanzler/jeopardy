@@ -91,6 +91,23 @@ export const isBoardDone = ({
     )
   )
 
+export const countQuestionsLeft = ({
+  board,
+  boardIndex,
+  usedKeys,
+}: {
+  board: Board
+  boardIndex: number
+  usedKeys: Array<string>
+}): number =>
+  board.categories
+    .flatMap((category, categoryIndex) =>
+      category.questions.map((_, rowIndex) =>
+        buildQuestionKey({ boardIndex, categoryIndex, rowIndex })
+      )
+    )
+    .filter((key) => !usedKeys.includes(key)).length
+
 export const isGameDone = ({
   boards,
   usedKeys,
