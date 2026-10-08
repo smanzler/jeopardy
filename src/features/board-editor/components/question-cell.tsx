@@ -3,6 +3,7 @@ import type { QuestionStatus } from "@/lib/board"
 import { Button } from "@/components/ui/button"
 import { getQuestionStatus } from "@/lib/board"
 import { cn } from "@/lib/utils"
+import type { QuestionDragProps } from "@/features/board-editor/hooks/use-question-drag"
 
 const STATUS_LABEL: Record<QuestionStatus, string> = {
   complete: "",
@@ -12,14 +13,20 @@ const STATUS_LABEL: Record<QuestionStatus, string> = {
 }
 
 type QuestionCellProps = {
+  dragProps: QuestionDragProps
   isDailyDouble: boolean
+  isDragged: boolean
+  isDropTarget: boolean
   onSelect: () => void
   question: Question
   value: string
 }
 
 export function QuestionCell({
+  dragProps,
   isDailyDouble,
+  isDragged,
+  isDropTarget,
   onSelect,
   question,
   value,
@@ -36,8 +43,11 @@ export function QuestionCell({
         // against `dark:border-input` in the variant of the button.
         status === "complete"
           ? "border-foreground/30 dark:border-foreground/30"
-          : "border-dashed opacity-60"
+          : "border-dashed opacity-60",
+        isDragged && "opacity-30",
+        isDropTarget && "ring-2 ring-primary"
       )}
+      {...dragProps}
       onClick={onSelect}
     >
       <span className="flex w-full items-center justify-between gap-1">

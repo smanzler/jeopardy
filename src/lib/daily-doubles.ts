@@ -1,5 +1,7 @@
 import type { Board, CellPosition, DailyDoubles } from "@/lib/db"
-import { buildQuestionKey } from "@/lib/board"
+import { buildQuestionKey, isSamePosition } from "@/lib/board"
+import type { QuestionMove } from "@/lib/board"
+import { toMovedIndex } from "@/lib/move"
 
 export type DailyDoublesType = DailyDoubles["type"]
 
@@ -15,6 +17,8 @@ type DailyDoubleOps = {
   hasPosition: (position: CellPosition) => boolean
   /** True when the editor picks the positions one by one. */
   isChoosable: boolean
+  /** Keeps each daily double on its question when `moveQuestion` moves it. */
+  moveQuestion: (move: QuestionMove) => DailyDoubles
   pickPositions: (args: {
     board: Board
     random: () => number
@@ -30,9 +34,6 @@ type DailyDoubleDispatch = {
     buildOps: (dailyDoubles: DailyDoublesOf<TType>) => DailyDoubleOps
   }
 }
-
-const isSamePosition = (a: CellPosition, b: CellPosition): boolean =>
-  a.categoryIndex === b.categoryIndex && a.rowIndex === b.rowIndex
 
 /** Drops the positions at `index` and moves the later ones down by one. */
 const removeIndex = ({
@@ -87,6 +88,17 @@ const buildChosenOps = (
   return {
     hasPosition,
     isChoosable: true,
+    moveQuestion: ({ categoryIndex, from, to }) => ({
+      ...dailyDoubles,
+      positions: positions.map((position) =>
+        position.categoryIndex === categoryIndex
+          ? {
+              ...position,
+              rowIndex: toMovedIndex({ from, index: position.rowIndex, to }),
+            }
+          : position
+      ),
+    }),
     pickPositions: () => positions,
     removeCategory: (categoryIndex) => ({
       ...dailyDoubles,
@@ -114,6 +126,7 @@ const buildRandomOps = (
 ): DailyDoubleOps => ({
   hasPosition: () => false,
   isChoosable: false,
+  moveQuestion: () => dailyDoubles,
   pickPositions: ({ board, random }) =>
     pickRandom({ cells: listCells(board), count: dailyDoubles.count, random }),
   removeCategory: () => dailyDoubles,

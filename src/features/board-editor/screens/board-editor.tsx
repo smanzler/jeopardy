@@ -16,6 +16,7 @@ import {
   formatValue,
   getRowCount,
   isDraftComplete,
+  moveQuestion,
   setBoard,
   setCategoryName,
   setQuestion,
@@ -37,6 +38,7 @@ import { getDailyDoubleOps } from "@/lib/daily-doubles"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
 import type { Removal } from "@/features/board-editor/lib/removals"
+import { useQuestionDrag } from "@/features/board-editor/hooks/use-question-drag"
 
 type Selection = { categoryIndex: number; rowIndex: number }
 
@@ -130,6 +132,10 @@ export default function BoardEditor({ game }: BoardEditorProps) {
       )
     }
   }
+
+  const questionDrag = useQuestionDrag((move) =>
+    updateCurrentBoard(moveQuestion({ ...move, board }))
+  )
 
   const handleToggleDailyDouble = () => {
     if (!selection) return
@@ -303,6 +309,15 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             {board.categories.map((category, categoryIndex) => (
               <QuestionCell
                 key={categoryIndex}
+                dragProps={questionDrag.getDragProps({
+                  categoryIndex,
+                  rowIndex,
+                })}
+                isDragged={questionDrag.isDragged({ categoryIndex, rowIndex })}
+                isDropTarget={questionDrag.isDropTarget({
+                  categoryIndex,
+                  rowIndex,
+                })}
                 isDailyDouble={dailyDoubleOps.hasPosition({
                   categoryIndex,
                   rowIndex,
