@@ -30,6 +30,8 @@ import {
   setBoard,
   setCategoryName,
   setQuestion,
+  setRowValue,
+  toRowValue,
 } from "@/lib/board"
 import type { Board, GameDraft } from "@/lib/db"
 
@@ -535,5 +537,30 @@ describe("getNextBoardIndex", () => {
         usedKeys: secondKeys,
       })
     ).toBe(1)
+  })
+})
+
+describe("setRowValue", () => {
+  it("changes the value of one row and leaves the others", () => {
+    const board = buildEmptyBoard(0)
+    const next = setRowValue({ board, rowIndex: 2, value: 250 })
+    expect(next.values).toEqual([100, 200, 250, 400, 500])
+    expect(next.categories).toBe(board.categories)
+    expect(board.values[2]).toBe(300)
+  })
+})
+
+describe("toRowValue", () => {
+  it("reads a whole number of points", () => {
+    expect(toRowValue("250")).toBe(250)
+    expect(toRowValue(" 0 ")).toBe(0)
+  })
+
+  it("rejects text that is not a whole number from 0 up", () => {
+    expect(toRowValue("")).toBeUndefined()
+    expect(toRowValue("-100")).toBeUndefined()
+    expect(toRowValue("1.5")).toBeUndefined()
+    expect(toRowValue("1e3")).toBeUndefined()
+    expect(toRowValue("abc")).toBeUndefined()
   })
 })

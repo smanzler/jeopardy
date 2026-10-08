@@ -19,6 +19,7 @@ import {
   setBoard,
   setCategoryName,
   setQuestion,
+  setRowValue,
 } from "@/lib/board"
 import { listGames, saveGame } from "@/lib/games"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ import { BoardTabs } from "@/components/board-tabs"
 import { ButtonLink } from "@/components/button-link"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
+import { RowValueInput } from "@/features/board-editor/components/row-value-input"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
 import type { Removal } from "@/features/board-editor/lib/removals"
@@ -191,9 +193,12 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         className="grid gap-2"
         // The column count changes at runtime, so Tailwind cannot name it.
         style={{
-          gridTemplateColumns: `repeat(${categoryCount}, minmax(0, 1fr)) auto`,
+          gridTemplateColumns: `auto repeat(${categoryCount}, minmax(0, 1fr)) auto`,
         }}
       >
+        <span className="self-center text-sm text-muted-foreground">
+          Points
+        </span>
         {board.categories.map((category, categoryIndex) => (
           <div key={categoryIndex} className="flex items-center gap-1">
             <Input
@@ -236,6 +241,13 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         {/* Rows read across the categories, so the cells iterate by row. */}
         {Array.from({ length: rowCount }, (_, rowIndex) => (
           <Fragment key={rowIndex}>
+            <RowValueInput
+              label={`Points for row ${rowIndex + 1}`}
+              value={board.values[rowIndex]}
+              onChange={(value) =>
+                updateCurrentBoard(setRowValue({ board, rowIndex, value }))
+              }
+            />
             {board.categories.map((category, categoryIndex) => (
               <QuestionCell
                 key={categoryIndex}
