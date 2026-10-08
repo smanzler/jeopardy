@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router"
 import { formatValue } from "@/lib/board"
 import { ButtonLink } from "@/components/button-link"
 
-export const Route = createFileRoute("/")({ component: App })
+export const Route = createFileRoute("/_app/")({ component: App })
 
 const SAMPLE_VALUES = [200, 400, 600, 800, 1000]
 
 function App() {
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-10 p-6">
+    <main className="flex flex-1 flex-col items-center justify-center gap-10 p-6">
       <div className="flex flex-col gap-1.5">
         <div className="bg-card px-10 py-8 shadow-[inset_0_-8px_0_var(--shade)] sm:px-16 sm:py-10">
           <h1 className="font-heading text-6xl font-bold tracking-wide text-primary uppercase text-shadow-[0_5px_0_var(--shade)] sm:text-8xl">

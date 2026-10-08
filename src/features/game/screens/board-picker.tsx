@@ -2,39 +2,21 @@ import { useState } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { Game } from "@/lib/db"
 import { formatBoardCount } from "@/lib/board"
-import { createGame, deleteGame, listGames } from "@/lib/games"
-import {
-  GAME_FILE_ACCEPT,
-  buildGameFileName,
-  parseGameFile,
-  renderGameFile,
-} from "@/lib/game-file"
+import { deleteGame, listGames } from "@/lib/games"
+import { buildGameFileName, renderGameFile } from "@/lib/game-file"
 import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
 import { ConfirmDialog } from "@/components/confirm-dialog"
-import { FileButton } from "@/components/file-button"
 import { downloadFile } from "@/features/game/lib/download-file"
 
 export default function BoardPicker() {
   const games = useLiveQuery(listGames, [], [])
   const [pendingDelete, setPendingDelete] = useState<Game>()
-  const [importError, setImportError] = useState<string>()
 
   const handleDelete = async () => {
     if (!pendingDelete) return
     await deleteGame(pendingDelete.id)
     setPendingDelete(undefined)
-  }
-
-  const handleImport = async (file: File) => {
-    try {
-      await createGame(parseGameFile(await file.text()))
-      setImportError(undefined)
-    } catch (error) {
-      setImportError(
-        error instanceof Error ? error.message : "The import did not work."
-      )
-    }
   }
 
   const handleExport = (game: Game) =>
@@ -44,24 +26,8 @@ export default function BoardPicker() {
     })
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-4 p-6">
-      <div className="flex items-center gap-2">
-        <ButtonLink variant="ghost" to="/">
-          Home
-        </ButtonLink>
-        <ButtonLink variant="ghost" to="/create">
-          New board
-        </ButtonLink>
-        <FileButton
-          variant="ghost"
-          accept={GAME_FILE_ACCEPT}
-          onFile={handleImport}
-        >
-          Import
-        </FileButton>
-      </div>
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-6">
       <h1 className="text-xl font-semibold">Boards</h1>
-      {importError && <p className="text-sm text-destructive">{importError}</p>}
       {games.length === 0 ? (
         <div className="flex flex-col items-start gap-4">
           <p className="text-muted-foreground">
