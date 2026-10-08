@@ -3,8 +3,10 @@ import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon, XIcon } from "lucide-react"
 import type { Board, Game, GameDraft, Question } from "@/lib/db"
 import {
+  MAX_BOARD_COUNT,
   MAX_CATEGORY_COUNT,
   MAX_ROW_COUNT,
+  addBoard,
   addCategory,
   addRow,
   buildEmptyDraft,
@@ -13,11 +15,7 @@ import {
   formatBoardCount,
   formatValue,
   getRowCount,
-  hasCategoryContent,
-  hasRowContent,
   isDraftComplete,
-  removeCategory,
-  removeRow,
   setBoard,
   setCategoryName,
   setQuestion,
@@ -30,16 +28,10 @@ import { ButtonLink } from "@/components/button-link"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { ConfirmDialog } from "@/components/confirm-dialog"
-import type { ConfirmPrompt } from "@/components/confirm-dialog"
+import { removalDispatches } from "@/features/board-editor/lib/removals"
+import type { Removal } from "@/features/board-editor/lib/removals"
 
 type Selection = { categoryIndex: number; rowIndex: number }
-
-/** A removal that deletes work, and that waits for a confirmation. */
-type PendingRemoval =
-  | { categoryIndex: number; type: "category" }
-  | { rowIndex: number; type: "row" }
-
-const REMOVAL_WARNING = "This deletes the questions and the answers in it."
 
 type BoardEditorProps = {
   /** A board to edit. The editor reads it on the first render only. */
@@ -54,12 +46,13 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   // race each other into two rows. A new board reaches the database when the
   // host makes the first change to it.
   const [gameId, setGameId] = useState(() => game?.id ?? crypto.randomUUID())
+  const [boardIndex, setBoardIndex] = useState(0)
   const [selection, setSelection] = useState<Selection>()
-  const [removal, setRemoval] = useState<PendingRemoval>()
+  const [removal, setRemoval] = useState<Removal>()
   const [hasSaveFailed, setHasSaveFailed] = useState(false)
   const savedGames = useLiveQuery(listGames, [], [])
 
-  const boardIndex = 0
+  const boardCount = draft.boards.length
   const board = draft.boards[boardIndex]
   const categoryCount = board.categories.length
   const rowCount = getRowCount(board)
@@ -75,6 +68,8 @@ export default function BoardEditor({ game }: BoardEditorProps) {
    */
   const updateBoard = (next: GameDraft) => {
     setDraft(next)
+    // A removed board can take the open tab with it.
+    setBoardIndex((index) => Math.min(index, next.boards.length - 1))
     saveGame({ draft: next, id: gameId }).then(
       () => setHasSaveFailed(false),
       () => setHasSaveFailed(true)
@@ -84,55 +79,28 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const updateCurrentBoard = (next: Board) =>
     updateBoard(setBoard({ board: next, boardIndex, draft }))
 
-  const buildConfirmPrompt = (action: PendingRemoval): ConfirmPrompt => {
-    switch (action.type) {
-      case "category":
-        return {
-          cancelLabel: "Keep it",
-          confirmLabel: "Remove",
-          description: REMOVAL_WARNING,
-          title: `Remove ${board.categories[action.categoryIndex].name || `category ${action.categoryIndex + 1}`}?`,
-        }
-      case "row":
-        return {
-          cancelLabel: "Keep it",
-          confirmLabel: "Remove",
-          description: REMOVAL_WARNING,
-          title: `Remove the ${formatValue(board.values[action.rowIndex])} row?`,
-        }
-    }
-  }
+  const applyRemoval = ({ index, type }: Removal) =>
+    updateBoard(removalDispatches[type].remove({ boardIndex, draft, index }))
 
   // A removal that throws no work away runs with no confirmation.
-  const handleRemoveCategory = (categoryIndex: number) => {
-    if (hasCategoryContent(board.categories[categoryIndex])) {
-      setRemoval({ categoryIndex, type: "category" })
+  const handleRemove = (next: Removal) => {
+    const context = { boardIndex, draft, index: next.index }
+    if (removalDispatches[next.type].hasContent(context)) {
+      setRemoval(next)
       return
     }
-    updateCurrentBoard(removeCategory({ board, categoryIndex }))
-  }
-
-  const handleRemoveRow = (rowIndex: number) => {
-    if (hasRowContent({ board, rowIndex })) {
-      setRemoval({ rowIndex, type: "row" })
-      return
-    }
-    updateCurrentBoard(removeRow({ board, rowIndex }))
+    applyRemoval(next)
   }
 
   const handleConfirm = () => {
     if (!removal) return
-    switch (removal.type) {
-      case "category":
-        updateCurrentBoard(
-          removeCategory({ board, categoryIndex: removal.categoryIndex })
-        )
-        break
-      case "row":
-        updateCurrentBoard(removeRow({ board, rowIndex: removal.rowIndex }))
-        break
-    }
+    applyRemoval(removal)
     setRemoval(undefined)
+  }
+
+  const handleAddBoard = () => {
+    updateBoard(addBoard(draft))
+    setBoardIndex(boardCount)
   }
 
   const handleQuestionChange = (question: Question) => {
@@ -145,6 +113,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const handleNew = () => {
     setDraft(buildEmptyDraft())
     setGameId(crypto.randomUUID())
+    setBoardIndex(0)
   }
 
   return (
@@ -192,6 +161,36 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         </p>
       )}
 
+      <div className="flex flex-wrap items-center gap-2">
+        {draft.boards.map((_, index) => (
+          <Button
+            key={index}
+            variant={index === boardIndex ? "default" : "outline"}
+            aria-pressed={index === boardIndex}
+            onClick={() => setBoardIndex(index)}
+          >
+            Board {index + 1}
+          </Button>
+        ))}
+        <Button
+          variant="outline"
+          disabled={boardCount >= MAX_BOARD_COUNT}
+          onClick={handleAddBoard}
+        >
+          <PlusIcon />
+          Add board
+        </Button>
+        <Button
+          variant="ghost"
+          className="ml-auto"
+          disabled={boardCount <= 1}
+          onClick={() => handleRemove({ index: boardIndex, type: "board" })}
+        >
+          <XIcon />
+          Remove board {boardIndex + 1}
+        </Button>
+      </div>
+
       <div
         className="grid gap-2"
         // The column count changes at runtime, so Tailwind cannot name it.
@@ -220,7 +219,9 @@ export default function BoardEditor({ game }: BoardEditorProps) {
               size="icon-sm"
               aria-label={`Remove category ${categoryIndex + 1}`}
               disabled={categoryCount <= 1}
-              onClick={() => handleRemoveCategory(categoryIndex)}
+              onClick={() =>
+                handleRemove({ index: categoryIndex, type: "category" })
+              }
             >
               <XIcon />
             </Button>
@@ -252,7 +253,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
               size="icon-sm"
               aria-label={`Remove the ${formatValue(board.values[rowIndex])} row`}
               disabled={rowCount <= 1}
-              onClick={() => handleRemoveRow(rowIndex)}
+              onClick={() => handleRemove({ index: rowIndex, type: "row" })}
             >
               <XIcon />
             </Button>
@@ -281,7 +282,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
       />
 
       <ConfirmDialog
-        prompt={removal && buildConfirmPrompt(removal)}
+        prompt={
+          removal &&
+          removalDispatches[removal.type].buildPrompt({
+            boardIndex,
+            draft,
+            index: removal.index,
+          })
+        }
         onCancel={() => setRemoval(undefined)}
         onConfirm={handleConfirm}
       />
