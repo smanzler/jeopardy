@@ -3,6 +3,7 @@ import { formatValue } from "@/lib/board"
 import { toScore } from "@/lib/score"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 type TeamScoreProps = {
   onChange: (score: number) => void
@@ -25,7 +26,10 @@ export function TeamScore({ onChange, score, teamName }: TeamScoreProps) {
     return (
       <Button
         variant="ghost"
-        className="h-auto px-2 font-heading text-2xl font-medium text-primary tabular-nums"
+        className={cn(
+          "h-auto px-2 font-heading text-3xl font-bold text-primary tabular-nums",
+          score < 0 && "text-destructive"
+        )}
         aria-label={`Change the score of ${teamName}`}
         onClick={() => setText(String(score))}
       >
