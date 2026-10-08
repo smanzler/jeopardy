@@ -54,7 +54,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   // The board claims its key before the first write, so quick changes cannot
   // race each other into two rows. A new board reaches the database when the
   // host makes the first change to it.
-  const [gameId, setGameId] = useState(() => game?.id ?? crypto.randomUUID())
+  const [gameId] = useState(() => game?.id ?? crypto.randomUUID())
   const [boardIndex, setBoardIndex] = useState(0)
   const [selection, setSelection] = useState<Selection>()
   const [removal, setRemoval] = useState<Removal>()
@@ -150,24 +150,8 @@ export default function BoardEditor({ game }: BoardEditorProps) {
     updateCurrentBoard(setQuestion({ ...selection, board, question }))
   }
 
-  // The board that the editor holds stays in the database, so a new board only
-  // needs an empty draft under a new key.
-  const handleNew = () => {
-    setDraft(buildEmptyDraft())
-    setGameId(crypto.randomUUID())
-    setBoardIndex(0)
-  }
-
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
-      <div className="flex items-center gap-2">
-        <ButtonLink variant="ghost" to="/">
-          Home
-        </ButtonLink>
-        <ButtonLink variant="ghost" to="/play">
-          Boards
-        </ButtonLink>
-      </div>
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
       <div className="flex items-end justify-between gap-4">
         <Field className="max-w-sm">
           <FieldLabel htmlFor="board-title">Board title</FieldLabel>
@@ -184,15 +168,6 @@ export default function BoardEditor({ game }: BoardEditorProps) {
             {countCompleteQuestions(draft)} of {countQuestions(draft)} questions
             {isDraftComplete(draft) ? " — ready" : ""}
           </span>
-          {game ? (
-            <ButtonLink variant="outline" to="/create">
-              New board
-            </ButtonLink>
-          ) : (
-            <Button variant="outline" onClick={handleNew}>
-              New board
-            </Button>
-          )}
         </div>
       </div>
 

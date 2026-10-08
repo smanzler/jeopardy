@@ -6,6 +6,7 @@ import type { buttonVariants } from "@/components/ui/button"
 type FileButtonProps = VariantProps<typeof buttonVariants> & {
   accept: string
   children: React.ReactNode
+  className?: string
   disabled?: boolean
   onFile: (file: File) => void
 }
