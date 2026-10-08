@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
-import { PlusIcon, XIcon } from "lucide-react"
+import { PlusIcon, UploadIcon, XIcon } from "lucide-react"
 import type { Board, Game, GameDraft, Question } from "@/lib/db"
 import {
   MAX_BOARD_COUNT,
@@ -27,6 +27,8 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { BoardTabs } from "@/components/board-tabs"
 import { ButtonLink } from "@/components/button-link"
+import { FileButton } from "@/components/file-button"
+import { GAME_FILE_ACCEPT, parseGameFile } from "@/lib/game-file"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
@@ -55,6 +57,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const [selection, setSelection] = useState<Selection>()
   const [removal, setRemoval] = useState<Removal>()
   const [hasSaveFailed, setHasSaveFailed] = useState(false)
+  const [importError, setImportError] = useState<string>()
   const savedGames = useLiveQuery(listGames, [], [])
 
   const boardCount = draft.boards.length
@@ -108,6 +111,24 @@ export default function BoardEditor({ game }: BoardEditorProps) {
   const handleAddBoard = () => {
     updateBoard(addBoard(draft))
     setBoardIndex(boardCount)
+  }
+
+  // The boards of the file go after the boards that the game holds.
+  const handleImportBoards = async (file: File) => {
+    try {
+      const { boards } = parseGameFile(await file.text())
+      if (boardCount + boards.length > MAX_BOARD_COUNT) {
+        setImportError(`A game holds ${MAX_BOARD_COUNT} boards at most.`)
+        return
+      }
+      updateBoard({ ...draft, boards: [...draft.boards, ...boards] })
+      setBoardIndex(boardCount)
+      setImportError(undefined)
+    } catch (error) {
+      setImportError(
+        error instanceof Error ? error.message : "The import did not work."
+      )
+    }
   }
 
   const handleToggleDailyDouble = () => {
@@ -176,6 +197,8 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         </p>
       )}
 
+      {importError && <p className="text-sm text-destructive">{importError}</p>}
+
       <div className="flex flex-wrap items-center gap-2">
         <BoardTabs
           boardCount={boardCount}
@@ -190,6 +213,15 @@ export default function BoardEditor({ game }: BoardEditorProps) {
           <PlusIcon />
           Add board
         </Button>
+        <FileButton
+          variant="outline"
+          accept={GAME_FILE_ACCEPT}
+          disabled={boardCount >= MAX_BOARD_COUNT}
+          onFile={handleImportBoards}
+        >
+          <UploadIcon />
+          Import boards
+        </FileButton>
         <Button
           variant="ghost"
           className="ml-auto"
