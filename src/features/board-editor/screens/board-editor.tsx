@@ -28,6 +28,7 @@ import { RowValueInput } from "@/features/board-editor/components/row-value-inpu
 import { EditorHeader } from "@/features/board-editor/components/editor-header"
 import type { SaveState } from "@/features/board-editor/components/editor-header"
 import { BoardStrip } from "@/features/board-editor/components/board-strip"
+import { DailyDoublesLine } from "@/features/board-editor/components/daily-doubles-line"
 import { getDailyDoubleOps } from "@/lib/daily-doubles"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
@@ -179,9 +180,6 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         boardIndex={boardIndex}
         draft={draft}
         onAddBoard={handleAddBoard}
-        onDailyDoublesChange={(dailyDoubles) =>
-          updateCurrentBoard({ ...board, dailyDoubles })
-        }
         onImportBoards={handleImportBoards}
         onRemoveBoard={() => handleRemove({ index: boardIndex, type: "board" })}
         onSelectBoard={showBoard}
@@ -304,6 +302,14 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         <PlusIcon />
         Add row
       </Button>
+
+      <DailyDoublesLine
+        boardIndex={boardIndex}
+        dailyDoubles={board.dailyDoubles}
+        onChange={(dailyDoubles) =>
+          updateCurrentBoard({ ...board, dailyDoubles })
+        }
+      />
       <QuestionDialog
         categoryName={
           selection ? board.categories[selection.categoryIndex].name : ""

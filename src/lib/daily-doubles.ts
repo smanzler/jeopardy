@@ -25,6 +25,8 @@ type DailyDoubleOps = {
   }) => Array<CellPosition>
   removeCategory: (categoryIndex: number) => DailyDoubles
   removeRow: (rowIndex: number) => DailyDoubles
+  /** One line for the editor that says how the board gets its daily doubles. */
+  summary: string
   togglePosition: (position: CellPosition) => DailyDoubles
 }
 
@@ -112,6 +114,10 @@ const buildChosenOps = (
       ...dailyDoubles,
       positions: removeIndex({ index: rowIndex, key: "rowIndex", positions }),
     }),
+    summary:
+      positions.length === 0
+        ? "None yet. Turn them on in each question."
+        : `${positions.length} chosen in the questions`,
     togglePosition: (position) => ({
       ...dailyDoubles,
       positions: hasPosition(position)
@@ -131,6 +137,10 @@ const buildRandomOps = (
     pickRandom({ cells: listCells(board), count: dailyDoubles.count, random }),
   removeCategory: () => dailyDoubles,
   removeRow: () => dailyDoubles,
+  summary:
+    dailyDoubles.count === 0
+      ? "None"
+      : `${dailyDoubles.count} at random when the game starts`,
   togglePosition: () => dailyDoubles,
 })
 

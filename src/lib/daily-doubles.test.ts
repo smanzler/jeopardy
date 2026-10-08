@@ -74,6 +74,22 @@ describe("getDailyDoubleOps", () => {
   })
 })
 
+describe("summary", () => {
+  it("counts the chosen daily doubles", () => {
+    expect(getDailyDoubleOps(chosen).summary).toBe("2 chosen in the questions")
+    expect(getDailyDoubleOps({ positions: [], type: "chosen" }).summary).toBe(
+      "None yet. Turn them on in each question."
+    )
+  })
+
+  it("says how many random daily doubles the game picks", () => {
+    expect(getDailyDoubleOps({ count: 1, type: "random" }).summary).toBe(
+      "1 at random when the game starts"
+    )
+    expect(getDailyDoubleOps({ count: 0, type: "random" }).summary).toBe("None")
+  })
+})
+
 describe("removeRow and removeCategory", () => {
   it("drop the chosen positions in that row and move the later ones up", () => {
     const board = removeRow({ board: withDailyDoubles(chosen), rowIndex: 1 })
