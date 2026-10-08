@@ -179,3 +179,29 @@ describe("buildDailyDoubleKeys", () => {
     ).toEqual(["0-0-0"])
   })
 })
+
+describe("a board with no daily doubles", () => {
+  it("is off, has no positions and picks none", () => {
+    const none = buildDailyDoubles({ boardIndex: 0, type: "none" })
+    const ops = getDailyDoubleOps(none)
+    expect(none).toEqual({ type: "none" })
+    expect(ops.isOn).toBe(false)
+    expect(ops.isChoosable).toBe(false)
+    expect(ops.hasPosition({ categoryIndex: 0, rowIndex: 0 })).toBe(false)
+    expect(
+      buildDailyDoubleKeys({
+        boards: [withDailyDoubles(none)],
+        random: () => 0,
+      })
+    ).toEqual([])
+  })
+
+  it("leaves the other types on", () => {
+    expect(getDailyDoubleOps(chosen).isOn).toBe(true)
+    expect(getDailyDoubleOps({ count: 1, type: "random" }).isOn).toBe(true)
+  })
+
+  it("counts a random board with a count of 0 as off", () => {
+    expect(getDailyDoubleOps({ count: 0, type: "random" }).isOn).toBe(false)
+  })
+})

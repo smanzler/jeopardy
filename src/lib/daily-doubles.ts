@@ -17,6 +17,8 @@ type DailyDoubleOps = {
   hasPosition: (position: CellPosition) => boolean
   /** True when the editor picks the positions one by one. */
   isChoosable: boolean
+  /** True when the board has daily doubles at all. */
+  isOn: boolean
   /** Keeps each daily double on its question when `moveQuestion` moves it. */
   moveQuestion: (move: QuestionMove) => DailyDoubles
   pickPositions: (args: {
@@ -90,6 +92,7 @@ const buildChosenOps = (
   return {
     hasPosition,
     isChoosable: true,
+    isOn: true,
     moveQuestion: ({ categoryIndex, from, to }) => ({
       ...dailyDoubles,
       positions: positions.map((position) =>
@@ -132,6 +135,7 @@ const buildRandomOps = (
 ): DailyDoubleOps => ({
   hasPosition: () => false,
   isChoosable: false,
+  isOn: dailyDoubles.count > 0,
   moveQuestion: () => dailyDoubles,
   pickPositions: ({ board, random }) =>
     pickRandom({ cells: listCells(board), count: dailyDoubles.count, random }),
@@ -144,10 +148,28 @@ const buildRandomOps = (
   togglePosition: () => dailyDoubles,
 })
 
+const buildNoneOps = (
+  dailyDoubles: DailyDoublesOf<"none">
+): DailyDoubleOps => ({
+  hasPosition: () => false,
+  isChoosable: false,
+  isOn: false,
+  moveQuestion: () => dailyDoubles,
+  pickPositions: () => [],
+  removeCategory: () => dailyDoubles,
+  removeRow: () => dailyDoubles,
+  summary: "None",
+  togglePosition: () => dailyDoubles,
+})
+
 const dailyDoubleDispatch: DailyDoubleDispatch = {
   chosen: {
     buildDefault: () => ({ positions: [], type: "chosen" }),
     buildOps: buildChosenOps,
+  },
+  none: {
+    buildDefault: () => ({ type: "none" }),
+    buildOps: buildNoneOps,
   },
   random: {
     // The show hides one daily double on the first board and two on the next.
