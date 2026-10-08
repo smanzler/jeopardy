@@ -28,6 +28,7 @@ const renderCell = ({
       isDailyDouble={isDailyDouble}
       isDragged={false}
       isDropTarget={false}
+      isSelected={false}
       question={question}
       value="$400"
       onSelect={vi.fn()}
