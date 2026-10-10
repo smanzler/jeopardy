@@ -9,6 +9,7 @@ import type {
 import { buildDailyDoubleKeys } from "@/lib/daily-doubles"
 import { buildQuestionKey } from "@/lib/board"
 import { applyResult, buildScores, setScore, undoResult } from "@/lib/score"
+import { localGameStore } from "@/lib/local-game-store"
 
 export const getSession = (gameId: string): Promise<Session | undefined> =>
   db.sessions.get(gameId)
@@ -42,22 +43,11 @@ export const endSession = async (gameId: string): Promise<void> => {
   await db.sessions.delete(gameId)
 }
 
-/**
- * Reads and writes the session in one transaction, so two presses in quick
- * succession cannot lose the work of the first.
- */
-const changeSession = ({
-  buildChanges,
-  gameId,
-}: {
-  buildChanges: (session: Session) => Partial<Session>
-  gameId: string
-}): Promise<void> =>
-  db.transaction("rw", db.sessions, async () => {
-    const session = await db.sessions.get(gameId)
-    if (!session) return
-    await db.sessions.put({ ...session, ...buildChanges(session) })
-  })
+const changeSession = async (
+  args: Parameters<typeof localGameStore.changeSession>[0]
+): Promise<void> => {
+  await localGameStore.changeSession(args)
+}
 
 export const openQuestion = ({
   gameId,

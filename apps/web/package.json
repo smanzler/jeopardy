@@ -19,6 +19,7 @@
     "@jeopardy/shared": "workspace:*",
     "@tailwindcss/vite": "^4",
     "@tanstack/react-devtools": "latest",
+    "@tanstack/react-query": "^5.104.1",
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
     "@tanstack/react-router-ssr-query": "latest",

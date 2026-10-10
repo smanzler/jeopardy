@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import type { Game, GameDraft } from "@/lib/db"
+import { localGameStore } from "@/lib/local-game-store"
 
 /**
  * Writes a draft to the local database under `id`, and makes the board if that
@@ -22,15 +23,8 @@ export const listGames = (): Promise<Array<Game>> =>
 export const getGame = (id: string): Promise<Game | undefined> =>
   db.games.get(id)
 
-/**
- * Deletes a board. The game in progress on that board goes with it, because a
- * session that points at no board can never start again.
- */
 export const deleteGame = (id: string): Promise<void> =>
-  db.transaction("rw", db.games, db.sessions, async () => {
-    await db.games.delete(id)
-    await db.sessions.delete(id)
-  })
+  localGameStore.deleteGame(id)
 
 /** Writes a draft under a new key, and gives that key. */
 export const createGame = async (draft: GameDraft): Promise<string> => {
