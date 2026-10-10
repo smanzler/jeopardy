@@ -5,6 +5,7 @@ import { createGame } from "@/lib/games"
 import { GAME_FILE_ACCEPT, parseGameFile } from "@/lib/game-file"
 import { ButtonLink } from "@/components/button-link"
 import { FileButton } from "@/components/file-button"
+import { AccountMenu } from "@/features/auth/components/account-menu"
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -43,6 +44,7 @@ export function AppHeader() {
           Jeopardy
         </Link>
         <div className="flex gap-2">
+          <AccountMenu />
           <FileButton
             variant="outline"
             size="lg"
