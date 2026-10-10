@@ -2,10 +2,9 @@ import type { Board, CellPosition, DailyDoubles } from "@/lib/db"
 import { buildQuestionKey, isSamePosition } from "@/lib/board"
 import type { QuestionMove } from "@/lib/board"
 import { toMovedIndex } from "@/lib/move"
+import { MAX_RANDOM_DAILY_DOUBLES } from "@jeopardy/shared/games/schemas"
 
 export type DailyDoublesType = DailyDoubles["type"]
-
-export const MAX_RANDOM_DAILY_DOUBLES = 3
 
 type DailyDoublesOf<TType extends DailyDoublesType> = Extract<
   DailyDoubles,

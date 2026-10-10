@@ -1,10 +1,7 @@
 import { EllipsisIcon, PlusIcon, Trash2Icon, UploadIcon } from "lucide-react"
 import type { GameDraft } from "@/lib/db"
-import {
-  MAX_BOARD_COUNT,
-  countCompleteQuestions,
-  countQuestions,
-} from "@/lib/board"
+import { MAX_BOARD_COUNT } from "@jeopardy/shared/games/schemas"
+import { countCompleteQuestions, countQuestions } from "@/lib/board"
 import { GAME_FILE_ACCEPT } from "@/lib/game-file"
 import { Button } from "@/components/ui/button"
 import {
