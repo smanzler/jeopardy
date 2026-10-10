@@ -4,7 +4,12 @@ import { formatValue, toPoints } from "@/lib/board"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { QuestionHeader } from "@/features/game/components/question-header"
 
@@ -89,18 +94,25 @@ export function DailyDoubleWager({
               {teamIndex === undefined ? "" : `${teamNames[teamIndex]} `}
               Wager
             </FieldLabel>
-            <Input
-              id="daily-double-wager"
-              autoFocus
-              autoComplete="off"
-              inputMode="numeric"
-              className="h-13 text-center font-heading text-2xl tabular-nums md:text-2xl"
-              value={text}
-              // The field keeps only the digits that the host types.
-              onChange={(event) =>
-                setText(event.target.value.replace(/\D/g, ""))
-              }
-            />
+            <InputGroup className="h-13">
+              <InputGroupAddon>
+                <InputGroupText className="font-heading text-2xl text-primary">
+                  $
+                </InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                id="daily-double-wager"
+                autoFocus
+                autoComplete="off"
+                inputMode="numeric"
+                className="font-heading text-2xl tabular-nums md:text-2xl"
+                value={text}
+                // The field keeps only the digits that the host types.
+                onChange={(event) =>
+                  setText(event.target.value.replace(/\D/g, ""))
+                }
+              />
+            </InputGroup>
           </Field>
           <Button
             size="lg"
