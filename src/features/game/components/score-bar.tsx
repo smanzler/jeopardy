@@ -1,5 +1,6 @@
 import type { QuestionResult } from "@/lib/db"
-import { findResult, listLeaderIndexes } from "@/lib/score"
+import { canScore, findResult, listLeaderIndexes } from "@/lib/score"
+import type { Stake } from "@/lib/score"
 import { cn } from "@/lib/utils"
 import { ScoreActions } from "@/features/game/components/score-actions"
 import { TeamScore } from "@/features/game/components/team-score"
@@ -17,10 +18,10 @@ type ScoreBarProps = {
   /** What each team got on the open question. */
   questionResults: Array<QuestionResult>
   scores: Array<number>
+  /** No stake hides the actions. */
+  stake: Stake | undefined
   /** One name for each entry of `scores`. */
   teamNames: Array<string>
-  /** The points of the open question. No value hides the actions. */
-  value: number | undefined
 }
 
 export function ScoreBar({
@@ -29,8 +30,8 @@ export function ScoreBar({
   onUndo,
   questionResults,
   scores,
+  stake,
   teamNames,
-  value,
 }: ScoreBarProps) {
   const leaderIndexes = listLeaderIndexes(scores)
 
@@ -60,11 +61,11 @@ export function ScoreBar({
               onChange={(next) => onSetScore({ score: next, teamIndex })}
             />
           </div>
-          {value !== undefined && (
+          {stake && canScore({ stake, teamIndex }) && (
             <ScoreActions
               result={findResult({ questionResults, teamIndex })}
               teamName={teamNames[teamIndex]}
-              value={value}
+              value={stake.points}
               onScore={(delta) => onScore({ delta, teamIndex })}
               onUndo={() => onUndo(teamIndex)}
             />

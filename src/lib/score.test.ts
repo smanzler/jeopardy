@@ -5,6 +5,7 @@ import {
   buildScores,
   buildTeamNames,
   buildStandings,
+  canScore,
   formatLeaders,
   formatTeamName,
   formatWinners,
@@ -202,5 +203,19 @@ describe("undoResult", () => {
   it("changes nothing for a team with no result", () => {
     const question = { questionResults: [], scores: [200, 0] }
     expect(undoResult({ ...question, teamIndex: 1 })).toEqual(question)
+  })
+})
+
+describe("canScore", () => {
+  it("lets every team answer a question", () => {
+    expect(
+      canScore({ stake: { points: 400, type: "all" }, teamIndex: 2 })
+    ).toBe(true)
+  })
+
+  it("lets only the team that chose a daily double answer it", () => {
+    const stake = { points: 1500, teamIndex: 1, type: "team" } as const
+    expect(canScore({ stake, teamIndex: 1 })).toBe(true)
+    expect(canScore({ stake, teamIndex: 0 })).toBe(false)
   })
 })

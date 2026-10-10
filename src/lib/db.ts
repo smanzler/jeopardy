@@ -7,6 +7,7 @@ import {
   toSessionV4,
   toSessionV5,
   toSessionV6,
+  toSessionV7,
 } from "@/lib/migrations"
 
 export type Question = { answer: string; question: string }
@@ -38,6 +39,9 @@ export type Board = {
 /** The points that one team got on the open question, so the host can undo them. */
 export type QuestionResult = { delta: number; teamIndex: number }
 
+/** The points that the team that chose a daily double stakes on it. */
+export type Wager = { points: number; teamIndex: number }
+
 /** Where a question sits in a game. */
 export type QuestionPosition = CellPosition & { boardIndex: number }
 
@@ -65,8 +69,8 @@ export type Session = {
   teamNames: Array<string>
   /** Keys from `buildQuestionKey`, for the questions that the game showed. */
   usedKeys: Array<string>
-  /** The points that a team stakes on the open daily double, once it is set. */
-  wager: number | null
+  /** The wager on the open daily double, once the host sets it. */
+  wager: Wager | null
 }
 
 const db = new Dexie("jeopardy") as Dexie & {
@@ -126,6 +130,16 @@ db.version(6)
       .toCollection()
       .modify((session, ref) => {
         ref.value = toSessionV6(session)
+      })
+  })
+db.version(7)
+  .stores({ games: "id, updatedAt", sessions: "gameId" })
+  .upgrade(async (tx) => {
+    await tx
+      .table("sessions")
+      .toCollection()
+      .modify((session, ref) => {
+        ref.value = toSessionV7(session)
       })
   })
 

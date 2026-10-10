@@ -1,7 +1,6 @@
-import { ArrowLeftIcon } from "lucide-react"
 import type { Question } from "@/lib/db"
-import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
+import { QuestionHeader } from "@/features/game/components/question-header"
 
 type QuestionViewProps = {
   categoryName: string
@@ -20,21 +19,9 @@ export function QuestionView({
 }: QuestionViewProps) {
   return (
     <div className="flex flex-1 flex-col bg-card px-6 py-5 text-card-foreground">
-      {/* The empty cell on the right holds the middle block in the centre. */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-        <Button
-          variant="outline"
-          className="justify-self-start font-heading tracking-wider uppercase"
-          onClick={onClose}
-        >
-          <ArrowLeftIcon />
-          Board
-        </Button>
-        <span className="font-heading text-2xl font-semibold tracking-wider uppercase">
-          {categoryName} <span className="text-primary">{value}</span>
-        </span>
-        <div />
-      </div>
+      <QuestionHeader onClose={onClose}>
+        {categoryName} <span className="text-primary">{value}</span>
+      </QuestionHeader>
       <div className="flex flex-1 flex-col items-center justify-center gap-10 px-12 text-center">
         <p className="max-w-5xl font-clue text-5xl leading-snug font-bold text-balance uppercase text-shadow-[0_4px_0_var(--shade)]">
           {question.question}

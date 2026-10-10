@@ -13,6 +13,7 @@ import {
   isGameDone,
 } from "@/lib/board"
 import { getGame } from "@/lib/games"
+import type { Stake } from "@/lib/score"
 import {
   closeQuestion,
   getSession,
@@ -134,10 +135,13 @@ export default function Play({ gameId }: { gameId: string }) {
   const openQuestionView =
     openPosition &&
     findQuestion({ boards: game.boards, position: openPosition })
-  // A daily double scores the wager in place of the value of its row.
-  const stake = isDailyDouble
-    ? (session.wager ?? undefined)
-    : openQuestionView?.value
+  const buildStake = (): Stake | undefined => {
+    if (!openQuestionView) return
+    if (!isDailyDouble) return { points: openQuestionView.value, type: "all" }
+    // A daily double scores the wager in place of the value of its row.
+    if (session.wager) return { ...session.wager, type: "team" }
+  }
+  const stake = buildStake()
 
   return (
     <div className="flex h-svh flex-col">
@@ -145,6 +149,8 @@ export default function Play({ gameId }: { gameId: string }) {
         <DailyDoubleWager
           categoryName={openQuestionView.categoryName}
           onClose={handleClose}
+          scores={session.scores}
+          teamNames={session.teamNames}
           onWager={(wager) => setWager({ gameId, wager })}
         />
       )}
@@ -154,7 +160,7 @@ export default function Play({ gameId }: { gameId: string }) {
           isAnswerShown={session.isAnswerShown}
           onClose={handleClose}
           question={openQuestionView.question}
-          value={formatValue(stake)}
+          value={formatValue(stake.points)}
         />
       )}
       {!openQuestionView && (
@@ -187,8 +193,8 @@ export default function Play({ gameId }: { gameId: string }) {
       <ScoreBar
         questionResults={session.questionResults}
         scores={session.scores}
+        stake={stake}
         teamNames={session.teamNames}
-        value={stake}
         onScore={(result) => scoreTeam({ gameId, result })}
         onSetScore={({ score, teamIndex }) =>
           setTeamScore({ gameId, score, teamIndex })
