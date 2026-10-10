@@ -4,6 +4,7 @@ pnpm workspace. TypeScript throughout, Vitest for tests.
 
 - `apps/web` is the web app: TanStack Start (SSR React 19) with file-based routing, Tailwind v4, and shadcn/ui components built on Base UI. It keeps its data in IndexedDB.
 - `packages/api` is the API: Fastify on Node, deployed to Fly.io. It has no database yet.
+- `packages/shared` holds the types and zod schemas that the web app and the API both use. Import a file by its path, e.g. `@jeopardy/shared/buzzers/messages`. Inside the package, use relative imports: the `@/*` alias of the package that imports it does not apply here.
 
 ## Layout
 
