@@ -131,6 +131,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@jeopardy/shared':
+        specifier: workspace:*
+        version: link:../shared
       fastify:
         specifier: ^5.12.5
         version: 5.12.5
