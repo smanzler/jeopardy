@@ -94,7 +94,7 @@ export function DailyDoubleWager({
               {teamIndex === undefined ? "" : `${teamNames[teamIndex]} `}
               Wager
             </FieldLabel>
-            <InputGroup className="h-13">
+            <InputGroup className="h-13 border-2 border-border bg-background">
               <InputGroupAddon>
                 <InputGroupText className="font-heading text-2xl text-primary">
                   $
