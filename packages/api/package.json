@@ -1,0 +1,29 @@
+{
+  "name": "@jeopardy/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\"",
+    "check": "prettier --check \"**/*.{ts,tsx,js,jsx}\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.12.5",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tanstack/eslint-config": "latest",
+    "@types/node": "^22",
+    "eslint": "^9",
+    "prettier": "^3.8.3",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6",
+    "vitest": "^4"
+  }
+}

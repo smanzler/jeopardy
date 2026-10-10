@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@11.23.0",
   "scripts": {
-    "dev": "pnpm --filter @jeopardy/web dev",
+    "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
