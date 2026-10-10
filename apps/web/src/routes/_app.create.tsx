@@ -1,5 +1,7 @@
 import { createFileRoute, useLocation } from "@tanstack/react-router"
 import { buildPageMeta } from "@/lib/meta"
+import { useDefaultStorage } from "@/hooks/use-default-storage"
+import { LoadingScreen } from "@/components/loading-screen"
 import BoardEditor from "@/features/board-editor/screens/board-editor"
 
 export const Route = createFileRoute("/_app/create")({
@@ -13,5 +15,7 @@ function CreateRoute() {
   const visitKey = useLocation({
     select: (location) => location.state.__TSR_key,
   })
-  return <BoardEditor key={visitKey} storage="local" />
+  const storage = useDefaultStorage()
+  if (!storage) return <LoadingScreen />
+  return <BoardEditor key={visitKey} storage={storage} />
 }

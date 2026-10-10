@@ -1,5 +1,6 @@
 import { DownloadIcon, EllipsisIcon, Trash2Icon } from "lucide-react"
 import type { GameStorage } from "@/lib/game-store"
+import { StorageBadge } from "@/components/game-storage"
 import type { Game, Session } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import {
@@ -55,6 +56,8 @@ type GameCardProps = {
   onExport: () => void
   /** The game in progress on this board, or none. */
   session: Session | undefined
+  /** Shows where the board lives. Use it when the list mixes both. */
+  showStorage: boolean
 }
 
 export function GameCard({
@@ -62,6 +65,7 @@ export function GameCard({
   onDelete,
   onExport,
   session,
+  showStorage,
   storage,
 }: GameCardProps) {
   const title = game.title || "Untitled board"
@@ -76,7 +80,10 @@ export function GameCard({
           view.bandClassName
         )}
       >
-        <span>{view.label}</span>
+        <span className="flex items-center gap-1.5">
+          {showStorage && <StorageBadge storage={storage} />}
+          {view.label}
+        </span>
         <span className="truncate font-sans font-medium tracking-normal normal-case">
           {status.detail}
         </span>

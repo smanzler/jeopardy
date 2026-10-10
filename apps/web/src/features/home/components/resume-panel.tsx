@@ -1,15 +1,10 @@
 import { formatValue } from "@/lib/board"
-import type { GameStorage } from "@/lib/game-store"
 import { ButtonLink } from "@/components/button-link"
 import { cn } from "@/lib/utils"
 import { formatGameProgress } from "@/features/home/lib/hub"
 import type { GameInProgress } from "@/features/home/lib/hub"
 
-export function ResumePanel({
-  game,
-  session,
-  storage,
-}: GameInProgress & { storage: GameStorage }) {
+export function ResumePanel({ game, session, storage }: GameInProgress) {
   return (
     <section
       aria-label={`Game in progress: ${game.title || "Untitled board"}`}

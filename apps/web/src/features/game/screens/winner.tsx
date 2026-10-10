@@ -8,6 +8,7 @@ import { useGame, useGameActions, useSession } from "@/hooks/use-games"
 import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
+import { GameUnavailable } from "@/components/game-storage"
 import { Lectern, PLATE_CLASS } from "@/features/game/components/lectern"
 import { buildPodium } from "@/features/game/lib/podium"
 
@@ -28,8 +29,10 @@ export default function Winner({
   const navigate = useNavigate()
   const [isEnding, setIsEnding] = useState(false)
   // The game loads on the client.
-  const session = useSession(storage, gameId).data
-  const game = useGame(storage, gameId).data
+  const sessionQuery = useSession(storage, gameId)
+  const gameQuery = useGame(storage, gameId)
+  const session = sessionQuery.data
+  const game = gameQuery.data
   const { deleteSession } = useGameActions(storage)
 
   // The session goes first, so the game no longer counts as in progress.
@@ -37,6 +40,10 @@ export default function Winner({
     setIsEnding(true)
     await deleteSession(gameId)
     await navigate({ to: "/" })
+  }
+
+  if (sessionQuery.isError || gameQuery.isError) {
+    return <GameUnavailable isError storage={storage} />
   }
 
   if (isEnding || session === undefined || game === undefined) {

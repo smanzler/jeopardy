@@ -8,9 +8,9 @@ import {
   waitFor,
 } from "@testing-library/react"
 import { SignInDialog } from "@/features/auth/components/sign-in-dialog"
-import { authClient } from "@/features/auth/lib/auth-client"
+import { authClient } from "@/lib/auth-client"
 
-vi.mock("@/features/auth/lib/auth-client", () => ({
+vi.mock("@/lib/auth-client", () => ({
   authClient: {
     emailOtp: { sendVerificationOtp: vi.fn() },
     signIn: { emailOtp: vi.fn() },

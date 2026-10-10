@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AccountMenu } from "@/features/auth/components/account-menu"
-import { authClient } from "@/features/auth/lib/auth-client"
+import { authClient } from "@/lib/auth-client"
 
-vi.mock("@/features/auth/lib/auth-client", () => ({
+vi.mock("@/lib/auth-client", () => ({
   authClient: { signOut: vi.fn(), useSession: vi.fn() },
 }))
 
@@ -19,22 +26,42 @@ const mockSession = (email: string | null) =>
     isPending: false,
   } as unknown as ReturnType<typeof authClient.useSession>)
 
+const renderMenu = () => {
+  const queryClient = new QueryClient()
+  render(
+    <QueryClientProvider client={queryClient}>
+      <AccountMenu />
+    </QueryClientProvider>
+  )
+  return { queryClient }
+}
+
 describe("AccountMenu", () => {
   it("offers to sign in when signed out", () => {
     mockSession(null)
-    render(<AccountMenu />)
+    renderMenu()
 
     expect(screen.getByRole("button", { name: "Sign in" })).toBeTruthy()
   })
 
-  it("shows the email and signs out from the menu", async () => {
+  it("signs out from the menu and drops the boards of the account", async () => {
+    vi.mocked(authClient.signOut).mockResolvedValue({
+      data: { success: true },
+      error: null,
+    })
     mockSession("host@example.com")
-    render(<AccountMenu />)
+    const { queryClient } = renderMenu()
+    queryClient.setQueryData(["cloud", "list"], { games: [], sessions: [] })
+    queryClient.setQueryData(["local", "list"], { games: [], sessions: [] })
 
     fireEvent.click(screen.getByRole("button", { name: "Account" }))
     expect(await screen.findByText("host@example.com")).toBeTruthy()
 
     fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }))
     expect(authClient.signOut).toHaveBeenCalledOnce()
+    await waitFor(() =>
+      expect(queryClient.getQueryData(["cloud", "list"])).toBeUndefined()
+    )
+    expect(queryClient.getQueryData(["local", "list"])).toBeDefined()
   })
 })

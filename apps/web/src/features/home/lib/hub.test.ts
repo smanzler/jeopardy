@@ -4,6 +4,7 @@ import type { Board, Game, Session } from "@/lib/db"
 import {
   findGamesInProgress,
   formatGameProgress,
+  mergeGameLists,
   buildCardStatus,
 } from "@/features/home/lib/hub"
 
@@ -60,8 +61,37 @@ describe("findGamesInProgress", () => {
       buildSession({ gameId: "gone", usedKeys: [] }),
     ]
     expect(
-      findGamesInProgress({ games, sessions }).map((entry) => entry.game.id)
+      findGamesInProgress(mergeGameLists({ local: { games, sessions } })).map(
+        (entry) => entry.game.id
+      )
     ).toEqual(["a", "c"])
+  })
+})
+
+describe("mergeGameLists", () => {
+  it("puts the games of both stores in one list, the last changed first", () => {
+    const at = (id: string, updatedAt: number) => ({
+      ...buildGame({ boards: [buildEmptyBoard(0)], id }),
+      updatedAt,
+    })
+    const merged = mergeGameLists({
+      local: { games: [at("l1", 3), at("l2", 1)], sessions: [] },
+      cloud: {
+        games: [at("c1", 2)],
+        sessions: [buildSession({ gameId: "c1", usedKeys: [] })],
+      },
+    })
+
+    expect(merged.map(({ game, storage }) => `${storage}:${game.id}`)).toEqual([
+      "local:l1",
+      "cloud:c1",
+      "local:l2",
+    ])
+    expect(merged[1].session?.gameId).toBe("c1")
+  })
+
+  it("skips a list that has not loaded", () => {
+    expect(mergeGameLists({ local: undefined, cloud: undefined })).toEqual([])
   })
 })
 

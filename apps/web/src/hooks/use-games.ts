@@ -83,3 +83,16 @@ export const useGameActions = (storage: GameStorage) => {
 }
 
 export type GameActions = ReturnType<typeof useGameActions>
+
+/** The actions of each store, for a screen that shows games of both. */
+export const useAllGameActions = (): Record<GameStorage, GameActions> => ({
+  local: useGameActions("local"),
+  cloud: useGameActions("cloud"),
+})
+
+/** Drops what the queries hold for `storage`, e.g. after the host signs out. */
+export const useClearGames = () => {
+  const queryClient = useQueryClient()
+  return (storage: GameStorage) =>
+    queryClient.removeQueries({ queryKey: [storage] })
+}

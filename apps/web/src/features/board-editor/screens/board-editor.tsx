@@ -28,6 +28,7 @@ import { parseGameFile } from "@/lib/game-file"
 import { QuestionCell } from "@/features/board-editor/components/question-cell"
 import { QuestionDialog } from "@/features/board-editor/components/question-dialog"
 import { getStepPosition } from "@/features/board-editor/lib/question-order"
+import { createLatestSaver } from "@/features/board-editor/lib/latest-saver"
 import { RowValueInput } from "@/features/board-editor/components/row-value-input"
 import { EditorHeader } from "@/features/board-editor/components/editor-header"
 import type { SaveState } from "@/features/board-editor/components/editor-header"
@@ -65,6 +66,16 @@ export default function BoardEditor({ game, storage }: BoardEditorProps) {
   const [saveState, setSaveState] = useState<SaveState>(game ? "saved" : "new")
   const [isStored, setIsStored] = useState(Boolean(game))
   const [importError, setImportError] = useState<string>()
+  const [saveLatest] = useState(() =>
+    createLatestSaver<GameDraft>({
+      onFailed: () => setSaveState("failed"),
+      onSaved: () => {
+        setSaveState("saved")
+        setIsStored(true)
+      },
+      save: (next) => saveGame({ draft: next, id: gameId }),
+    })
+  )
 
   const boardCount = draft.boards.length
   const board = draft.boards[boardIndex]
@@ -98,13 +109,7 @@ export default function BoardEditor({ game, storage }: BoardEditorProps) {
     setDraft(next)
     // A removed board can take the open tab with it.
     setBoardIndex((index) => Math.min(index, next.boards.length - 1))
-    saveGame({ draft: next, id: gameId }).then(
-      () => {
-        setSaveState("saved")
-        setIsStored(true)
-      },
-      () => setSaveState("failed")
-    )
+    saveLatest(next)
   }
 
   const updateCurrentBoard = (next: Board) =>
