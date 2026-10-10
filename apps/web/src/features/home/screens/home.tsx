@@ -38,18 +38,18 @@ export default function Home() {
     setPendingDelete(undefined)
   }
 
-  const handleUpload = async ({ game, session }: StoredGame) => {
+  const handleUpload = async (entry: StoredGame) => {
     setUploadError(undefined)
     try {
       await uploadGame({
         cloud: actions.cloud,
-        game,
+        game: entry.game,
         local: actions.local,
-        session,
+        session: entry.session,
       })
     } catch {
       setUploadError(
-        `${game.title || "The untitled board"} did not upload. It is still on this device.`
+        `${entry.game.title || "The untitled board"} did not upload. It is still on this device.`
       )
     }
   }
