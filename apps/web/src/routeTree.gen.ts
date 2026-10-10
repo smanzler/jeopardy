@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCreateRouteImport } from './routes/_app.create'
+import { Route as BuzzIndexRouteImport } from './routes/buzz.index'
+import { Route as BuzzCodeRouteImport } from './routes/buzz.$code'
 import { Route as PlayIndexRouteImport } from './routes/play.index'
 import { Route as AppEditGameIdRouteImport } from './routes/_app.edit.$gameId'
 import { Route as PlayGameIdIndexRouteImport } from './routes/play.$gameId.index'
@@ -30,6 +32,16 @@ const AppCreateRoute = AppCreateRouteImport.update({
   id: '/create',
   path: '/create',
   getParentRoute: () => AppRoute,
+} as any)
+const BuzzIndexRoute = BuzzIndexRouteImport.update({
+  id: '/buzz/',
+  path: '/buzz/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuzzCodeRoute = BuzzCodeRouteImport.update({
+  id: '/buzz/$code',
+  path: '/buzz/$code',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PlayIndexRoute = PlayIndexRouteImport.update({
   id: '/play/',
@@ -55,6 +67,8 @@ const PlayGameIdWinnerRoute = PlayGameIdWinnerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/create': typeof AppCreateRoute
+  '/buzz/$code': typeof BuzzCodeRoute
+  '/buzz/': typeof BuzzIndexRoute
   '/play/': typeof PlayIndexRoute
   '/edit/$gameId': typeof AppEditGameIdRoute
   '/play/$gameId/winner': typeof PlayGameIdWinnerRoute
@@ -62,7 +76,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/create': typeof AppCreateRoute
+  '/buzz/$code': typeof BuzzCodeRoute
   '/': typeof AppIndexRoute
+  '/buzz': typeof BuzzIndexRoute
   '/play': typeof PlayIndexRoute
   '/edit/$gameId': typeof AppEditGameIdRoute
   '/play/$gameId/winner': typeof PlayGameIdWinnerRoute
@@ -72,7 +88,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/create': typeof AppCreateRoute
+  '/buzz/$code': typeof BuzzCodeRoute
   '/_app/': typeof AppIndexRoute
+  '/buzz/': typeof BuzzIndexRoute
   '/play/': typeof PlayIndexRoute
   '/_app/edit/$gameId': typeof AppEditGameIdRoute
   '/play/$gameId/winner': typeof PlayGameIdWinnerRoute
@@ -83,6 +101,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/create'
+    | '/buzz/$code'
+    | '/buzz/'
     | '/play/'
     | '/edit/$gameId'
     | '/play/$gameId/winner'
@@ -90,7 +110,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/create'
+    | '/buzz/$code'
     | '/'
+    | '/buzz'
     | '/play'
     | '/edit/$gameId'
     | '/play/$gameId/winner'
@@ -99,7 +121,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/create'
+    | '/buzz/$code'
     | '/_app/'
+    | '/buzz/'
     | '/play/'
     | '/_app/edit/$gameId'
     | '/play/$gameId/winner'
@@ -108,6 +132,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  BuzzCodeRoute: typeof BuzzCodeRoute
+  BuzzIndexRoute: typeof BuzzIndexRoute
   PlayIndexRoute: typeof PlayIndexRoute
   PlayGameIdWinnerRoute: typeof PlayGameIdWinnerRoute
   PlayGameIdIndexRoute: typeof PlayGameIdIndexRoute
@@ -135,6 +161,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/create'
       preLoaderRoute: typeof AppCreateRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/buzz/': {
+      id: '/buzz/'
+      path: '/buzz'
+      fullPath: '/buzz/'
+      preLoaderRoute: typeof BuzzIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buzz/$code': {
+      id: '/buzz/$code'
+      path: '/buzz/$code'
+      fullPath: '/buzz/$code'
+      preLoaderRoute: typeof BuzzCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/play/': {
       id: '/play/'
@@ -183,6 +223,8 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  BuzzCodeRoute: BuzzCodeRoute,
+  BuzzIndexRoute: BuzzIndexRoute,
   PlayIndexRoute: PlayIndexRoute,
   PlayGameIdWinnerRoute: PlayGameIdWinnerRoute,
   PlayGameIdIndexRoute: PlayGameIdIndexRoute,
