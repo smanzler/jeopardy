@@ -12,6 +12,7 @@ import { TitleCard } from "@/features/home/components/title-card"
 import { downloadGameFile } from "@/lib/download-file"
 import { findGamesInProgress, mergeGameLists } from "@/features/home/lib/hub"
 import type { StoredGame } from "@/features/home/lib/hub"
+import { uploadGame } from "@/features/home/lib/upload"
 
 export default function Home() {
   const { data: session, isPending } = authClient.useSession()
@@ -22,6 +23,7 @@ export default function Home() {
   const cloud = useGameList("cloud", isSignedIn)
   const actions = useAllGameActions()
   const [pendingDelete, setPendingDelete] = useState<StoredGame>()
+  const [uploadError, setUploadError] = useState<string>()
 
   const isLoading = isPending || !local.data || (isSignedIn && cloud.isPending)
   const games = mergeGameLists({
@@ -34,6 +36,22 @@ export default function Home() {
     if (!pendingDelete) return
     await actions[pendingDelete.storage].deleteGame(pendingDelete.game.id)
     setPendingDelete(undefined)
+  }
+
+  const handleUpload = async (entry: StoredGame) => {
+    setUploadError(undefined)
+    try {
+      await uploadGame({
+        cloud: actions.cloud,
+        game: entry.game,
+        local: actions.local,
+        session: entry.session,
+      })
+    } catch {
+      setUploadError(
+        `${entry.game.title || "The untitled board"} did not upload. It is still on this device.`
+      )
+    }
   }
 
   if (isLoading) {
@@ -56,6 +74,7 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-9">
       {/* The page heading is for screen readers. The bar shows the name. */}
       <h1 className="sr-only">Jeopardy</h1>
+      {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
       {cloud.isError && (
         <p className="text-sm text-destructive">
           The boards in your account did not load.
@@ -79,6 +98,11 @@ export default function Home() {
               showStorage={isSignedIn}
               onDelete={() => setPendingDelete(entry)}
               onExport={() => downloadGameFile(entry.game)}
+              onUpload={
+                isSignedIn && entry.storage === "local"
+                  ? () => void handleUpload(entry)
+                  : undefined
+              }
             />
           ))}
           <Link
