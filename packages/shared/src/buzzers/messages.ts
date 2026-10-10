@@ -49,8 +49,23 @@ export const playerMessageSchema = z.discriminatedUnion("type", [
 
 export type PlayerMessage = z.infer<typeof playerMessageSchema>
 
+export const roomCodeSchema = z.string().regex(/^[A-Z2-9]{4}$/)
+
 export const serverMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("room"), room: roomSchema }),
+  /** Sent to the host once. Use the code and token to connect again. */
+  z.object({
+    type: z.literal("hosting"),
+    code: roomCodeSchema,
+    hostToken: z.string(),
+  }),
 ])
 
 export type ServerMessage = z.infer<typeof serverMessageSchema>
+
+/** WebSocket close codes that the API sends. */
+export const closeCodes = {
+  roomNotFound: 4404,
+  badHostToken: 4403,
+  replaced: 4409,
+} as const
