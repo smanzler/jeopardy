@@ -1,5 +1,6 @@
 import fastify from "fastify"
 import fastifyWebsocket from "@fastify/websocket"
+import { authRoutes } from "@/auth/routes"
 import { buzzerRoutes } from "@/buzzers/routes"
 import { healthRoutes } from "@/health/routes"
 
@@ -9,6 +10,7 @@ export const buildServer = () => {
   server.register(fastifyWebsocket)
   server.register(healthRoutes)
   server.register(buzzerRoutes)
+  server.register(authRoutes)
 
   return server
 }
