@@ -6,4 +6,6 @@ export default defineConfig({
   target: "node22",
   clean: true,
   sourcemap: true,
+  // The shared package is TypeScript source with no build step.
+  noExternal: [/^@jeopardy\/shared/],
 })
