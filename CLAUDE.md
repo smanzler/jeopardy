@@ -3,7 +3,7 @@
 pnpm workspace. TypeScript throughout, Vitest for tests.
 
 - `apps/web` is the web app: TanStack Start (SSR React 19) with file-based routing, Tailwind v4, and shadcn/ui components built on Base UI. It keeps its data in IndexedDB. `VITE_API_URL` gives the URL of the API (`apps/web/.env.example`).
-- `packages/api` is the API: Fastify on Node, deployed to Fly.io. It has no database yet.
+- `packages/api` is the API: Fastify on Node, deployed to Fly.io. Postgres through Drizzle: Docker locally, Neon in production.
 - `packages/shared` holds the types and zod schemas that the web app and the API both use. Import a file by its path, e.g. `@jeopardy/shared/buzzers/messages`. Inside the package, use relative imports: the `@/*` alias of the package that imports it does not apply here.
 
 ## Layout
@@ -22,13 +22,15 @@ Paths in `apps/web`:
 
 Paths in `packages/api`:
 
-| Path            | Holds                                                  |
-| --------------- | ------------------------------------------------------ |
-| `src/index.ts`  | Entry point. Starts the server                         |
-| `src/server.ts` | `buildServer()`. Registers the routes of each feature  |
-| `src/env.ts`    | Environment schema. `.env.example` lists the variables |
-| `src/<feature>` | Routes and logic for each feature                      |
-| `fly.toml`      | Fly.io app config                                      |
+| Path              | Holds                                                  |
+| ----------------- | ------------------------------------------------------ |
+| `src/index.ts`    | Entry point. Starts the server                         |
+| `src/server.ts`   | `buildServer()`. Registers the routes of each feature  |
+| `src/env.ts`      | Environment schema. `.env.example` lists the variables |
+| `src/<feature>`   | Routes and logic for each feature                      |
+| `src/*/schema.ts` | Drizzle tables of each feature                         |
+| `drizzle/`        | Migrations from `db:generate`. Never edit them         |
+| `fly.toml`        | Fly.io app config                                      |
 
 ## General
 
@@ -78,5 +80,7 @@ Run these from the repository root. Each one runs in every package.
 | `pnpm check`     | Prettier, check only               |
 
 Use `pnpm --filter <package> <script>` to run one package's script, e.g. `pnpm --filter @jeopardy/web preview`.
+
+Database scripts run in `packages/api` (`pnpm --filter @jeopardy/api <script>`): `db:up` starts Postgres in Docker, `db:generate` writes a migration after a schema change, and `db:migrate` applies the migrations. The deploy workflow applies them in production.
 
 Test an API route with `buildServer().inject(...)`. Do not start a server for it.
