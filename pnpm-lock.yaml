@@ -28,6 +28,9 @@ importers:
       '@tanstack/react-devtools':
         specifier: latest
         version: 0.10.13(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(solid-js@1.9.15)
+      '@tanstack/react-query':
+        specifier: ^5.104.1
+        version: 5.104.1(react@19.2.8)
       '@tanstack/react-router':
         specifier: latest
         version: 1.170.41(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
