@@ -14,9 +14,12 @@ const pressKey = (key: string) => {
 
 const renderKeys = ({ isOpen }: { isOpen: boolean }) => {
   const onClose = vi.fn()
+  const onOpenBuzzers = vi.fn()
   const onReveal = vi.fn()
-  const view = renderHook(() => useQuestionKeys({ isOpen, onClose, onReveal }))
-  return { onClose, onReveal, view }
+  const view = renderHook(() =>
+    useQuestionKeys({ isOpen, onClose, onOpenBuzzers, onReveal })
+  )
+  return { onClose, onOpenBuzzers, onReveal, view }
 }
 
 describe("useQuestionKeys", () => {
@@ -53,11 +56,18 @@ describe("useQuestionKeys", () => {
     expect(onReveal).not.toHaveBeenCalled()
   })
 
+  it("opens buzzing on B", () => {
+    const { onOpenBuzzers } = renderKeys({ isOpen: true })
+    pressKey("b")
+    expect(onOpenBuzzers).toHaveBeenCalledOnce()
+  })
+
   it("ignores the other keys", () => {
-    const { onClose, onReveal } = renderKeys({ isOpen: true })
+    const { onClose, onOpenBuzzers, onReveal } = renderKeys({ isOpen: true })
     pressKey("a")
     expect(onReveal).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
+    expect(onOpenBuzzers).not.toHaveBeenCalled()
   })
 
   it("binds nothing while the board is open", () => {
