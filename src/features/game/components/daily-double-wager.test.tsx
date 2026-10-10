@@ -12,6 +12,7 @@ const renderWager = () => {
     <DailyDoubleWager
       categoryName="History"
       onClose={vi.fn()}
+      scores={[1200, -200]}
       teamNames={["Owls", "Foxes"]}
       onWager={onWager}
     />
@@ -24,7 +25,7 @@ describe("DailyDoubleWager", () => {
     renderWager()
     const submit = screen.getByText<HTMLButtonElement>("Show the question")
     expect(submit.disabled).toBe(true)
-    fireEvent.change(screen.getByLabelText("Wager"), {
+    fireEvent.change(screen.getByLabelText(/Wager$/), {
       target: { value: "abc" },
     })
     expect(submit.disabled).toBe(true)
@@ -32,21 +33,21 @@ describe("DailyDoubleWager", () => {
 
   it("keeps only the digits that the host types", () => {
     renderWager()
-    const field = screen.getByLabelText<HTMLInputElement>("Wager")
+    const field = screen.getByLabelText<HTMLInputElement>(/Wager$/)
     fireEvent.change(field, { target: { value: "-1,2a00" } })
     expect(field.value).toBe("1200")
   })
 
   it("asks the browser for no autofill", () => {
     renderWager()
-    expect(screen.getByLabelText("Wager").getAttribute("autocomplete")).toBe(
+    expect(screen.getByLabelText(/Wager$/).getAttribute("autocomplete")).toBe(
       "off"
     )
   })
 
   it("waits for the team that chose it", () => {
     renderWager()
-    fireEvent.change(screen.getByLabelText("Wager"), {
+    fireEvent.change(screen.getByLabelText(/Wager$/), {
       target: { value: "1500" },
     })
     expect(
@@ -54,10 +55,22 @@ describe("DailyDoubleWager", () => {
     ).toBe(true)
   })
 
+  it("shows the score of each team", () => {
+    renderWager()
+    expect(screen.getByText("$1,200")).toBeTruthy()
+    expect(screen.getByText("-$200")).toBeTruthy()
+  })
+
+  it("names the team that wagers", () => {
+    renderWager()
+    fireEvent.click(screen.getByText("Foxes"))
+    expect(screen.getByLabelText("Foxes Wager")).toBeTruthy()
+  })
+
   it("sends the wager with the team that chose it", () => {
     const { onWager } = renderWager()
     fireEvent.click(screen.getByText("Foxes"))
-    fireEvent.change(screen.getByLabelText("Wager"), {
+    fireEvent.change(screen.getByLabelText(/Wager$/), {
       target: { value: "1500" },
     })
     fireEvent.click(screen.getByText("Show the question"))

@@ -10,14 +10,14 @@ const toggleVariants = cva(
       variant: {
         default: "bg-transparent",
         outline: "border border-input bg-transparent hover:bg-muted",
-        choice:
-          "border border-input bg-transparent hover:bg-muted aria-pressed:bg-primary aria-pressed:text-primary-foreground hover:aria-pressed:bg-primary",
+        tile: "border-2 border-border bg-background shadow-[0_6px_0_var(--shade)] hover:border-primary/60 hover:bg-background aria-pressed:-translate-y-1.5 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground hover:aria-pressed:bg-primary hover:aria-pressed:text-primary-foreground",
       },
       size: {
         default:
           "h-8 min-w-8 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         sm: "h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        tile: "w-56 flex-col items-stretch gap-0 overflow-hidden rounded-xl p-0",
       },
     },
     defaultVariants: {

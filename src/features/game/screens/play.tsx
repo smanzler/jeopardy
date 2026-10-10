@@ -149,6 +149,7 @@ export default function Play({ gameId }: { gameId: string }) {
         <DailyDoubleWager
           categoryName={openQuestionView.categoryName}
           onClose={handleClose}
+          scores={session.scores}
           teamNames={session.teamNames}
           onWager={(wager) => setWager({ gameId, wager })}
         />
