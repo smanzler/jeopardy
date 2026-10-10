@@ -1,5 +1,11 @@
 import { db } from "@/lib/db"
-import type { Board, QuestionPosition, QuestionResult, Session } from "@/lib/db"
+import type {
+  Board,
+  QuestionPosition,
+  QuestionResult,
+  Session,
+  Wager,
+} from "@/lib/db"
 import { buildDailyDoubleKeys } from "@/lib/daily-doubles"
 import { buildQuestionKey } from "@/lib/board"
 import { applyResult, buildScores, setScore, undoResult } from "@/lib/score"
@@ -147,5 +153,5 @@ export const setWager = ({
   wager,
 }: {
   gameId: string
-  wager: number
+  wager: Wager
 }): Promise<void> => changeSession({ buildChanges: () => ({ wager }), gameId })

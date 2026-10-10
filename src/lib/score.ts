@@ -26,6 +26,22 @@ export const adjustScore = ({
 }): Array<number> =>
   setScore({ score: scores[teamIndex] + delta, scores, teamIndex })
 
+/**
+ * The points of the open question and the teams that can get them. Every team
+ * can answer a question. Only the team that chose a daily double can answer it.
+ */
+export type Stake =
+  | { points: number; type: "all" }
+  | { points: number; teamIndex: number; type: "team" }
+
+export const canScore = ({
+  stake,
+  teamIndex,
+}: {
+  stake: Stake
+  teamIndex: number
+}): boolean => stake.type === "all" || stake.teamIndex === teamIndex
+
 type ScoredQuestion = {
   questionResults: Array<QuestionResult>
   scores: Array<number>

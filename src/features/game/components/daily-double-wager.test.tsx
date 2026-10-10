@@ -12,6 +12,7 @@ const renderWager = () => {
     <DailyDoubleWager
       categoryName="History"
       onClose={vi.fn()}
+      teamNames={["Owls", "Foxes"]}
       onWager={onWager}
     />
   )
@@ -43,12 +44,23 @@ describe("DailyDoubleWager", () => {
     )
   })
 
-  it("sends the wager", () => {
+  it("waits for the team that chose it", () => {
+    renderWager()
+    fireEvent.change(screen.getByLabelText("Wager"), {
+      target: { value: "1500" },
+    })
+    expect(
+      screen.getByText<HTMLButtonElement>("Show the question").disabled
+    ).toBe(true)
+  })
+
+  it("sends the wager with the team that chose it", () => {
     const { onWager } = renderWager()
+    fireEvent.click(screen.getByText("Foxes"))
     fireEvent.change(screen.getByLabelText("Wager"), {
       target: { value: "1500" },
     })
     fireEvent.click(screen.getByText("Show the question"))
-    expect(onWager).toHaveBeenCalledWith(1500)
+    expect(onWager).toHaveBeenCalledWith({ points: 1500, teamIndex: 1 })
   })
 })

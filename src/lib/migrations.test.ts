@@ -6,6 +6,7 @@ import {
   toSessionV4,
   toSessionV5,
   toSessionV6,
+  toSessionV7,
 } from "@/lib/migrations"
 
 const categories = [
@@ -135,5 +136,23 @@ describe("toSessionV6", () => {
       wager: null,
     }
     expect(toSessionV6(session)).toEqual({ ...session, questionResults: [] })
+  })
+})
+
+describe("toSessionV7", () => {
+  it("drops a wager that has no team", () => {
+    const session = {
+      boardIndex: 0,
+      dailyDoubleKeys: ["0-1-2"],
+      gameId: "g1",
+      isAnswerShown: false,
+      openPosition: { boardIndex: 0, categoryIndex: 1, rowIndex: 2 },
+      questionResults: [],
+      scores: [300, -100],
+      teamNames: ["Owls", "Foxes"],
+      usedKeys: ["0-1-2"],
+      wager: 1500,
+    }
+    expect(toSessionV7(session)).toEqual({ ...session, wager: null })
   })
 })

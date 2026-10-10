@@ -24,9 +24,13 @@ type SessionV3 = Omit<
   "dailyDoubleKeys" | "questionResults" | "teamNames" | "wager"
 >
 
-type SessionV4 = Omit<Session, "questionResults" | "teamNames">
+type SessionV4 = Omit<SessionV5, "teamNames">
 
-type SessionV5 = Omit<Session, "questionResults">
+type SessionV5 = Omit<Session, "questionResults" | "wager"> & {
+  wager: number | null
+}
+
+type SessionV6 = SessionV5 & Pick<Session, "questionResults">
 
 /** Version 2 gave each row 200 points more than the row above it. */
 const V2_ROW_VALUE_STEP = 200
@@ -80,7 +84,13 @@ export const toSessionV5 = (session: SessionV4): SessionV5 => ({
 })
 
 /** Version 5 kept no results for the open question. */
-export const toSessionV6 = (session: SessionV5): Session => ({
+export const toSessionV6 = (session: SessionV5): SessionV6 => ({
   ...session,
   questionResults: [],
+})
+
+/** Version 6 kept no team with the wager, so the host sets the wager again. */
+export const toSessionV7 = (session: SessionV6): Session => ({
+  ...session,
+  wager: null,
 })
