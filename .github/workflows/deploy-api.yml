@@ -1,0 +1,31 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/api/**"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # Keep one machine. The API keeps live state in memory.
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config packages/api/fly.toml --dockerfile packages/api/Dockerfile --ha=false --remote-only .
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
