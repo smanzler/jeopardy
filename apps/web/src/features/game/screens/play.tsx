@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition } from "@/lib/db"
@@ -35,6 +35,8 @@ import { QuestionView } from "@/features/game/components/question-view"
 import { ScoreBar } from "@/features/game/components/score-bar"
 import { TeamSetup } from "@/features/game/components/team-setup"
 import { useQuestionKeys } from "@/features/game/hooks/use-question-keys"
+import { BuzzersDialog } from "@/features/buzzers/components/buzzers-dialog"
+import { useHostRoom } from "@/features/buzzers/hooks/use-host-room"
 
 export default function Play({ gameId }: { gameId: string }) {
   const navigate = useNavigate()
@@ -48,6 +50,11 @@ export default function Play({ gameId }: { gameId: string }) {
     async () => (await getSession(gameId)) ?? null,
     [gameId]
   )
+  const { hostRoom, start: startBuzzers } = useHostRoom({
+    gameId,
+    teamNames: session?.teamNames ?? [],
+  })
+  const [isBuzzersOpen, setIsBuzzersOpen] = useState(false)
   const openPosition = session?.openPosition
   const isDailyDouble = Boolean(
     openPosition &&
@@ -169,6 +176,11 @@ export default function Play({ gameId }: { gameId: string }) {
             boardCount={game.boards.length}
             boardIndex={boardIndex}
             gameId={gameId}
+            phoneCount={
+              hostRoom.status === "live"
+                ? hostRoom.room.players.length
+                : undefined
+            }
             questionsLeft={countQuestionsLeft({
               board: game.boards[boardIndex],
               boardIndex,
@@ -178,6 +190,7 @@ export default function Play({ gameId }: { gameId: string }) {
               boards: [game.boards[boardIndex]],
             })}
             title={title}
+            onOpenBuzzers={() => setIsBuzzersOpen(true)}
             onSelectBoard={(index) => showBoard({ boardIndex: index, gameId })}
           />
           <div className="flex flex-1 flex-col px-3.5 py-2.5">
@@ -190,6 +203,12 @@ export default function Play({ gameId }: { gameId: string }) {
           </div>
         </>
       )}
+      <BuzzersDialog
+        hostRoom={hostRoom}
+        isOpen={isBuzzersOpen}
+        onOpenChange={setIsBuzzersOpen}
+        onStart={startBuzzers}
+      />
       <ScoreBar
         questionResults={session.questionResults}
         scores={session.scores}
