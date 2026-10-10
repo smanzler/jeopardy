@@ -27,6 +27,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tanstack/eslint-config": "latest",
     "@types/node": "^22",
     "@types/nodemailer": "^8.0.2",

@@ -83,4 +83,4 @@ Use `pnpm --filter <package> <script>` to run one package's script, e.g. `pnpm -
 
 Database scripts run in `packages/api` (`pnpm --filter @jeopardy/api <script>`): `db:up` starts Postgres and Mailpit in Docker (read the sign-in emails at http://localhost:8025), `db:generate` writes a migration after a schema change, and `db:migrate` applies the migrations. The deploy workflow applies them in production.
 
-Test an API route with `buildServer().inject(...)`. Do not start a server for it.
+Test an API route with `buildServer().inject(...)`. Do not start a server for it. API tests run on PGlite (in-memory Postgres) with the migrations applied, from `src/db/test-database.ts`, so they need no Docker. Use `signIn` from `src/auth/test-sign-in.ts` to get a session cookie.
