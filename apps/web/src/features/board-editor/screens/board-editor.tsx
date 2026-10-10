@@ -19,7 +19,8 @@ import {
   setQuestion,
   setRowValue,
 } from "@/lib/board"
-import { saveGame } from "@/lib/games"
+import type { GameStorage } from "@/lib/game-store"
+import { useGameActions } from "@/hooks/use-games"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,9 +47,11 @@ type Selection = { categoryIndex: number; rowIndex: number }
 type BoardEditorProps = {
   /** A board to edit. The editor reads it on the first render only. */
   game?: Game
+  storage: GameStorage
 }
 
-export default function BoardEditor({ game }: BoardEditorProps) {
+export default function BoardEditor({ game, storage }: BoardEditorProps) {
+  const { saveGame } = useGameActions(storage)
   const [draft, setDraft] = useState<GameDraft>(() =>
     game ? { boards: game.boards, title: game.title } : buildEmptyDraft()
   )
@@ -177,6 +180,7 @@ export default function BoardEditor({ game }: BoardEditorProps) {
         isNew={!game}
         isStored={isStored}
         saveState={saveState}
+        storage={storage}
         onTitleChange={(title) => updateBoard({ ...draft, title })}
       />
 

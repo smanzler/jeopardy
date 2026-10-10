@@ -1,10 +1,8 @@
 import { useState } from "react"
-import { useLiveQuery } from "dexie-react-hooks"
 import { PlusIcon } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import type { Game } from "@/lib/db"
-import { deleteGame, listGames } from "@/lib/games"
-import { listSessions } from "@/lib/sessions"
+import { useGameActions, useGameList } from "@/hooks/use-games"
 import { Spinner } from "@/components/ui/spinner"
 import { buildNewBoardState } from "@/components/app-header"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -15,15 +13,13 @@ import { downloadGameFile } from "@/lib/download-file"
 import { findGamesInProgress } from "@/features/home/lib/hub"
 
 export default function Home() {
-  // Dexie holds the boards in the browser, so the load waits for the client.
-  const hub = useLiveQuery(async () => {
-    const [games, sessions] = await Promise.all([listGames(), listSessions()])
-    return {
-      games,
-      inProgress: findGamesInProgress({ games, sessions }),
-      sessions,
-    }
-  }, [])
+  // The boards load on the client.
+  const list = useGameList("local").data
+  const { deleteGame } = useGameActions("local")
+  const hub = list && {
+    ...list,
+    inProgress: findGamesInProgress(list),
+  }
   const [pendingDelete, setPendingDelete] = useState<Game>()
 
   const handleDelete = async () => {
@@ -53,7 +49,7 @@ export default function Home() {
       {/* The page heading is for screen readers. The bar shows the name. */}
       <h1 className="sr-only">Jeopardy</h1>
       {hub.inProgress.map((entry) => (
-        <ResumePanel key={entry.game.id} {...entry} />
+        <ResumePanel key={entry.game.id} storage="local" {...entry} />
       ))}
       <section aria-labelledby="your-boards" className="flex flex-col gap-3.5">
         <h2
@@ -67,6 +63,7 @@ export default function Home() {
             <GameCard
               key={game.id}
               game={game}
+              storage="local"
               session={hub.sessions.find(
                 (session) => session.gameId === game.id
               )}

@@ -13,5 +13,5 @@ function CreateRoute() {
   const visitKey = useLocation({
     select: (location) => location.state.__TSR_key,
   })
-  return <BoardEditor key={visitKey} />
+  return <BoardEditor key={visitKey} storage="local" />
 }

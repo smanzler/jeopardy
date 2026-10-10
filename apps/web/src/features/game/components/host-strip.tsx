@@ -1,3 +1,4 @@
+import type { GameStorage } from "@/lib/game-store"
 import { Progress } from "@/components/ui/progress"
 import { BoardTabs } from "@/components/board-tabs"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,7 @@ type HostStripProps = {
   boardCount: number
   boardIndex: number
   gameId: string
+  storage: GameStorage
   onOpenBuzzers: () => void
   onSelectBoard: (boardIndex: number) => void
   /** The phones in the buzzer room. No count means no room. */
@@ -30,6 +32,7 @@ export function HostStrip({
   phoneCount,
   questionsLeft,
   questionTotal,
+  storage,
   title,
 }: HostStripProps) {
   return (
@@ -73,6 +76,7 @@ export function HostStrip({
           className={LINK_CLASS}
           to="/play/$gameId/winner"
           params={{ gameId }}
+          search={{ storage }}
         >
           End game
         </ButtonLink>

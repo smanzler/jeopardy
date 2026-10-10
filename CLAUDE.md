@@ -2,7 +2,7 @@
 
 pnpm workspace. TypeScript throughout, Vitest for tests.
 
-- `apps/web` is the web app: TanStack Start (SSR React 19) with file-based routing, Tailwind v4, and shadcn/ui components built on Base UI. It keeps its data in IndexedDB. `VITE_API_URL` gives the URL of the API (`apps/web/.env.example`).
+- `apps/web` is the web app: TanStack Start (SSR React 19) with file-based routing, Tailwind v4, and shadcn/ui components built on Base UI. A game lives in this browser (IndexedDB, `local`) or in the account of the host (the API, `cloud`). Read and write games through the hooks in `src/hooks/use-games.ts`, which pick the store from `gameStores` in `src/lib/game-store.ts`. A route that shows one game takes `?storage=`. `VITE_API_URL` gives the URL of the API (`apps/web/.env.example`).
 - `packages/api` is the API: Fastify on Node, deployed to Fly.io. Postgres through Drizzle: Docker locally, Neon in production.
 - `packages/shared` holds the types and zod schemas that the web app and the API both use. Import a file by its path, e.g. `@jeopardy/shared/buzzers/messages`. Inside the package, use relative imports: the `@/*` alias of the package that imports it does not apply here.
 
