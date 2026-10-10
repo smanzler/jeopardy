@@ -1,4 +1,9 @@
-import { DownloadIcon, EllipsisIcon, Trash2Icon } from "lucide-react"
+import {
+  CloudUploadIcon,
+  DownloadIcon,
+  EllipsisIcon,
+  Trash2Icon,
+} from "lucide-react"
 import type { GameStorage } from "@/lib/game-store"
 import { StorageBadge } from "@/components/game-storage"
 import type { Game, Session } from "@/lib/db"
@@ -54,6 +59,8 @@ type GameCardProps = {
   storage: GameStorage
   onDelete: () => void
   onExport: () => void
+  /** No handler hides the Upload item. */
+  onUpload: (() => void) | undefined
   /** The game in progress on this board, or none. */
   session: Session | undefined
   /** Shows where the board lives. Use it when the list mixes both. */
@@ -64,6 +71,7 @@ export function GameCard({
   game,
   onDelete,
   onExport,
+  onUpload,
   session,
   showStorage,
   storage,
@@ -146,6 +154,12 @@ export function GameCard({
               <DownloadIcon />
               Export
             </DropdownMenuItem>
+            {onUpload && (
+              <DropdownMenuItem onClick={onUpload}>
+                <CloudUploadIcon />
+                Upload to account
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem variant="destructive" onClick={onDelete}>
               <Trash2Icon />
               Delete
