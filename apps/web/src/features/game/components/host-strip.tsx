@@ -1,5 +1,6 @@
 import { Progress } from "@/components/ui/progress"
 import { BoardTabs } from "@/components/board-tabs"
+import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
 
 const LINK_CLASS =
@@ -9,7 +10,10 @@ type HostStripProps = {
   boardCount: number
   boardIndex: number
   gameId: string
+  onOpenBuzzers: () => void
   onSelectBoard: (boardIndex: number) => void
+  /** The phones in the buzzer room. No count means no room. */
+  phoneCount: number | undefined
   /** The questions of the shown board that the game has not shown yet. */
   questionsLeft: number
   questionTotal: number
@@ -21,7 +25,9 @@ export function HostStrip({
   boardCount,
   boardIndex,
   gameId,
+  onOpenBuzzers,
   onSelectBoard,
+  phoneCount,
   questionsLeft,
   questionTotal,
   title,
@@ -56,6 +62,12 @@ export function HostStrip({
             className="w-20 *:data-[slot=progress-track]:bg-card"
           />
         </div>
+        <Button variant="ghost" className={LINK_CLASS} onClick={onOpenBuzzers}>
+          Buzzers
+          {phoneCount !== undefined && (
+            <span className="text-foreground tabular-nums">· {phoneCount}</span>
+          )}
+        </Button>
         <ButtonLink
           variant="ghost"
           className={LINK_CLASS}
