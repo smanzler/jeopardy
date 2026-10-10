@@ -1,11 +1,10 @@
 import { useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
-import { useLiveQuery } from "dexie-react-hooks"
 import { formatValue } from "@/lib/board"
-import { getGame } from "@/lib/games"
 import { formatWinners } from "@/lib/score"
 import { cn } from "@/lib/utils"
-import { endSession, getSession } from "@/lib/sessions"
+import type { GameStorage } from "@/lib/game-store"
+import { useGame, useGameActions, useSession } from "@/hooks/use-games"
 import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
@@ -19,23 +18,24 @@ const PODIUM_BLOCKS = [
   "h-18 bg-secondary text-muted-foreground",
 ]
 
-export default function Winner({ gameId }: { gameId: string }) {
+export default function Winner({
+  gameId,
+  storage,
+}: {
+  gameId: string
+  storage: GameStorage
+}) {
   const navigate = useNavigate()
   const [isEnding, setIsEnding] = useState(false)
-  // Dexie holds the game in the browser, so the load waits for the client.
-  const session = useLiveQuery(
-    async () => (await getSession(gameId)) ?? null,
-    [gameId]
-  )
-  const game = useLiveQuery(
-    async () => (await getGame(gameId)) ?? null,
-    [gameId]
-  )
+  // The game loads on the client.
+  const session = useSession(storage, gameId).data
+  const game = useGame(storage, gameId).data
+  const { deleteSession } = useGameActions(storage)
 
   // The session goes first, so the game no longer counts as in progress.
   const handleHome = async () => {
     setIsEnding(true)
-    await endSession(gameId)
+    await deleteSession(gameId)
     await navigate({ to: "/" })
   }
 

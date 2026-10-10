@@ -1,4 +1,5 @@
 import { DownloadIcon, EllipsisIcon, Trash2Icon } from "lucide-react"
+import type { GameStorage } from "@/lib/game-store"
 import type { Game, Session } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import {
@@ -49,13 +50,20 @@ const ACTION_CLASS =
 
 type GameCardProps = {
   game: Game
+  storage: GameStorage
   onDelete: () => void
   onExport: () => void
   /** The game in progress on this board, or none. */
   session: Session | undefined
 }
 
-export function GameCard({ game, onDelete, onExport, session }: GameCardProps) {
+export function GameCard({
+  game,
+  onDelete,
+  onExport,
+  session,
+  storage,
+}: GameCardProps) {
   const title = game.title || "Untitled board"
   const status = buildCardStatus({ game, session })
   const view = STATE_VIEWS[status.state]
@@ -101,6 +109,7 @@ export function GameCard({ game, onDelete, onExport, session }: GameCardProps) {
           )}
           to="/play/$gameId"
           params={{ gameId: game.id }}
+          search={{ storage }}
         >
           {view.playLabel}
         </ButtonLink>
@@ -109,6 +118,7 @@ export function GameCard({ game, onDelete, onExport, session }: GameCardProps) {
           className={cn(ACTION_CLASS, "border-l border-card-foreground/15")}
           to="/edit/$gameId"
           params={{ gameId: game.id }}
+          search={{ storage }}
         >
           Edit
         </ButtonLink>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
-import { useLiveQuery } from "dexie-react-hooks"
 import type { QuestionPosition, QuestionResult } from "@/lib/db"
 import {
   buildQuestionKey,
@@ -12,20 +11,9 @@ import {
   getNextBoardIndex,
   isGameDone,
 } from "@/lib/board"
-import { getGame } from "@/lib/games"
 import type { Stake } from "@/lib/score"
-import {
-  closeQuestion,
-  getSession,
-  openQuestion,
-  revealAnswer,
-  scoreTeam,
-  setTeamScore,
-  setWager,
-  showBoard,
-  startSession,
-  undoTeamScore,
-} from "@/lib/sessions"
+import type { BuildSessionChanges, GameStorage } from "@/lib/game-store"
+import { useGame, useGameActions, useSession } from "@/hooks/use-games"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 import { DailyDoubleWager } from "@/features/game/components/daily-double-wager"
@@ -35,6 +23,10 @@ import { QuestionView } from "@/features/game/components/question-view"
 import { ScoreBar } from "@/features/game/components/score-bar"
 import { TeamSetup } from "@/features/game/components/team-setup"
 import { useQuestionKeys } from "@/features/game/hooks/use-question-keys"
+import {
+  buildNewSession,
+  sessionChanges,
+} from "@/features/game/lib/session-changes"
 import { BuzzersDialog } from "@/features/buzzers/components/buzzers-dialog"
 import { useHostRoom } from "@/features/buzzers/hooks/use-host-room"
 import {
@@ -43,18 +35,20 @@ import {
   listExcludedTeams,
 } from "@/features/buzzers/lib/buzzer-status"
 
-export default function Play({ gameId }: { gameId: string }) {
+export default function Play({
+  gameId,
+  storage,
+}: {
+  gameId: string
+  storage: GameStorage
+}) {
   const navigate = useNavigate()
-  // Dexie holds the board and the game in the browser, so the load waits for
-  // the client. A live query then follows every write.
-  const game = useLiveQuery(
-    async () => (await getGame(gameId)) ?? null,
-    [gameId]
-  )
-  const session = useLiveQuery(
-    async () => (await getSession(gameId)) ?? null,
-    [gameId]
-  )
+  // The game loads on the client, and each write updates the query.
+  const game = useGame(storage, gameId).data
+  const session = useSession(storage, gameId).data
+  const { changeSession, putSession } = useGameActions(storage)
+  const change = (buildChanges: BuildSessionChanges) =>
+    changeSession({ buildChanges, gameId })
   const {
     hostRoom,
     send: sendToRoom,
@@ -95,7 +89,7 @@ export default function Play({ gameId }: { gameId: string }) {
 
   const handleReveal = () => {
     closeBuzzers()
-    return revealAnswer(gameId)
+    return change(sessionChanges.revealAnswer())
   }
 
   const handleScore = (result: QuestionResult) => {
@@ -108,20 +102,21 @@ export default function Play({ gameId }: { gameId: string }) {
       })
       if (message) sendToRoom(message)
     }
-    return scoreTeam({ gameId, result })
+    return change(sessionChanges.scoreTeam(result))
   }
 
   const handleClose = () => {
     if (!game || !session) return
     closeBuzzers()
-    return closeQuestion({
-      boardIndex: getNextBoardIndex({
-        boardIndex: session.boardIndex,
-        boards: game.boards,
-        usedKeys: session.usedKeys,
-      }),
-      gameId,
-    })
+    return change(
+      sessionChanges.closeQuestion(
+        getNextBoardIndex({
+          boardIndex: session.boardIndex,
+          boards: game.boards,
+          usedKeys: session.usedKeys,
+        })
+      )
+    )
   }
 
   useQuestionKeys({
@@ -147,10 +142,11 @@ export default function Play({ gameId }: { gameId: string }) {
       void navigate({
         params: { gameId },
         replace: true,
+        search: { storage },
         to: "/play/$gameId/winner",
       })
     }
-  }, [gameId, isFinished, navigate])
+  }, [gameId, isFinished, navigate, storage])
 
   if (game === undefined || session === undefined) {
     return <LoadingScreen />
@@ -176,7 +172,9 @@ export default function Play({ gameId }: { gameId: string }) {
           summary={formatGameSummary(game)}
           title={title}
           onStart={(teamNames) =>
-            startSession({ boards: game.boards, gameId, teamNames })
+            putSession(
+              buildNewSession({ boards: game.boards, gameId, teamNames })
+            )
           }
         />
       </div>
@@ -187,7 +185,7 @@ export default function Play({ gameId }: { gameId: string }) {
   const boardIndex = Math.min(session.boardIndex, game.boards.length - 1)
 
   const handleSelect = (position: QuestionPosition) =>
-    openQuestion({ gameId, position })
+    change(sessionChanges.openQuestion(position))
 
   const openQuestionView =
     openPosition &&
@@ -208,7 +206,7 @@ export default function Play({ gameId }: { gameId: string }) {
           onClose={handleClose}
           scores={session.scores}
           teamNames={session.teamNames}
-          onWager={(wager) => setWager({ gameId, wager })}
+          onWager={(wager) => change(sessionChanges.setWager(wager))}
         />
       )}
       {openQuestionView && !isWagering && stake !== undefined && (
@@ -228,6 +226,7 @@ export default function Play({ gameId }: { gameId: string }) {
             boardCount={game.boards.length}
             boardIndex={boardIndex}
             gameId={gameId}
+            storage={storage}
             phoneCount={
               hostRoom.status === "live"
                 ? hostRoom.room.players.length
@@ -243,7 +242,7 @@ export default function Play({ gameId }: { gameId: string }) {
             })}
             title={title}
             onOpenBuzzers={() => setIsBuzzersOpen(true)}
-            onSelectBoard={(index) => showBoard({ boardIndex: index, gameId })}
+            onSelectBoard={(index) => change(sessionChanges.showBoard(index))}
           />
           <div className="flex flex-1 flex-col px-3.5 py-2.5">
             <GameBoard
@@ -273,9 +272,9 @@ export default function Play({ gameId }: { gameId: string }) {
         teamNames={session.teamNames}
         onScore={handleScore}
         onSetScore={({ score, teamIndex }) =>
-          setTeamScore({ gameId, score, teamIndex })
+          change(sessionChanges.setTeamScore({ score, teamIndex }))
         }
-        onUndo={(teamIndex) => undoTeamScore({ gameId, teamIndex })}
+        onUndo={(teamIndex) => change(sessionChanges.undoTeamScore(teamIndex))}
       />
     </div>
   )

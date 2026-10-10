@@ -1,10 +1,15 @@
 import { formatValue } from "@/lib/board"
+import type { GameStorage } from "@/lib/game-store"
 import { ButtonLink } from "@/components/button-link"
 import { cn } from "@/lib/utils"
 import { formatGameProgress } from "@/features/home/lib/hub"
 import type { GameInProgress } from "@/features/home/lib/hub"
 
-export function ResumePanel({ game, session }: GameInProgress) {
+export function ResumePanel({
+  game,
+  session,
+  storage,
+}: GameInProgress & { storage: GameStorage }) {
   return (
     <section
       aria-label={`Game in progress: ${game.title || "Untitled board"}`}
@@ -44,6 +49,7 @@ export function ResumePanel({ game, session }: GameInProgress) {
         className="font-heading text-lg tracking-wider uppercase"
         to="/play/$gameId"
         params={{ gameId: game.id }}
+        search={{ storage }}
       >
         Resume game
       </ButtonLink>

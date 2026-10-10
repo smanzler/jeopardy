@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router"
+import type { GameStorage } from "@/lib/game-store"
 import {
   CheckIcon,
   DownloadIcon,
@@ -40,6 +41,7 @@ type EditorHeaderProps = {
   isNew: boolean
   onTitleChange: (title: string) => void
   saveState: SaveState
+  storage: GameStorage
 }
 
 export function EditorHeader({
@@ -49,6 +51,7 @@ export function EditorHeader({
   isStored,
   onTitleChange,
   saveState,
+  storage,
 }: EditorHeaderProps) {
   const complete = countCompleteQuestions(draft)
   const total = countQuestions(draft)
@@ -101,6 +104,7 @@ export function EditorHeader({
               className="font-heading tracking-wider uppercase"
               to="/play/$gameId"
               params={{ gameId }}
+              search={{ storage }}
             >
               <PlayIcon />
               Play

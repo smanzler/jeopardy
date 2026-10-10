@@ -16,6 +16,7 @@ import {
   createRouter,
   useLocation,
 } from "@tanstack/react-router"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AppHeader } from "@/components/app-header"
 
 // Vitest runs with no globals, so Testing Library cannot clean up on its own.
@@ -29,12 +30,13 @@ function VisitKey() {
 }
 
 const renderAt = async (path: string) => {
+  const queryClient = new QueryClient()
   const rootRoute = createRootRoute({
     component: () => (
-      <>
+      <QueryClientProvider client={queryClient}>
         <AppHeader />
         <Outlet />
-      </>
+      </QueryClientProvider>
     ),
   })
   const routeTree = rootRoute.addChildren(

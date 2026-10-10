@@ -1,15 +1,18 @@
-import { useLiveQuery } from "dexie-react-hooks"
-import { getGame } from "@/lib/games"
+import type { GameStorage } from "@/lib/game-store"
+import { useGame } from "@/hooks/use-games"
 import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
 import BoardEditor from "@/features/board-editor/screens/board-editor"
 
-export default function EditBoard({ gameId }: { gameId: string }) {
-  // Dexie holds the boards in the browser, so the load waits for the client.
-  const game = useLiveQuery(
-    async () => (await getGame(gameId)) ?? null,
-    [gameId]
-  )
+export default function EditBoard({
+  gameId,
+  storage,
+}: {
+  gameId: string
+  storage: GameStorage
+}) {
+  // The board loads on the client.
+  const game = useGame(storage, gameId).data
 
   if (game === undefined) {
     return <LoadingScreen />
@@ -27,5 +30,5 @@ export default function EditBoard({ gameId }: { gameId: string }) {
   }
 
   // The key gives the editor a new state when the host edits another board.
-  return <BoardEditor key={game.id} game={game} />
+  return <BoardEditor key={game.id} game={game} storage={storage} />
 }

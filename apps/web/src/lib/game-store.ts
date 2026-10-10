@@ -1,9 +1,20 @@
+import { z } from "zod"
 import type { Game, GameDraft, Session } from "@/lib/db"
 import { localGameStore } from "@/lib/local-game-store"
 import { cloudGameStore } from "@/lib/cloud-game-store"
 
 /** Where a game lives: in this browser, or in the account of the host. */
-export type GameStorage = "local" | "cloud"
+export const gameStorageSchema = z.enum(["local", "cloud"])
+
+export type GameStorage = z.infer<typeof gameStorageSchema>
+
+/**
+ * The search params of a route that shows one game. A link with no `storage`
+ * opens a game in this browser, so old links still work.
+ */
+export const gameSearchSchema = z.object({
+  storage: gameStorageSchema.catch("local"),
+})
 
 export type GameList = { games: Array<Game>; sessions: Array<Session> }
 
