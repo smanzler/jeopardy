@@ -12,6 +12,8 @@ describe("QuestionView", () => {
   it("shows the category and the value at the top", () => {
     render(
       <QuestionView
+        buzzerStatus={undefined}
+        canOpenBuzzers={false}
         categoryName="History"
         isAnswerShown={false}
         question={question}
@@ -28,6 +30,8 @@ describe("QuestionView", () => {
   it("holds the answer back until the host asks for it", () => {
     render(
       <QuestionView
+        buzzerStatus={undefined}
+        canOpenBuzzers={false}
         categoryName="History"
         isAnswerShown={false}
         question={question}
@@ -43,6 +47,8 @@ describe("QuestionView", () => {
   it("drops the note about Space once the answer is out", () => {
     render(
       <QuestionView
+        buzzerStatus={undefined}
+        canOpenBuzzers={false}
         categoryName="History"
         isAnswerShown
         question={question}
@@ -60,6 +66,8 @@ describe("QuestionView", () => {
     const onClose = vi.fn()
     render(
       <QuestionView
+        buzzerStatus={undefined}
+        canOpenBuzzers={false}
         categoryName="History"
         isAnswerShown={false}
         question={question}
@@ -69,5 +77,21 @@ describe("QuestionView", () => {
     )
     fireEvent.click(screen.getByText("Board"))
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it("shows the buzzer line and the B key hint", () => {
+    render(
+      <QuestionView
+        buzzerStatus="Foxes buzzed first"
+        canOpenBuzzers
+        categoryName="History"
+        isAnswerShown={false}
+        question={question}
+        value="$400"
+        onClose={vi.fn()}
+      />
+    )
+    expect(screen.getByText("Foxes buzzed first")).toBeTruthy()
+    expect(screen.getByText("opens buzzing.")).toBeTruthy()
   })
 })

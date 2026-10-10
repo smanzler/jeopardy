@@ -3,6 +3,10 @@ import { Kbd } from "@/components/ui/kbd"
 import { QuestionHeader } from "@/features/game/components/question-header"
 
 type QuestionViewProps = {
+  /** Shows the B key hint. */
+  canOpenBuzzers: boolean
+  /** No status hides the buzzer line. */
+  buzzerStatus: string | undefined
   categoryName: string
   isAnswerShown: boolean
   onClose: () => void
@@ -11,6 +15,8 @@ type QuestionViewProps = {
 }
 
 export function QuestionView({
+  buzzerStatus,
+  canOpenBuzzers,
   categoryName,
   isAnswerShown,
   onClose,
@@ -26,6 +32,11 @@ export function QuestionView({
         <p className="max-w-5xl font-clue text-5xl leading-snug font-bold text-balance uppercase text-shadow-[0_4px_0_var(--shade)]">
           {question.question}
         </p>
+        {buzzerStatus && (
+          <p className="font-heading text-2xl tracking-widest text-primary uppercase">
+            {buzzerStatus}
+          </p>
+        )}
         {isAnswerShown && (
           <p className="max-w-4xl font-heading text-5xl font-semibold tracking-wide text-balance text-primary uppercase text-shadow-[0_3px_0_var(--shade)]">
             {question.answer}
@@ -37,6 +48,12 @@ export function QuestionView({
           <>
             <Kbd>Space</Kbd>
             <span>shows the answer.</span>
+          </>
+        )}
+        {canOpenBuzzers && (
+          <>
+            <Kbd>B</Kbd>
+            <span>opens buzzing.</span>
           </>
         )}
         <Kbd>Esc</Kbd>

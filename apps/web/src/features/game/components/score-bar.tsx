@@ -6,6 +6,8 @@ import { ScoreActions } from "@/features/game/components/score-actions"
 import { TeamScore } from "@/features/game/components/team-score"
 
 type ScoreBarProps = {
+  /** The team that buzzed first on the open question. */
+  buzzedTeamIndex: number | undefined
   onScore: (result: QuestionResult) => void
   onSetScore: ({
     score,
@@ -25,6 +27,7 @@ type ScoreBarProps = {
 }
 
 export function ScoreBar({
+  buzzedTeamIndex,
   onScore,
   onSetScore,
   onUndo,
@@ -48,8 +51,12 @@ export function ScoreBar({
           key={teamIndex}
           className={cn(
             "flex min-w-0 flex-col items-center justify-center gap-1.5 border-b-4 border-l border-b-transparent border-l-secondary px-3 py-2 first:border-l-0",
-            leaderIndexes.includes(teamIndex) && "border-b-primary bg-secondary"
+            leaderIndexes.includes(teamIndex) &&
+              "border-b-primary bg-secondary",
+            buzzedTeamIndex === teamIndex &&
+              "bg-primary/20 ring-4 ring-primary ring-inset"
           )}
+          data-buzzed={buzzedTeamIndex === teamIndex || undefined}
         >
           <div className="flex min-w-0 items-baseline gap-3">
             <span className="truncate font-heading text-lg tracking-widest text-muted-foreground uppercase">

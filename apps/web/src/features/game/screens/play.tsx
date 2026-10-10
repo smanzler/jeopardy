@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { useLiveQuery } from "dexie-react-hooks"
-import type { QuestionPosition } from "@/lib/db"
+import type { QuestionPosition, QuestionResult } from "@/lib/db"
 import {
   buildQuestionKey,
   countQuestions,
@@ -37,6 +37,11 @@ import { TeamSetup } from "@/features/game/components/team-setup"
 import { useQuestionKeys } from "@/features/game/hooks/use-question-keys"
 import { BuzzersDialog } from "@/features/buzzers/components/buzzers-dialog"
 import { useHostRoom } from "@/features/buzzers/hooks/use-host-room"
+import {
+  buildMessageAfterScore,
+  describeBuzzer,
+  listExcludedTeams,
+} from "@/features/buzzers/lib/buzzer-status"
 
 export default function Play({ gameId }: { gameId: string }) {
   const navigate = useNavigate()
@@ -50,7 +55,11 @@ export default function Play({ gameId }: { gameId: string }) {
     async () => (await getSession(gameId)) ?? null,
     [gameId]
   )
-  const { hostRoom, start: startBuzzers } = useHostRoom({
+  const {
+    hostRoom,
+    send: sendToRoom,
+    start: startBuzzers,
+  } = useHostRoom({
     gameId,
     teamNames: session?.teamNames ?? [],
   })
@@ -62,9 +71,49 @@ export default function Play({ gameId }: { gameId: string }) {
   )
   // The question of a daily double waits for the wager of the team.
   const isWagering = isDailyDouble && session?.wager === null
+  const buzzer = hostRoom.status === "live" ? hostRoom.room.buzzer : undefined
+  // A daily double belongs to one team, so nobody buzzes on it.
+  const canOpenBuzzers = Boolean(
+    buzzer &&
+    buzzer.status !== "open" &&
+    openPosition &&
+    !isDailyDouble &&
+    !session.isAnswerShown
+  )
+
+  const handleOpenBuzzers = () => {
+    if (!session || !canOpenBuzzers) return
+    sendToRoom({
+      type: "open",
+      excludedTeamIndexes: listExcludedTeams(session.questionResults),
+    })
+  }
+
+  const closeBuzzers = () => {
+    if (buzzer && buzzer.status !== "closed") sendToRoom({ type: "close" })
+  }
+
+  const handleReveal = () => {
+    closeBuzzers()
+    return revealAnswer(gameId)
+  }
+
+  const handleScore = (result: QuestionResult) => {
+    if (session && buzzer) {
+      const message = buildMessageAfterScore({
+        buzzer,
+        delta: result.delta,
+        questionResults: [...session.questionResults, result],
+        teamCount: session.teamNames.length,
+      })
+      if (message) sendToRoom(message)
+    }
+    return scoreTeam({ gameId, result })
+  }
 
   const handleClose = () => {
     if (!game || !session) return
+    closeBuzzers()
     return closeQuestion({
       boardIndex: getNextBoardIndex({
         boardIndex: session.boardIndex,
@@ -79,7 +128,8 @@ export default function Play({ gameId }: { gameId: string }) {
     // The keys stay free while the host types the wager.
     isOpen: Boolean(openPosition) && !isWagering,
     onClose: handleClose,
-    onReveal: () => revealAnswer(gameId),
+    onOpenBuzzers: handleOpenBuzzers,
+    onReveal: handleReveal,
   })
 
   // The game ends when the host shuts the last question that the game holds.
@@ -163,6 +213,8 @@ export default function Play({ gameId }: { gameId: string }) {
       )}
       {openQuestionView && !isWagering && stake !== undefined && (
         <QuestionView
+          buzzerStatus={buzzer && describeBuzzer(buzzer, session.teamNames)}
+          canOpenBuzzers={canOpenBuzzers}
           categoryName={openQuestionView.categoryName}
           isAnswerShown={session.isAnswerShown}
           onClose={handleClose}
@@ -210,11 +262,16 @@ export default function Play({ gameId }: { gameId: string }) {
         onStart={startBuzzers}
       />
       <ScoreBar
+        buzzedTeamIndex={
+          openQuestionView && buzzer?.status === "won"
+            ? buzzer.teamIndex
+            : undefined
+        }
         questionResults={session.questionResults}
         scores={session.scores}
         stake={stake}
         teamNames={session.teamNames}
-        onScore={(result) => scoreTeam({ gameId, result })}
+        onScore={handleScore}
         onSetScore={({ score, teamIndex }) =>
           setTeamScore({ gameId, score, teamIndex })
         }

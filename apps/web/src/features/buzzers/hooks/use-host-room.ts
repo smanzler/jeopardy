@@ -102,5 +102,5 @@ export const useHostRoom = ({
     return { status: "live", code: stored.code, room }
   }
 
-  return { hostRoom: toHostRoom(), start: () => setIsEnabled(true) }
+  return { hostRoom: toHostRoom(), send, start: () => setIsEnabled(true) }
 }

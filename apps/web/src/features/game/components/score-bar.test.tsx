@@ -9,10 +9,12 @@ import type { Stake } from "@/lib/score"
 afterEach(cleanup)
 
 const renderBar = ({
+  buzzedTeamIndex,
   questionResults = [],
   scores = [0, 0],
   stake,
 }: {
+  buzzedTeamIndex?: number
   questionResults?: Array<QuestionResult>
   scores?: Array<number>
   stake: Stake | undefined
@@ -20,6 +22,7 @@ const renderBar = ({
   const handlers = { onScore: vi.fn(), onSetScore: vi.fn(), onUndo: vi.fn() }
   const view = render(
     <ScoreBar
+      buzzedTeamIndex={buzzedTeamIndex}
       questionResults={questionResults}
       scores={scores}
       teamNames={["Owls", "Foxes"]}
@@ -87,5 +90,17 @@ describe("ScoreBar", () => {
     )
     expect(second.className).toContain("border-b-primary")
     expect(first.className).not.toContain("border-b-primary")
+  })
+
+  it("marks the team that buzzed first", () => {
+    const { view } = renderBar({
+      buzzedTeamIndex: 1,
+      stake: { points: 400, type: "all" },
+    })
+    const [first, second] = Array.from(
+      view.container.firstElementChild?.children ?? []
+    )
+    expect(second.hasAttribute("data-buzzed")).toBe(true)
+    expect(first.hasAttribute("data-buzzed")).toBe(false)
   })
 })
