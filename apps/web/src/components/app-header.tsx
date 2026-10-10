@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { PlusIcon, UploadIcon } from "lucide-react"
-import { useGameActions } from "@/hooks/use-games"
+import { useAllGameActions } from "@/hooks/use-games"
+import { useDefaultStorage } from "@/hooks/use-default-storage"
 import { GAME_FILE_ACCEPT, parseGameFile } from "@/lib/game-file"
 import { ButtonLink } from "@/components/button-link"
 import { FileButton } from "@/components/file-button"
@@ -21,11 +22,12 @@ export const buildNewBoardState = () => ({ newBoardId: crypto.randomUUID() })
 export function AppHeader() {
   const navigate = useNavigate()
   const [importError, setImportError] = useState<string>()
-  const { createGame } = useGameActions("local")
+  const actions = useAllGameActions()
+  const storage = useDefaultStorage() ?? "local"
 
   const handleImport = async (file: File) => {
     try {
-      await createGame(parseGameFile(await file.text()))
+      await actions[storage].createGame(parseGameFile(await file.text()))
       setImportError(undefined)
       await navigate({ to: "/" })
     } catch (error) {

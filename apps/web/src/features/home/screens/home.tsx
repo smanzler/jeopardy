@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { PlusIcon } from "lucide-react"
 import { Link } from "@tanstack/react-router"
-import type { Game } from "@/lib/db"
-import { useGameActions, useGameList } from "@/hooks/use-games"
+import { authClient } from "@/lib/auth-client"
+import { useAllGameActions, useGameList } from "@/hooks/use-games"
 import { Spinner } from "@/components/ui/spinner"
 import { buildNewBoardState } from "@/components/app-header"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -10,25 +10,33 @@ import { GameCard } from "@/features/home/components/game-card"
 import { ResumePanel } from "@/features/home/components/resume-panel"
 import { TitleCard } from "@/features/home/components/title-card"
 import { downloadGameFile } from "@/lib/download-file"
-import { findGamesInProgress } from "@/features/home/lib/hub"
+import { findGamesInProgress, mergeGameLists } from "@/features/home/lib/hub"
+import type { StoredGame } from "@/features/home/lib/hub"
 
 export default function Home() {
-  // The boards load on the client.
-  const list = useGameList("local").data
-  const { deleteGame } = useGameActions("local")
-  const hub = list && {
-    ...list,
-    inProgress: findGamesInProgress(list),
-  }
-  const [pendingDelete, setPendingDelete] = useState<Game>()
+  const { data: session, isPending } = authClient.useSession()
+  const isSignedIn = Boolean(session)
+  // The boards load on the client. The account adds its boards when the host
+  // is signed in.
+  const local = useGameList("local")
+  const cloud = useGameList("cloud", isSignedIn)
+  const actions = useAllGameActions()
+  const [pendingDelete, setPendingDelete] = useState<StoredGame>()
+
+  const isLoading = isPending || !local.data || (isSignedIn && cloud.isPending)
+  const games = mergeGameLists({
+    local: local.data,
+    cloud: isSignedIn ? cloud.data : undefined,
+  })
+  const inProgress = findGamesInProgress(games)
 
   const handleDelete = async () => {
     if (!pendingDelete) return
-    await deleteGame(pendingDelete.id)
+    await actions[pendingDelete.storage].deleteGame(pendingDelete.game.id)
     setPendingDelete(undefined)
   }
 
-  if (!hub) {
+  if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
         <Spinner className="size-8 text-muted-foreground" />
@@ -36,7 +44,7 @@ export default function Home() {
     )
   }
 
-  if (hub.games.length === 0) {
+  if (games.length === 0) {
     return (
       <main className="flex flex-1 flex-col p-6">
         <TitleCard />
@@ -48,8 +56,13 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-9">
       {/* The page heading is for screen readers. The bar shows the name. */}
       <h1 className="sr-only">Jeopardy</h1>
-      {hub.inProgress.map((entry) => (
-        <ResumePanel key={entry.game.id} storage="local" {...entry} />
+      {cloud.isError && (
+        <p className="text-sm text-destructive">
+          The boards in your account did not load.
+        </p>
+      )}
+      {inProgress.map((entry) => (
+        <ResumePanel key={entry.game.id} {...entry} />
       ))}
       <section aria-labelledby="your-boards" className="flex flex-col gap-3.5">
         <h2
@@ -59,16 +72,13 @@ export default function Home() {
           Your boards
         </h2>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-3.5">
-          {hub.games.map((game) => (
+          {games.map((entry) => (
             <GameCard
-              key={game.id}
-              game={game}
-              storage="local"
-              session={hub.sessions.find(
-                (session) => session.gameId === game.id
-              )}
-              onDelete={() => setPendingDelete(game)}
-              onExport={() => downloadGameFile(game)}
+              key={entry.game.id}
+              {...entry}
+              showStorage={isSignedIn}
+              onDelete={() => setPendingDelete(entry)}
+              onExport={() => downloadGameFile(entry.game)}
             />
           ))}
           <Link
@@ -88,7 +98,7 @@ export default function Home() {
             confirmLabel: "Delete it",
             description:
               "This deletes the board, its questions and the game that runs on it. You cannot undo it.",
-            title: `Delete ${pendingDelete.title || "the untitled board"}?`,
+            title: `Delete ${pendingDelete.game.title || "the untitled board"}?`,
           }
         }
         onCancel={() => setPendingDelete(undefined)}

@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SignInDialog } from "@/features/auth/components/sign-in-dialog"
-import { authClient } from "@/features/auth/lib/auth-client"
+import { authClient } from "@/lib/auth-client"
+import { useClearGames } from "@/hooks/use-games"
 
 const BUTTON_CLASS = "font-heading tracking-wider uppercase"
 
@@ -19,6 +20,12 @@ const BUTTON_CLASS = "font-heading tracking-wider uppercase"
 export function AccountMenu() {
   const { data: session, isPending } = authClient.useSession()
   const [isSignInOpen, setIsSignInOpen] = useState(false)
+  const clearGames = useClearGames()
+
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    clearGames("cloud")
+  }
 
   if (isPending) return null
 
@@ -59,7 +66,7 @@ export function AccountMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => void authClient.signOut()}>
+        <DropdownMenuItem onClick={() => void handleSignOut()}>
           <LogOutIcon />
           Sign out
         </DropdownMenuItem>

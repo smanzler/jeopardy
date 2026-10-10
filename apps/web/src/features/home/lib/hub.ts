@@ -1,4 +1,6 @@
 import type { Game, Session } from "@/lib/db"
+import { gameStorageSchema } from "@/lib/game-store"
+import type { GameList, GameStorage } from "@/lib/game-store"
 import {
   countCompleteQuestions,
   countQuestions,
@@ -7,25 +9,45 @@ import {
 } from "@/lib/board"
 import { formatLeaders } from "@/lib/score"
 
-export type GameInProgress = { game: Game; session: Session }
+/** A game with its game in progress and the store that holds it. */
+export type StoredGame = {
+  game: Game
+  session: Session | undefined
+  storage: GameStorage
+}
+
+export type GameInProgress = StoredGame & { session: Session }
+
+/** Puts the games of each store in one list, the last changed first. */
+export const mergeGameLists = (
+  lists: Partial<Record<GameStorage, GameList | undefined>>
+): Array<StoredGame> =>
+  gameStorageSchema.options
+    .flatMap((storage) => {
+      const list = lists[storage]
+      // A list that has not loaded yet adds no games.
+      if (!list) return []
+      return list.games.map((game) => ({
+        game,
+        session: list.sessions.find((session) => session.gameId === game.id),
+        storage,
+      }))
+    })
+    .sort((a, b) => b.game.updatedAt - a.game.updatedAt)
 
 /** The games that a host can resume, in the order of `games`. */
-export const findGamesInProgress = ({
-  games,
-  sessions,
-}: {
-  games: Array<Game>
-  sessions: Array<Session>
-}): Array<GameInProgress> =>
-  games.flatMap((game) => {
-    const session = sessions.find((other) => other.gameId === game.id)
+export const findGamesInProgress = (
+  games: Array<StoredGame>
+): Array<GameInProgress> =>
+  games.flatMap((entry) => {
+    const { game, session } = entry
     // A finished game waits on its winner screen, so it has nothing to resume.
     if (
       !session ||
       isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
     )
       return []
-    return [{ game, session }]
+    return [{ ...entry, session }]
   })
 
 export type CardState = "in-progress" | "ready" | "unfinished"
@@ -91,7 +113,7 @@ export const buildCardStatus = ({
 export const formatGameProgress = ({
   game,
   session,
-}: GameInProgress): string => {
+}: Pick<GameInProgress, "game" | "session">): string => {
   // The editor can remove the board that the session shows.
   const boardIndex = Math.min(session.boardIndex, game.boards.length - 1)
   const board = game.boards[boardIndex]

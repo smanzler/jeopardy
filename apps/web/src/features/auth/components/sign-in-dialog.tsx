@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { authClient } from "@/features/auth/lib/auth-client"
+import { authClient } from "@/lib/auth-client"
 
 const CODE_LENGTH = 6
 

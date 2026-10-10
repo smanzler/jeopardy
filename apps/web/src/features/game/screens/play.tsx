@@ -14,8 +14,8 @@ import {
 import type { Stake } from "@/lib/score"
 import type { BuildSessionChanges, GameStorage } from "@/lib/game-store"
 import { useGame, useGameActions, useSession } from "@/hooks/use-games"
-import { ButtonLink } from "@/components/button-link"
 import { LoadingScreen } from "@/components/loading-screen"
+import { GameUnavailable } from "@/components/game-storage"
 import { DailyDoubleWager } from "@/features/game/components/daily-double-wager"
 import { GameBoard } from "@/features/game/components/game-board"
 import { HostStrip } from "@/features/game/components/host-strip"
@@ -44,8 +44,10 @@ export default function Play({
 }) {
   const navigate = useNavigate()
   // The game loads on the client, and each write updates the query.
-  const game = useGame(storage, gameId).data
-  const session = useSession(storage, gameId).data
+  const gameQuery = useGame(storage, gameId)
+  const sessionQuery = useSession(storage, gameId)
+  const game = gameQuery.data
+  const session = sessionQuery.data
   const { changeSession, putSession } = useGameActions(storage)
   const change = (buildChanges: BuildSessionChanges) =>
     changeSession({ buildChanges, gameId })
@@ -148,19 +150,17 @@ export default function Play({
     }
   }, [gameId, isFinished, navigate, storage])
 
-  if (game === undefined || session === undefined) {
-    return <LoadingScreen />
+  if (gameQuery.isError || sessionQuery.isError || game === null) {
+    return (
+      <GameUnavailable
+        isError={gameQuery.isError || sessionQuery.isError}
+        storage={storage}
+      />
+    )
   }
 
-  if (game === null) {
-    return (
-      <div className="flex flex-col items-start gap-4 p-6">
-        <p>That board is not in this browser.</p>
-        <ButtonLink variant="outline" to="/">
-          Home
-        </ButtonLink>
-      </div>
-    )
+  if (game === undefined || session === undefined) {
+    return <LoadingScreen />
   }
 
   const title = game.title || "Untitled board"
