@@ -1,4 +1,5 @@
 import Dexie from "dexie"
+import type { GameDraft, SessionState } from "@jeopardy/shared/games/schemas"
 import type { EntityTable } from "dexie"
 import {
   toGameV3,
@@ -10,43 +11,17 @@ import {
   toSessionV7,
 } from "@/lib/migrations"
 
-export type Question = { answer: string; question: string }
-
-export type Category = { name: string; questions: Array<Question> }
-
-/** Where a question sits on a board. */
-export type CellPosition = { categoryIndex: number; rowIndex: number }
-
-/**
- * The daily doubles of a board. The editor picks `chosen` positions. A game
- * picks `count` random positions when it starts. A `none` board has none.
- */
-export type DailyDoubles =
-  | { positions: Array<CellPosition>; type: "chosen" }
-  | { type: "none" }
-  | { count: number; type: "random" }
-
-/**
- * One round of a game. `values` holds the points of each row, top to bottom,
- * so it has one entry for each question in a category.
- */
-export type Board = {
-  categories: Array<Category>
-  dailyDoubles: DailyDoubles
-  values: Array<number>
-}
-
-/** The points that one team got on the open question, so the host can undo them. */
-export type QuestionResult = { delta: number; teamIndex: number }
-
-/** The points that the team that chose a daily double stakes on it. */
-export type Wager = { points: number; teamIndex: number }
-
-/** Where a question sits in a game. */
-export type QuestionPosition = CellPosition & { boardIndex: number }
-
-/** A game that is still in the editor and has no database identity yet. */
-export type GameDraft = { boards: Array<Board>; title: string }
+export type {
+  Board,
+  Category,
+  CellPosition,
+  DailyDoubles,
+  GameDraft,
+  Question,
+  QuestionPosition,
+  QuestionResult,
+  Wager,
+} from "@jeopardy/shared/games/schemas"
 
 export type Game = GameDraft & { id: string; updatedAt: number }
 
@@ -54,24 +29,7 @@ export type Game = GameDraft & { id: string; updatedAt: number }
  * A game in progress. One game holds one session, so a reload keeps the
  * scores and the questions that the game showed already.
  */
-export type Session = {
-  /** The board that the host sees while no question is open. */
-  boardIndex: number
-  /** Keys from `buildQuestionKey`, fixed when the game starts. */
-  dailyDoubleKeys: Array<string>
-  gameId: string
-  isAnswerShown: boolean
-  openPosition: QuestionPosition | null
-  /** At most one result for each team, for the open question only. */
-  questionResults: Array<QuestionResult>
-  scores: Array<number>
-  /** One name for each entry of `scores`. */
-  teamNames: Array<string>
-  /** Keys from `buildQuestionKey`, for the questions that the game showed. */
-  usedKeys: Array<string>
-  /** The wager on the open daily double, once the host sets it. */
-  wager: Wager | null
-}
+export type Session = SessionState & { gameId: string }
 
 const db = new Dexie("jeopardy") as Dexie & {
   games: EntityTable<Game, "id">

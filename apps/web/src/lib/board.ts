@@ -13,12 +13,6 @@ export const DEFAULT_CATEGORY_COUNT = 5
 
 export const DEFAULT_ROW_COUNT = 5
 
-export const MAX_CATEGORY_COUNT = 8
-
-export const MAX_ROW_COUNT = 8
-
-export const MAX_BOARD_COUNT = 3
-
 /** The first board goes up by 100 for each row, the second by 200, and so on. */
 const ROW_VALUE_STEP = 100
 

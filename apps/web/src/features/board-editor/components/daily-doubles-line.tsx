@@ -1,10 +1,7 @@
 import type { DailyDoubles } from "@/lib/db"
 import type { DailyDoublesType } from "@/lib/daily-doubles"
-import {
-  MAX_RANDOM_DAILY_DOUBLES,
-  buildDailyDoubles,
-  getDailyDoubleOps,
-} from "@/lib/daily-doubles"
+import { MAX_RANDOM_DAILY_DOUBLES } from "@jeopardy/shared/games/schemas"
+import { buildDailyDoubles, getDailyDoubleOps } from "@/lib/daily-doubles"
 import { Label } from "@/components/ui/label"
 import {
   Select,

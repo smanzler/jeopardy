@@ -5,6 +5,8 @@ import {
   MAX_BOARD_COUNT,
   MAX_CATEGORY_COUNT,
   MAX_ROW_COUNT,
+} from "@jeopardy/shared/games/schemas"
+import {
   addBoard,
   addCategory,
   addRow,
