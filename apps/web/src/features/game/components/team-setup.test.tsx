@@ -8,20 +8,37 @@ import {
   createRouter,
 } from "@tanstack/react-router"
 import { TeamSetup } from "@/features/game/components/team-setup"
+import { useTeamDrafts } from "@/features/game/hooks/use-team-drafts"
+import type { HostRoom } from "@/features/buzzers/hooks/use-host-room"
 
 // Vitest runs with no globals, so Testing Library cannot clean up on its own.
 afterEach(cleanup)
 
-const renderSetup = async () => {
+function Harness({
+  hostRoom,
+  onStart,
+}: {
+  hostRoom: HostRoom
+  onStart: (teamNames: Array<string>) => void
+}) {
+  const teamDrafts = useTeamDrafts()
+  return (
+    <TeamSetup
+      hostRoom={hostRoom}
+      summary="1 board · 25 questions"
+      teamDrafts={teamDrafts}
+      title="Movie night"
+      onRemoveTeam={teamDrafts.remove}
+      onStart={() => onStart(teamDrafts.teamNames)}
+      onStartBuzzers={() => undefined}
+    />
+  )
+}
+
+const renderSetup = async (hostRoom: HostRoom = { status: "off" }) => {
   const onStart = vi.fn()
   const rootRoute = createRootRoute({
-    component: () => (
-      <TeamSetup
-        summary="1 board · 25 questions"
-        title="Movie night"
-        onStart={onStart}
-      />
-    ),
+    component: () => <Harness hostRoom={hostRoom} onStart={onStart} />,
   })
   const router = createRouter({
     history: createMemoryHistory(),
@@ -79,5 +96,23 @@ describe("TeamSetup", () => {
     fireEvent.click(screen.getByLabelText("Remove Team 2"))
     fireEvent.click(screen.getByText("Start the game"))
     expect(onStart).toHaveBeenCalledWith(["Owls", "Bears"])
+  })
+
+  it("shows the phones of each team when the buzzers are live", async () => {
+    await renderSetup({
+      status: "live",
+      code: "ABCD",
+      room: {
+        teamNames: ["Team 1", "Team 2"],
+        players: [
+          { id: "a", teamIndex: 0 },
+          { id: "b", teamIndex: 0 },
+        ],
+        buzzer: { status: "closed" },
+      },
+    })
+    expect(screen.getByText("ABCD")).toBeTruthy()
+    expect(screen.getByText("2 phones")).toBeTruthy()
+    expect(screen.getByText("0 phones")).toBeTruthy()
   })
 })

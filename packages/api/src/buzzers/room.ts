@@ -67,6 +67,19 @@ const hostHandlers: HostHandlers = {
       ({ teamIndex }) => teamIndex < teamNames.length
     ),
   }),
+  // The round holds team indexes that change, so it closes.
+  removeTeam: (state, { teamIndex }) => ({
+    ...state,
+    teamNames: state.teamNames.filter((_, index) => index !== teamIndex),
+    players: state.players
+      .filter((player) => player.teamIndex !== teamIndex)
+      .map((player) =>
+        player.teamIndex > teamIndex
+          ? { ...player, teamIndex: player.teamIndex - 1 }
+          : player
+      ),
+    round: { status: "closed" },
+  }),
   open: (state, { excludedTeamIndexes }) => ({
     ...state,
     round: {

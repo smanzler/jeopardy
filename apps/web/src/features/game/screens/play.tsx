@@ -23,6 +23,7 @@ import { QuestionView } from "@/features/game/components/question-view"
 import { ScoreBar } from "@/features/game/components/score-bar"
 import { TeamSetup } from "@/features/game/components/team-setup"
 import { useQuestionKeys } from "@/features/game/hooks/use-question-keys"
+import { useTeamDrafts } from "@/features/game/hooks/use-team-drafts"
 import {
   buildNewSession,
   sessionChanges,
@@ -51,13 +52,15 @@ export default function Play({
   const { changeSession, putSession } = useGameActions(storage)
   const change = (buildChanges: BuildSessionChanges) =>
     changeSession({ buildChanges, gameId })
+  const teamDrafts = useTeamDrafts()
   const {
     hostRoom,
     send: sendToRoom,
     start: startBuzzers,
   } = useHostRoom({
     gameId,
-    teamNames: session?.teamNames ?? [],
+    // The phones can join while the host names the teams.
+    teamNames: session?.teamNames ?? teamDrafts.teamNames,
   })
   const [isBuzzersOpen, setIsBuzzersOpen] = useState(false)
   const openPosition = session?.openPosition
@@ -166,14 +169,30 @@ export default function Play({
   const title = game.title || "Untitled board"
 
   if (session === null) {
+    const handleRemoveTeam = (id: string) => {
+      sendToRoom({
+        type: "removeTeam",
+        teamIndex: teamDrafts.teams.findIndex((team) => team.id === id),
+      })
+      teamDrafts.remove(id)
+    }
+
     return (
       <div className="flex h-svh flex-col">
         <TeamSetup
+          hostRoom={hostRoom}
           summary={formatGameSummary(game)}
+          teamDrafts={teamDrafts}
           title={title}
-          onStart={(teamNames) =>
+          onRemoveTeam={handleRemoveTeam}
+          onStartBuzzers={startBuzzers}
+          onStart={() =>
             putSession(
-              buildNewSession({ boards: game.boards, gameId, teamNames })
+              buildNewSession({
+                boards: game.boards,
+                gameId,
+                teamNames: teamDrafts.teamNames,
+              })
             )
           }
         />
