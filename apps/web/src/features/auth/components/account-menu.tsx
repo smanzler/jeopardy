@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRouterState } from "@tanstack/react-router"
 import { LogOutIcon, UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { SignInDialog } from "@/features/auth/components/sign-in-dialog"
+import { ButtonLink } from "@/components/button-link"
 import { authClient } from "@/lib/auth-client"
 import { useClearGames } from "@/hooks/use-games"
 
@@ -19,7 +19,7 @@ const BUTTON_CLASS = "font-heading tracking-wider uppercase"
 /** Signs the host in or out. The app works the same without an account. */
 export function AccountMenu() {
   const { data: session, isPending } = authClient.useSession()
-  const [isSignInOpen, setIsSignInOpen] = useState(false)
+  const location = useRouterState({ select: (state) => state.location })
   const clearGames = useClearGames()
 
   const handleSignOut = async () => {
@@ -30,18 +30,17 @@ export function AccountMenu() {
   if (isPending) return null
 
   if (!session) {
+    if (location.pathname === "/sign-in") return null
     return (
-      <>
-        <Button
-          className={BUTTON_CLASS}
-          size="lg"
-          variant="ghost"
-          onClick={() => setIsSignInOpen(true)}
-        >
-          Sign in
-        </Button>
-        <SignInDialog isOpen={isSignInOpen} onOpenChange={setIsSignInOpen} />
-      </>
+      <ButtonLink
+        className={BUTTON_CLASS}
+        size="lg"
+        variant="ghost"
+        to="/sign-in"
+        search={{ redirect: location.href }}
+      >
+        Sign in
+      </ButtonLink>
     )
   }
 

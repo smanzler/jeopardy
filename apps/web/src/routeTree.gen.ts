@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCreateRouteImport } from './routes/_app.create'
+import { Route as AppSignInRouteImport } from './routes/_app.sign-in'
 import { Route as BuzzIndexRouteImport } from './routes/buzz.index'
 import { Route as BuzzCodeRouteImport } from './routes/buzz.$code'
 import { Route as PlayIndexRouteImport } from './routes/play.index'
@@ -31,6 +32,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppCreateRoute = AppCreateRouteImport.update({
   id: '/create',
   path: '/create',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSignInRoute = AppSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => AppRoute,
 } as any)
 const BuzzIndexRoute = BuzzIndexRouteImport.update({
@@ -67,6 +73,7 @@ const PlayGameIdWinnerRoute = PlayGameIdWinnerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/create': typeof AppCreateRoute
+  '/sign-in': typeof AppSignInRoute
   '/buzz/$code': typeof BuzzCodeRoute
   '/buzz/': typeof BuzzIndexRoute
   '/play/': typeof PlayIndexRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/create': typeof AppCreateRoute
+  '/sign-in': typeof AppSignInRoute
   '/buzz/$code': typeof BuzzCodeRoute
   '/': typeof AppIndexRoute
   '/buzz': typeof BuzzIndexRoute
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/create': typeof AppCreateRoute
+  '/_app/sign-in': typeof AppSignInRoute
   '/buzz/$code': typeof BuzzCodeRoute
   '/_app/': typeof AppIndexRoute
   '/buzz/': typeof BuzzIndexRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/create'
+    | '/sign-in'
     | '/buzz/$code'
     | '/buzz/'
     | '/play/'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/create'
+    | '/sign-in'
     | '/buzz/$code'
     | '/'
     | '/buzz'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/create'
+    | '/_app/sign-in'
     | '/buzz/$code'
     | '/_app/'
     | '/buzz/'
@@ -160,6 +172,13 @@ declare module '@tanstack/react-router' {
       path: '/create'
       fullPath: '/create'
       preLoaderRoute: typeof AppCreateRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sign-in': {
+      id: '/_app/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof AppSignInRouteImport
       parentRoute: typeof AppRoute
     }
     '/buzz/': {
@@ -209,12 +228,14 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCreateRoute: typeof AppCreateRoute
+  AppSignInRoute: typeof AppSignInRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditGameIdRoute: typeof AppEditGameIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCreateRoute: AppCreateRoute,
+  AppSignInRoute: AppSignInRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditGameIdRoute: AppEditGameIdRoute,
 }

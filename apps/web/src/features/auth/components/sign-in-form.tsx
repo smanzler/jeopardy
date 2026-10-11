@@ -1,15 +1,14 @@
 import { useState } from "react"
+import { REGEXP_ONLY_DIGITS } from "input-otp"
 import type { FormEvent, ReactNode } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
 import { authClient } from "@/lib/auth-client"
 
 const CODE_LENGTH = 6
@@ -92,11 +91,15 @@ function CodeStep({
   const [isResent, setIsResent] = useState(false)
   const { error, isPending, run } = useRequest()
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault()
-    if (await run(() => authClient.signIn.emailOtp({ email, otp: code }))) {
+  const signIn = async (otp: string) => {
+    if (await run(() => authClient.signIn.emailOtp({ email, otp }))) {
       onSignedIn()
     }
+  }
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault()
+    void signIn(code)
   }
 
   const handleResend = async () => {
@@ -108,16 +111,29 @@ function CodeStep({
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <Field data-invalid={error !== undefined || undefined}>
         <FieldLabel htmlFor="sign-in-code">Code</FieldLabel>
-        <Input
+        <InputOTP
           id="sign-in-code"
           autoComplete="one-time-code"
           autoFocus
-          className="text-center font-heading text-2xl tracking-[0.4em] md:text-2xl"
-          inputMode="numeric"
+          containerClassName="justify-center"
+          disabled={isPending}
           maxLength={CODE_LENGTH}
+          pattern={REGEXP_ONLY_DIGITS}
           value={code}
-          onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
-        />
+          onChange={setCode}
+          onComplete={(otp: string) => void signIn(otp)}
+        >
+          <InputOTPGroup>
+            {Array.from({ length: CODE_LENGTH }, (_, index) => (
+              <InputOTPSlot
+                key={index}
+                aria-invalid={error !== undefined || undefined}
+                className="size-12 font-heading text-2xl"
+                index={index}
+              />
+            ))}
+          </InputOTPGroup>
+        </InputOTP>
         {error && <FieldError>{error}</FieldError>}
       </Field>
       <Button disabled={isPending || code.length !== CODE_LENGTH} type="submit">
@@ -170,34 +186,29 @@ const buildStepView = <TKind extends Step["kind"]>(
   actions: StepActions
 ): StepView => stepViews[step.kind](step, actions)
 
-type SignInDialogProps = {
-  isOpen: boolean
-  onOpenChange: (isOpen: boolean) => void
+type SignInFormProps = {
+  onSignedIn: () => void
 }
 
-export function SignInDialog({ isOpen, onOpenChange }: SignInDialogProps) {
+/** Asks for an email, sends a code to it, and signs in with the code. */
+export function SignInForm({ onSignedIn }: SignInFormProps) {
   const [step, setStep] = useState<Step>({ kind: "email" })
-
-  const handleOpenChange = (next: boolean) => {
-    if (!next) setStep({ kind: "email" })
-    onOpenChange(next)
-  }
 
   const { body, description } = buildStepView(step, {
     onBack: () => setStep({ kind: "email" }),
     onSent: (email) => setStep({ kind: "code", email }),
-    onSignedIn: () => handleOpenChange(false),
+    onSignedIn,
   })
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Sign in</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        {body}
-      </DialogContent>
-    </Dialog>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-heading text-3xl font-semibold tracking-wider uppercase">
+          Sign in
+        </h1>
+        <p className="text-muted-foreground">{description}</p>
+      </div>
+      {body}
+    </div>
   )
 }
