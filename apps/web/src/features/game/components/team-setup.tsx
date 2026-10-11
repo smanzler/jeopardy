@@ -1,38 +1,45 @@
-import { useState } from "react"
 import { ArrowLeftIcon, PlusIcon, XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ButtonLink } from "@/components/button-link"
 import { formatValue } from "@/lib/board"
-import { buildTeamNames, formatTeamName } from "@/lib/score"
+import { formatTeamName } from "@/lib/score"
 import { cn } from "@/lib/utils"
 import { Lectern, PLATE_CLASS } from "@/features/game/components/lectern"
-
-const MIN_TEAM_COUNT = 2
-
-const MAX_TEAM_COUNT = 8
-
-/** The id keeps the field of a team when a team before it goes away. */
-type TeamDraft = { id: string; name: string }
-
-const buildTeamDraft = (): TeamDraft => ({ id: crypto.randomUUID(), name: "" })
+import {
+  MAX_TEAM_COUNT,
+  MIN_TEAM_COUNT,
+} from "@/features/game/hooks/use-team-drafts"
+import type { TeamDrafts } from "@/features/game/hooks/use-team-drafts"
+import type { HostRoom } from "@/features/buzzers/hooks/use-host-room"
+import { HostRoomStatus } from "@/features/buzzers/components/host-room-status"
+import { JoinCode } from "@/features/buzzers/components/join-code"
+import {
+  countPlayers,
+  formatPhoneCount,
+} from "@/features/buzzers/lib/count-players"
 
 type TeamSetupProps = {
-  /** Gets one name for each team. A blank name becomes the team number. */
-  onStart: (teamNames: Array<string>) => void
+  hostRoom: HostRoom
+  onRemoveTeam: (id: string) => void
+  onStart: () => void
+  onStartBuzzers: () => void
   /** A line about the game under its title, such as its size. */
   summary: string
+  teamDrafts: TeamDrafts
   title: string
 }
 
-export function TeamSetup({ onStart, summary, title }: TeamSetupProps) {
-  const [teams, setTeams] = useState(() =>
-    Array.from({ length: MIN_TEAM_COUNT }, buildTeamDraft)
-  )
-
-  const handleNameChange = ({ id, name }: TeamDraft) =>
-    setTeams((current) =>
-      current.map((team) => (team.id === id ? { id, name } : team))
-    )
+export function TeamSetup({
+  hostRoom,
+  onRemoveTeam,
+  onStart,
+  onStartBuzzers,
+  summary,
+  teamDrafts,
+  title,
+}: TeamSetupProps) {
+  const { teams } = teamDrafts
+  const room = hostRoom.status === "live" ? hostRoom.room : undefined
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-9 p-8">
@@ -61,11 +68,7 @@ export function TeamSetup({ onStart, summary, title }: TeamSetupProps) {
                 size="icon-sm"
                 className="absolute -top-3 -right-3 z-10 rounded-full bg-secondary text-muted-foreground hover:bg-destructive hover:text-foreground"
                 aria-label={`Remove ${formatTeamName(teamIndex)}`}
-                onClick={() =>
-                  setTeams((current) =>
-                    current.filter((other) => other.id !== team.id)
-                  )
-                }
+                onClick={() => onRemoveTeam(team.id)}
               >
                 <XIcon />
               </Button>
@@ -82,11 +85,16 @@ export function TeamSetup({ onStart, summary, title }: TeamSetupProps) {
                     "outline-none placeholder:text-background/50 focus-visible:ring-3 focus-visible:ring-ring"
                   )}
                   onChange={(event) =>
-                    handleNameChange({ id: team.id, name: event.target.value })
+                    teamDrafts.rename({ id: team.id, name: event.target.value })
                   }
                 />
               }
             />
+            {room && (
+              <span className="absolute inset-x-0 -bottom-6 text-center text-sm text-muted-foreground tabular-nums">
+                {formatPhoneCount(countPlayers(room, teamIndex))}
+              </span>
+            )}
           </li>
         ))}
         {teams.length < MAX_TEAM_COUNT && (
@@ -94,9 +102,7 @@ export function TeamSetup({ onStart, summary, title }: TeamSetupProps) {
             <Button
               variant="ghost"
               className="flex h-[11.5rem] w-48 flex-col gap-1.5 rounded-none border-2 border-dashed border-card font-heading tracking-widest text-muted-foreground uppercase hover:border-primary hover:bg-card/20 hover:text-foreground"
-              onClick={() =>
-                setTeams((current) => [...current, buildTeamDraft()])
-              }
+              onClick={teamDrafts.add}
             >
               <PlusIcon className="size-8 text-primary" />
               Add team
@@ -104,13 +110,16 @@ export function TeamSetup({ onStart, summary, title }: TeamSetupProps) {
           </li>
         )}
       </ul>
+      <HostRoomStatus
+        hostRoom={hostRoom}
+        onStart={onStartBuzzers}
+        renderLive={({ code }) => <JoinCode code={code} qrSize={128} />}
+      />
       <div className="flex flex-col items-center gap-2">
         <Button
           size="xl"
           className="h-15 px-11 font-heading text-2xl font-bold tracking-widest uppercase"
-          onClick={() =>
-            onStart(buildTeamNames(teams.map((team) => team.name)))
-          }
+          onClick={onStart}
         >
           Start the game
         </Button>

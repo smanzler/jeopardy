@@ -61,6 +61,24 @@ describe("setTeams", () => {
   })
 })
 
+describe("removeTeam", () => {
+  it("removes the players of the team and keeps the others on their team", () => {
+    const state = applyHostMessage(buildOpenRoom(), {
+      type: "removeTeam",
+      teamIndex: 1,
+    })
+
+    expect(toRoom(state)).toEqual({
+      teamNames: ["Red", "Green"],
+      players: [
+        { id: "red-1", teamIndex: 0 },
+        { id: "green-1", teamIndex: 1 },
+      ],
+      buzzer: { status: "closed" },
+    })
+  })
+})
+
 describe("open", () => {
   it("gives each round a new id", () => {
     let state = buildOpenRoom()

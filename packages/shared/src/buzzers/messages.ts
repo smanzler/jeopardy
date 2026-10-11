@@ -28,6 +28,8 @@ export type Room = z.infer<typeof roomSchema>
 
 export const hostMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("setTeams"), teamNames: z.array(z.string()) }),
+  /** Keeps each player on the same team when the teams after it move up. */
+  z.object({ type: z.literal("removeTeam"), teamIndex: teamIndexSchema }),
   z.object({
     type: z.literal("open"),
     excludedTeamIndexes: z.array(teamIndexSchema),
