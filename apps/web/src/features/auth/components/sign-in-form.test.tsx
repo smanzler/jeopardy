@@ -7,7 +7,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react"
-import { SignInDialog } from "@/features/auth/components/sign-in-dialog"
+import { SignInForm } from "@/features/auth/components/sign-in-form"
 import { authClient } from "@/lib/auth-client"
 
 vi.mock("@/lib/auth-client", () => ({
@@ -23,15 +23,18 @@ const signIn = vi.mocked(authClient.signIn.emailOtp)
 // Vitest runs with no globals, so Testing Library cannot clean up on its own.
 afterEach(cleanup)
 
+// jsdom has no layout, and input-otp asks for the element at a point.
+document.elementFromPoint = () => null
+
 beforeEach(() => {
   sendCode.mockReset().mockResolvedValue({ data: null, error: null })
   signIn.mockReset().mockResolvedValue({ data: null, error: null })
 })
 
-const renderDialog = () => {
-  const onOpenChange = vi.fn()
-  render(<SignInDialog isOpen onOpenChange={onOpenChange} />)
-  return { onOpenChange }
+const renderForm = () => {
+  const onSignedIn = vi.fn()
+  render(<SignInForm onSignedIn={onSignedIn} />)
+  return { onSignedIn }
 }
 
 const sendCodeTo = async (email: string) => {
@@ -42,9 +45,12 @@ const sendCodeTo = async (email: string) => {
   await screen.findByLabelText("Code")
 }
 
-describe("SignInDialog", () => {
-  it("sends a code, then signs in with it", async () => {
-    const { onOpenChange } = renderDialog()
+const typeCode = (code: string) =>
+  fireEvent.change(screen.getByLabelText("Code"), { target: { value: code } })
+
+describe("SignInForm", () => {
+  it("sends a code, then signs in when the code is complete", async () => {
+    const { onSignedIn } = renderForm()
 
     await sendCodeTo("host@example.com")
     expect(sendCode).toHaveBeenCalledWith({
@@ -53,37 +59,41 @@ describe("SignInDialog", () => {
     })
     expect(screen.getByText(/host@example.com/)).toBeTruthy()
 
-    fireEvent.change(screen.getByLabelText("Code"), {
-      target: { value: "48 29 13" },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }))
+    typeCode("482913")
 
-    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+    await waitFor(() => expect(onSignedIn).toHaveBeenCalledOnce())
     expect(signIn).toHaveBeenCalledWith({
       email: "host@example.com",
       otp: "482913",
     })
   })
 
-  it("shows the error of a wrong code and stays open", async () => {
+  it("takes digits only", async () => {
+    renderForm()
+
+    await sendCodeTo("host@example.com")
+    typeCode("48a913")
+
+    expect(screen.getByLabelText<HTMLInputElement>("Code").value).toBe("")
+    expect(signIn).not.toHaveBeenCalled()
+  })
+
+  it("shows the error of a wrong code and stays on the code", async () => {
     signIn.mockResolvedValue({
       data: null,
       error: { message: "Invalid OTP" },
     })
-    const { onOpenChange } = renderDialog()
+    const { onSignedIn } = renderForm()
 
     await sendCodeTo("host@example.com")
-    fireEvent.change(screen.getByLabelText("Code"), {
-      target: { value: "000000" },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }))
+    typeCode("000000")
 
     expect(await screen.findByText("Invalid OTP")).toBeTruthy()
-    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(onSignedIn).not.toHaveBeenCalled()
   })
 
   it("goes back to the email step", async () => {
-    renderDialog()
+    renderForm()
 
     await sendCodeTo("host@example.com")
     fireEvent.click(screen.getByRole("button", { name: "Use another email" }))

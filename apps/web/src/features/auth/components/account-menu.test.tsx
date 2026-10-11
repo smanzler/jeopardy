@@ -8,6 +8,13 @@ import {
   waitFor,
 } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import {
+  RouterProvider,
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router"
 import { AccountMenu } from "@/features/auth/components/account-menu"
 import { authClient } from "@/lib/auth-client"
 
@@ -26,22 +33,44 @@ const mockSession = (email: string | null) =>
     isPending: false,
   } as unknown as ReturnType<typeof authClient.useSession>)
 
-const renderMenu = () => {
+const renderMenu = async (path = "/") => {
   const queryClient = new QueryClient()
-  render(
-    <QueryClientProvider client={queryClient}>
-      <AccountMenu />
-    </QueryClientProvider>
-  )
+  const rootRoute = createRootRoute({
+    component: () => (
+      <QueryClientProvider client={queryClient}>
+        <AccountMenu />
+      </QueryClientProvider>
+    ),
+  })
+  const router = createRouter({
+    history: createMemoryHistory({ initialEntries: [path] }),
+    routeTree: rootRoute.addChildren(
+      ["/", "/play/$gameId", "/sign-in"].map((routePath) =>
+        createRoute({ getParentRoute: () => rootRoute, path: routePath })
+      )
+    ),
+  })
+  await router.load()
+  render(<RouterProvider router={router} />)
   return { queryClient }
 }
 
 describe("AccountMenu", () => {
-  it("offers to sign in when signed out", () => {
+  it("hides the Sign in link on the sign-in page", async () => {
     mockSession(null)
-    renderMenu()
+    await renderMenu("/sign-in")
 
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeTruthy()
+    expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull()
+  })
+
+  it("offers to sign in when signed out, and comes back here", async () => {
+    mockSession(null)
+    await renderMenu("/play/g1?storage=cloud")
+
+    const link = await screen.findByRole("link", { name: "Sign in" })
+    expect(link.getAttribute("href")).toBe(
+      "/sign-in?redirect=%2Fplay%2Fg1%3Fstorage%3Dcloud"
+    )
   })
 
   it("signs out from the menu and drops the boards of the account", async () => {
@@ -50,11 +79,11 @@ describe("AccountMenu", () => {
       error: null,
     })
     mockSession("host@example.com")
-    const { queryClient } = renderMenu()
+    const { queryClient } = await renderMenu()
     queryClient.setQueryData(["cloud", "list"], { games: [], sessions: [] })
     queryClient.setQueryData(["local", "list"], { games: [], sessions: [] })
 
-    fireEvent.click(screen.getByRole("button", { name: "Account" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Account" }))
     expect(await screen.findByText("host@example.com")).toBeTruthy()
 
     fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }))
