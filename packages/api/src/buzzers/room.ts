@@ -101,6 +101,8 @@ const hostHandlers: HostHandlers = {
   }),
   close: (state) => ({ ...state, round: { status: "closed" } }),
   setFinal: (state, { final }) => ({ ...state, final }),
+  // The hub deletes the room, so the state stays as it is.
+  end: (state) => state,
 }
 
 export const applyHostMessage = <TType extends keyof HostMessageMap>(
