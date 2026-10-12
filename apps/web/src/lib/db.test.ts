@@ -56,6 +56,7 @@ describe("db", () => {
     expect(session).toEqual({
       boardIndex: 0,
       dailyDoubleKeys: [],
+      final: null,
       gameId: "g1",
       isAnswerShown: false,
       openPosition: { boardIndex: 0, categoryIndex: 1, rowIndex: 0 },

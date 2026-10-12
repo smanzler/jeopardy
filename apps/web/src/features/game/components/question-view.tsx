@@ -3,6 +3,8 @@ import { Kbd } from "@/components/ui/kbd"
 import { AnswerTimer } from "@/features/game/components/answer-timer"
 import { QuestionHeader } from "@/features/game/components/question-header"
 
+const ANSWER_MS = 5000
+
 type QuestionViewProps = {
   /** No key hides the answer timer. */
   answerTurnKey: string | undefined
@@ -41,7 +43,9 @@ export function QuestionView({
             {buzzerStatus}
           </p>
         )}
-        {answerTurnKey !== undefined && <AnswerTimer turnKey={answerTurnKey} />}
+        {answerTurnKey !== undefined && (
+          <AnswerTimer durationMs={ANSWER_MS} turnKey={answerTurnKey} />
+        )}
         {isAnswerShown && (
           <p className="max-w-4xl font-heading text-5xl font-semibold tracking-wide text-balance text-primary uppercase text-shadow-[0_3px_0_var(--shade)]">
             {question.answer}

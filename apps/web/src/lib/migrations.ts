@@ -22,17 +22,19 @@ type GameV3 = Omit<GameV4, "boards"> & {
 }
 
 type SessionV3 = Omit<
-  Session,
+  SessionV7,
   "dailyDoubleKeys" | "questionResults" | "teamNames" | "wager"
 >
 
 type SessionV4 = Omit<SessionV5, "teamNames">
 
-type SessionV5 = Omit<Session, "questionResults" | "wager"> & {
+type SessionV5 = Omit<SessionV7, "questionResults" | "wager"> & {
   wager: number | null
 }
 
 type SessionV6 = SessionV5 & Pick<Session, "questionResults">
+
+type SessionV7 = Omit<Session, "final">
 
 /** Version 2 gave each row 200 points more than the row above it. */
 const V2_ROW_VALUE_STEP = 200
@@ -97,7 +99,12 @@ export const toSessionV6 = (session: SessionV5): SessionV6 => ({
 })
 
 /** Version 6 kept no team with the wager, so the host sets the wager again. */
-export const toSessionV7 = (session: SessionV6): Session => ({
+export const toSessionV7 = (session: SessionV6): SessionV7 => ({
   ...session,
   wager: null,
+})
+
+export const toSessionV8 = (session: SessionV7): Session => ({
+  ...session,
+  final: null,
 })

@@ -10,6 +10,7 @@ import {
   toSessionV5,
   toSessionV6,
   toSessionV7,
+  toSessionV8,
 } from "@/lib/migrations"
 
 export type {
@@ -110,6 +111,16 @@ db.version(8)
       .toCollection()
       .modify((game, ref) => {
         ref.value = toGameV5(game)
+      })
+  })
+db.version(9)
+  .stores({ games: "id, updatedAt", sessions: "gameId" })
+  .upgrade(async (tx) => {
+    await tx
+      .table("sessions")
+      .toCollection()
+      .modify((session, ref) => {
+        ref.value = toSessionV8(session)
       })
   })
 

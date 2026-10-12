@@ -21,6 +21,7 @@ export const buildNewSession = ({
 }): Session => ({
   boardIndex: 0,
   dailyDoubleKeys: buildDailyDoubleKeys({ boards, random: Math.random }),
+  final: null,
   gameId,
   isAnswerShown: false,
   openPosition: null,

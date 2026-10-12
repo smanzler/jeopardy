@@ -33,6 +33,7 @@ const buildSession = ({
 }): Session => ({
   boardIndex,
   dailyDoubleKeys: [],
+  final: null,
   gameId,
   isAnswerShown: false,
   openPosition: null,

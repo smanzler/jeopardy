@@ -25,6 +25,7 @@ import {
   isBoardDone,
   isDraftComplete,
   isGameDone,
+  isGameOver,
   isQuestionComplete,
   moveQuestion,
   removeBoard,
@@ -466,6 +467,32 @@ describe("isGameDone", () => {
     expect(isGameDone({ boards, usedKeys: firstKeys })).toBe(false)
     expect(
       isGameDone({ boards, usedKeys: [...firstKeys, ...secondKeys] })
+    ).toBe(true)
+  })
+})
+
+describe("isGameOver", () => {
+  const boards = [buildEmptyBoard(0)]
+  const usedKeys = buildAllKeys({ board: boards[0], boardIndex: 0 })
+  const finalJeopardy = { answer: "A", category: "Cities", question: "Q" }
+
+  it("ends a game with no Final Jeopardy after its last question", () => {
+    expect(
+      isGameOver({
+        game: { boards, finalJeopardy: null },
+        session: { final: null, usedKeys },
+      })
+    ).toBe(true)
+  })
+
+  it("waits for Final Jeopardy to be done", () => {
+    const game = { boards, finalJeopardy }
+    expect(isGameOver({ game, session: { final: null, usedKeys } })).toBe(false)
+    expect(
+      isGameOver({
+        game,
+        session: { final: { step: "done", teams: [] }, usedKeys },
+      })
     ).toBe(true)
   })
 })

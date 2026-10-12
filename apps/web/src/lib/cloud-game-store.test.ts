@@ -5,6 +5,7 @@ import { cloudGameStore } from "@/lib/cloud-game-store"
 const state: SessionState = {
   boardIndex: 0,
   dailyDoubleKeys: [],
+  final: null,
   isAnswerShown: false,
   openPosition: null,
   questionResults: [],

@@ -7,6 +7,7 @@ import type {
   GameDraft,
   Question,
   QuestionPosition,
+  Session,
 } from "@/lib/db"
 import { moveItem } from "@/lib/move"
 
@@ -114,6 +115,20 @@ export const isGameDone = ({
   boards.every((board, boardIndex) =>
     isBoardDone({ board, boardIndex, usedKeys })
   )
+
+/**
+ * True when every question is used and Final Jeopardy is done or the game has
+ * none.
+ */
+export const isGameOver = ({
+  game,
+  session,
+}: {
+  game: Pick<GameDraft, "boards" | "finalJeopardy">
+  session: Pick<Session, "final" | "usedKeys">
+}): boolean =>
+  isGameDone({ boards: game.boards, usedKeys: session.usedKeys }) &&
+  (game.finalJeopardy === null || session.final?.step === "done")
 
 /**
  * The board to show after a question closes: the same board while it holds a

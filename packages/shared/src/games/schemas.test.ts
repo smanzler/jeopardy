@@ -4,6 +4,7 @@ import { gameDraftSchema, sessionStateSchema } from "./schemas"
 const session = {
   boardIndex: 0,
   dailyDoubleKeys: ["0:1:2"],
+  final: null,
   isAnswerShown: false,
   openPosition: { boardIndex: 0, categoryIndex: 1, rowIndex: 2 },
   questionResults: [{ delta: -400, teamIndex: 1 }],
