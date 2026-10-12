@@ -12,6 +12,7 @@ type HostStripProps = {
   boardIndex: number
   gameId: string
   storage: GameStorage
+  onEndGame: () => void
   onOpenBuzzers: () => void
   onSelectBoard: (boardIndex: number) => void
   /** The phones in the buzzer room. No count means no room. */
@@ -27,6 +28,7 @@ export function HostStrip({
   boardCount,
   boardIndex,
   gameId,
+  onEndGame,
   onOpenBuzzers,
   onSelectBoard,
   phoneCount,
@@ -77,6 +79,7 @@ export function HostStrip({
           to="/play/$gameId/winner"
           params={{ gameId }}
           search={{ storage }}
+          onClick={onEndGame}
         >
           End game
         </ButtonLink>

@@ -142,6 +142,20 @@ describe("buzzer rooms", () => {
     expect(next.type).toBe("room")
   })
 
+  it("closes each socket and deletes the room when the host ends it", async () => {
+    const { host, code, hostToken } = await hostRoom()
+    const red = await connect(`/rooms/${code}/play?playerId=red`)
+    red.send({ type: "join", teamIndex: 0 })
+    await host.waitFor(isRoom(({ players }) => players.length === 1))
+
+    host.send({ type: "end" })
+
+    expect(await red.closed).toBe(closeCodes.roomNotFound)
+    expect(await host.closed).toBe(closeCodes.roomNotFound)
+    const again = await connect(`/rooms/host?code=${code}&token=${hostToken}`)
+    expect(await again.closed).toBe(closeCodes.roomNotFound)
+  })
+
   it("closes a phone that asks for a room that does not exist", async () => {
     const phone = await connect("/rooms/ZZZZ/play?playerId=p1")
 

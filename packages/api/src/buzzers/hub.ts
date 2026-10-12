@@ -124,8 +124,20 @@ export const createRoomHub = () => {
     room.expiryTimer = setTimeout(() => deleteRoom(room), ROOM_EXPIRY_MS)
   }
 
+  const endRoom = (room: LiveRoom) => {
+    const { host } = room
+    // A null host makes the close skip the expiry timer of disconnectHost.
+    room.host = null
+    deleteRoom(room)
+    host?.close(closeCodes.roomNotFound)
+  }
+
   const receiveHostMessage = (room: LiveRoom, message: HostMessage) => {
     clearBuzzTimer(room)
+    if (message.type === "end") {
+      endRoom(room)
+      return
+    }
     setState(room, applyHostMessage(room.state, message))
   }
 

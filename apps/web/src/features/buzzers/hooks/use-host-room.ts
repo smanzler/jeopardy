@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { roomFinalSchema } from "@jeopardy/shared/buzzers/messages"
 import type {
   HostMessage,
@@ -62,7 +62,7 @@ type FinalAnswer = Extract<ServerMessage, { type: "finalAnswer" }>
 
 /**
  * Hosts a buzzer room for the game. The room starts with `start`, and stays
- * in this tab after a reload.
+ * in this tab after a reload. `end` deletes the room and closes each phone.
  * @param final What the phones see of Final Jeopardy. The hook sends it to
  * the room each time that it changes.
  */
@@ -84,11 +84,20 @@ export const useHostRoom = ({
   const [room, setRoom] = useState<Room | null>(null)
   const storedRef = useRef<StoredRoom | null>(null)
 
-  const saveStored = (next: StoredRoom | null) => {
-    storedRef.current = next
-    setStored(next)
-    writeStoredRoom(gameId, next)
-  }
+  const saveStored = useCallback(
+    (next: StoredRoom | null) => {
+      storedRef.current = next
+      setStored(next)
+      writeStoredRoom(gameId, next)
+    },
+    [gameId]
+  )
+
+  const stop = useCallback(() => {
+    saveStored(null)
+    setRoom(null)
+    setIsEnabled(false)
+  }, [saveStored])
 
   useEffect(() => {
     const existing = readStoredRoom(gameId)
@@ -109,11 +118,7 @@ export const useHostRoom = ({
           })
         : buildRoomUrl("/rooms/host")
     },
-    onEnd: () => {
-      saveStored(null)
-      setRoom(null)
-      setIsEnabled(false)
-    },
+    onEnd: stop,
     onMessage: (message) =>
       handleServerMessage(
         {
@@ -145,5 +150,16 @@ export const useHostRoom = ({
     return { status: "live", code: stored.code, room }
   }
 
-  return { hostRoom: toHostRoom(), send, start: () => setIsEnabled(true) }
+  // The socket sends the message that it holds before it closes.
+  const end = useCallback(() => {
+    send({ type: "end" })
+    stop()
+  }, [send, stop])
+
+  return {
+    end,
+    hostRoom: toHostRoom(),
+    send,
+    start: () => setIsEnabled(true),
+  }
 }

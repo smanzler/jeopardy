@@ -77,6 +77,8 @@ export const hostMessageSchema = z.discriminatedUnion("type", [
   }),
   z.object({ type: z.literal("close") }),
   z.object({ type: z.literal("setFinal"), final: roomFinalSchema }),
+  /** Deletes the room and closes each socket with `closeCodes.roomNotFound`. */
+  z.object({ type: z.literal("end") }),
 ])
 
 export type HostMessage = z.infer<typeof hostMessageSchema>

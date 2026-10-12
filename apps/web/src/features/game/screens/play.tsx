@@ -60,6 +60,7 @@ export default function Play({
     changeSession({ buildChanges, gameId })
   const teamDrafts = useTeamDrafts()
   const {
+    end: endBuzzers,
     hostRoom,
     send: sendToRoom,
     start: startBuzzers,
@@ -156,6 +157,7 @@ export default function Play({
     // The replace keeps the finished board out of the history, which would
     // otherwise send the host straight back here.
     if (isFinished) {
+      endBuzzers()
       void navigate({
         params: { gameId },
         replace: true,
@@ -163,7 +165,7 @@ export default function Play({
         to: "/play/$gameId/winner",
       })
     }
-  }, [gameId, isFinished, navigate, storage])
+  }, [endBuzzers, gameId, isFinished, navigate, storage])
 
   if (gameQuery.isError || sessionQuery.isError || game === null) {
     return (
@@ -295,6 +297,7 @@ export default function Play({
               boards: [game.boards[boardIndex]],
             })}
             title={title}
+            onEndGame={endBuzzers}
             onOpenBuzzers={() => setIsBuzzersOpen(true)}
             onSelectBoard={(index) => change(sessionChanges.showBoard(index))}
           />
