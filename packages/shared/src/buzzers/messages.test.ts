@@ -32,6 +32,23 @@ describe("playerMessageSchema", () => {
   })
 })
 
+describe("playerMessageSchema answers", () => {
+  it("trims an answer", () => {
+    expect(
+      playerMessageSchema.parse({ type: "answer", answer: "  Rome " })
+    ).toEqual({ type: "answer", answer: "Rome" })
+  })
+
+  it("rejects an empty answer", () => {
+    const result = playerMessageSchema.safeParse({
+      type: "answer",
+      answer: "   ",
+    })
+
+    expect(result.success).toBe(false)
+  })
+})
+
 describe("hostMessageSchema", () => {
   it("rejects a player message", () => {
     const result = hostMessageSchema.safeParse({ type: "join", teamIndex: 0 })
@@ -48,6 +65,7 @@ describe("serverMessageSchema", () => {
         teamNames: ["Red", "Blue"],
         players: [{ id: "p1", teamIndex: 1 }],
         buzzer: { status: "won", roundId: 2, teamIndex: 1 },
+        final: { step: "off" },
       },
     }
 

@@ -97,6 +97,51 @@ describe("buzzer rooms", () => {
     expect(won).toMatchObject({ room: { buzzer: { teamIndex: 1 } } })
   })
 
+  it("sends a wager from a phone to the host and to no other phone", async () => {
+    const { host, code } = await hostRoom()
+    const red = await connect(`/rooms/${code}/play?playerId=red`)
+    const blue = await connect(`/rooms/${code}/play?playerId=blue`)
+    red.send({ type: "join", teamIndex: 0 })
+    blue.send({ type: "join", teamIndex: 1 })
+    await host.waitFor(isRoom(({ players }) => players.length === 2))
+
+    const teams = [
+      { status: "in", maxWager: 1000, hasWagered: false },
+      { status: "in", maxWager: 500, hasWagered: false },
+    ]
+    host.send({
+      type: "setFinal",
+      final: { step: "wagering", category: "Cities", teams },
+    })
+    await red.waitFor(isRoom(({ final }) => final.step === "wagering"))
+    red.send({ type: "wager", points: 700 })
+
+    expect(await host.waitFor(({ type }) => type === "finalWager")).toEqual({
+      type: "finalWager",
+      teamIndex: 0,
+      points: 700,
+    })
+
+    host.send({
+      type: "setFinal",
+      final: {
+        step: "wagering",
+        category: "Cities",
+        teams: [{ ...teams[0], hasWagered: true }, teams[1]],
+      },
+    })
+    // Messages arrive in order, so a wager sent to this phone comes first.
+    const next = await blue.waitFor(
+      (message) =>
+        message.type === "finalWager" ||
+        (message.type === "room" &&
+          message.room.final.step === "wagering" &&
+          message.room.final.teams[0].status === "in" &&
+          message.room.final.teams[0].hasWagered)
+    )
+    expect(next.type).toBe("room")
+  })
+
   it("closes a phone that asks for a room that does not exist", async () => {
     const phone = await connect("/rooms/ZZZZ/play?playerId=p1")
 

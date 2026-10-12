@@ -8,6 +8,7 @@ import {
   BUZZ_WINDOW_MS,
   applyHostMessage,
   applyPlayerMessage,
+  buildHostForward,
   createRoomState,
   removePlayer,
   settleBuzzes,
@@ -161,6 +162,9 @@ export const createRoomHub = () => {
     playerId: string,
     message: PlayerMessage
   ) => {
+    const forward = buildHostForward(room.state, playerId, message)
+    if (forward && room.host) send(room.host, forward)
+
     const state = applyPlayerMessage(room.state, playerId, message)
     const isFirstBuzz = state !== room.state && startsBuzzWindow(state)
     setState(room, state)

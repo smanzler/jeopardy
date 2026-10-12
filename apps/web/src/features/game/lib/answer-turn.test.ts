@@ -4,6 +4,7 @@ import { getAnswerTurnKey } from "@/features/game/lib/answer-turn"
 
 const buildRoom = (buzzer: Buzzer): Room => ({
   buzzer,
+  final: { step: "off" },
   players: [{ id: "p1", teamIndex: 0 }],
   teamNames: ["Owls", "Foxes"],
 })

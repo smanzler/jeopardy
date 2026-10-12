@@ -2,6 +2,7 @@ import type {
   HostMessage,
   PlayerMessage,
   Room,
+  ServerMessage,
 } from "@jeopardy/shared/buzzers/messages"
 
 /** Time to wait after the first buzz for a faster one from a slower phone. */
@@ -24,6 +25,7 @@ export type RoomState = {
   players: Room["players"]
   round: Round
   nextRoundId: number
+  final: Room["final"]
 }
 
 export const createRoomState = (): RoomState => ({
@@ -31,11 +33,18 @@ export const createRoomState = (): RoomState => ({
   players: [],
   round: { status: "closed" },
   nextRoundId: 1,
+  final: { step: "off" },
 })
 
-export const toRoom = ({ teamNames, players, round }: RoomState): Room => ({
+export const toRoom = ({
   teamNames,
   players,
+  round,
+  final,
+}: RoomState): Room => ({
+  teamNames,
+  players,
+  final,
   buzzer:
     round.status === "open"
       ? {
@@ -91,6 +100,7 @@ const hostHandlers: HostHandlers = {
     nextRoundId: state.nextRoundId + 1,
   }),
   close: (state) => ({ ...state, round: { status: "closed" } }),
+  setFinal: (state, { final }) => ({ ...state, final }),
 }
 
 export const applyHostMessage = <TType extends keyof HostMessageMap>(
@@ -141,6 +151,9 @@ const playerHandlers: PlayerHandlers = {
       },
     }
   },
+  // The host keeps the wagers and the answers, so the room only sends them on.
+  wager: (state) => state,
+  answer: (state) => state,
 }
 
 export const applyPlayerMessage = <TType extends keyof PlayerMessageMap>(
@@ -148,6 +161,42 @@ export const applyPlayerMessage = <TType extends keyof PlayerMessageMap>(
   playerId: string,
   message: PlayerMessageMap[TType] & { type: TType }
 ): RoomState => playerHandlers[message.type](state, playerId, message)
+
+type HostForwards = {
+  [K in keyof PlayerMessageMap]: (
+    state: RoomState,
+    teamIndex: number,
+    message: PlayerMessageMap[K]
+  ) => ServerMessage | undefined
+}
+
+const hostForwards: HostForwards = {
+  join: () => undefined,
+  buzz: () => undefined,
+  wager: ({ final }, teamIndex, { points }) => {
+    if (final.step !== "wagering") return undefined
+    const team = final.teams.at(teamIndex)
+    if (team?.status !== "in" || team.hasWagered) return undefined
+    if (points > team.maxWager) return undefined
+    return { type: "finalWager", teamIndex, points }
+  },
+  answer: ({ final }, teamIndex, { answer }) => {
+    if (final.step !== "answering") return undefined
+    if (final.teams.at(teamIndex)?.status !== "in") return undefined
+    return { type: "finalAnswer", teamIndex, answer }
+  },
+}
+
+/** Gives the message for the host that a player message makes, if any. */
+export const buildHostForward = <TType extends keyof PlayerMessageMap>(
+  state: RoomState,
+  playerId: string,
+  message: PlayerMessageMap[TType] & { type: TType }
+): ServerMessage | undefined => {
+  const player = state.players.find(({ id }) => id === playerId)
+  if (!player) return undefined
+  return hostForwards[message.type](state, player.teamIndex, message)
+}
 
 /** Tells if this state has the first buzz of a round, so the window starts. */
 export const startsBuzzWindow = ({ round }: RoomState): boolean =>
