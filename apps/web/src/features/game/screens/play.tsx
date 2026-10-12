@@ -232,9 +232,9 @@ export default function Play({
       {openQuestionView && !isWagering && stake !== undefined && (
         <QuestionView
           answerTurnKey={getAnswerTurnKey({
-            buzzer,
             isAnswerShown: session.isAnswerShown,
             isDailyDouble,
+            room: hostRoom.status === "live" ? hostRoom.room : undefined,
           })}
           buzzerStatus={buzzer && describeBuzzer(buzzer, session.teamNames)}
           canOpenBuzzers={canOpenBuzzers}
