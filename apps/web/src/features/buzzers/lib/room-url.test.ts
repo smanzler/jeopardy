@@ -13,9 +13,9 @@ describe("buildRoomUrl", () => {
       buildRoomUrl(
         "/rooms/AB23/play",
         { playerId: "p 1" },
-        "http://localhost:4000"
+        "http://localhost:4311"
       )
-    ).toBe("ws://localhost:4000/rooms/AB23/play?playerId=p+1")
+    ).toBe("ws://localhost:4311/rooms/AB23/play?playerId=p+1")
   })
 })
 
