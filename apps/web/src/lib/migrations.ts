@@ -7,6 +7,8 @@ type GameV2 = {
   updatedAt: number
 }
 
+type GameV4 = Omit<Game, "finalJeopardy">
+
 type SessionV2 = {
   gameId: string
   isAnswerShown: boolean
@@ -15,7 +17,7 @@ type SessionV2 = {
   usedKeys: Array<string>
 }
 
-type GameV3 = Omit<Game, "boards"> & {
+type GameV3 = Omit<GameV4, "boards"> & {
   boards: Array<Omit<Board, "dailyDoubles">>
 }
 
@@ -63,12 +65,17 @@ export const toSessionV3 = ({
 })
 
 /** Gives a version 3 board no daily doubles, so its game plays as before. */
-export const toGameV4 = (game: GameV3): Game => ({
+export const toGameV4 = (game: GameV3): GameV4 => ({
   ...game,
   boards: game.boards.map((board) => ({
     ...board,
     dailyDoubles: { positions: [], type: "chosen" },
   })),
+})
+
+export const toGameV5 = (game: GameV4): Game => ({
+  ...game,
+  finalJeopardy: null,
 })
 
 export const toSessionV4 = (session: SessionV3): SessionV4 => ({

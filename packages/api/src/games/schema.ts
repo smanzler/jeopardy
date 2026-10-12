@@ -8,7 +8,11 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core"
-import type { Board, SessionState } from "@jeopardy/shared/games/schemas"
+import type {
+  Board,
+  FinalJeopardy,
+  SessionState,
+} from "@jeopardy/shared/games/schemas"
 import { users } from "@/auth/schema"
 
 export const games = pgTable(
@@ -22,6 +26,7 @@ export const games = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     boards: jsonb("boards").$type<Array<Board>>().notNull(),
+    finalJeopardy: jsonb("final_jeopardy").$type<FinalJeopardy>(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

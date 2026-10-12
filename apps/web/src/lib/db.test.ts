@@ -48,6 +48,7 @@ describe("db", () => {
           values: [200, 400],
         },
       ],
+      finalJeopardy: null,
       id: "g1",
       title: "Quiz night",
       updatedAt: 1,

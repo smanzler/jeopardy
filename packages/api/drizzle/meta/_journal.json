@@ -15,6 +15,13 @@
       "when": 1791673201501,
       "tag": "0001_games",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791829106923,
+      "tag": "0002_final_jeopardy",
+      "breakpoints": true
     }
   ]
 }

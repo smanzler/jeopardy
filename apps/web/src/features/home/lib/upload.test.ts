@@ -13,6 +13,7 @@ const game: Game = {
       values: [200],
     },
   ],
+  finalJeopardy: null,
 }
 
 const session = { gameId: game.id, scores: [200, 0] } as Session
@@ -48,7 +49,7 @@ describe("uploadGame", () => {
       "local.deleteGame",
     ])
     expect(cloud.saveGame).toHaveBeenCalledWith({
-      draft: { boards: game.boards, title: "Quiz night" },
+      draft: { boards: game.boards, finalJeopardy: null, title: "Quiz night" },
       id: game.id,
     })
   })

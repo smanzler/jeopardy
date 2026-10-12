@@ -16,6 +16,7 @@ const toCloudGame = (row: GameRow): CloudGame => ({
   id: row.id,
   title: row.title,
   boards: row.boards,
+  finalJeopardy: row.finalJeopardy,
   updatedAt: row.updatedAt.getTime(),
 })
 

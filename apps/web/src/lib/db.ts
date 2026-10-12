@@ -4,6 +4,7 @@ import type { EntityTable } from "dexie"
 import {
   toGameV3,
   toGameV4,
+  toGameV5,
   toSessionV3,
   toSessionV4,
   toSessionV5,
@@ -14,6 +15,7 @@ import {
 export type {
   Board,
   Category,
+  FinalJeopardy,
   CellPosition,
   DailyDoubles,
   GameDraft,
@@ -98,6 +100,16 @@ db.version(7)
       .toCollection()
       .modify((session, ref) => {
         ref.value = toSessionV7(session)
+      })
+  })
+db.version(8)
+  .stores({ games: "id, updatedAt", sessions: "gameId" })
+  .upgrade(async (tx) => {
+    await tx
+      .table("games")
+      .toCollection()
+      .modify((game, ref) => {
+        ref.value = toGameV5(game)
       })
   })
 

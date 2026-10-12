@@ -3,6 +3,7 @@ import type {
   Board,
   Category,
   CellPosition,
+  FinalJeopardy,
   GameDraft,
   Question,
   QuestionPosition,
@@ -54,6 +55,7 @@ export const buildEmptyBoard = (boardIndex: number): Board => ({
 
 export const buildEmptyDraft = (): GameDraft => ({
   boards: [buildEmptyBoard(0)],
+  finalJeopardy: null,
   title: "",
 })
 
@@ -157,6 +159,16 @@ export const getQuestionStatus = (question: Question): QuestionStatus => {
 
 const hasQuestionContent = (question: Question): boolean =>
   question.answer.trim() !== "" || question.question.trim() !== ""
+
+export const buildEmptyFinalJeopardy = (): FinalJeopardy => ({
+  ...buildEmptyQuestion(),
+  category: "",
+})
+
+export const hasFinalJeopardyContent = (
+  finalJeopardy: FinalJeopardy
+): boolean =>
+  finalJeopardy.category.trim() !== "" || hasQuestionContent(finalJeopardy)
 
 /** The name of a category is work that a removal loses, the same as a question. */
 export const hasCategoryContent = (category: Category): boolean =>

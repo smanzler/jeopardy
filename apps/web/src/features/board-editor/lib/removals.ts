@@ -4,6 +4,7 @@ import {
   formatValue,
   hasBoardContent,
   hasCategoryContent,
+  hasFinalJeopardyContent,
   hasRowContent,
   removeBoard,
   removeCategory,
@@ -11,9 +12,12 @@ import {
   setBoard,
 } from "@/lib/board"
 
-export type RemovalType = "board" | "category" | "row"
+export type RemovalType = "board" | "category" | "final" | "row"
 
-/** A part of the game that the editor removes. `index` counts in that part. */
+/**
+ * A part of the game that the editor removes. `index` counts in that part. A
+ * game has one Final Jeopardy, so its removal ignores `index`.
+ */
 export type Removal = { index: number; type: RemovalType }
 
 type RemovalContext = { boardIndex: number; draft: GameDraft; index: number }
@@ -69,6 +73,18 @@ const categoryDispatch: RemovalDispatch = {
     }),
 }
 
+const finalDispatch: RemovalDispatch = {
+  buildPrompt: () =>
+    buildRemovalPrompt({
+      description: "This deletes its category, clue and answer.",
+      title: "Remove Final Jeopardy?",
+    }),
+  hasContent: ({ draft }) =>
+    draft.finalJeopardy !== null &&
+    hasFinalJeopardyContent(draft.finalJeopardy),
+  remove: ({ draft }) => ({ ...draft, finalJeopardy: null }),
+}
+
 const rowDispatch: RemovalDispatch = {
   buildPrompt: ({ boardIndex, draft, index }) =>
     buildRemovalPrompt({
@@ -88,5 +104,6 @@ const rowDispatch: RemovalDispatch = {
 export const removalDispatches: Record<RemovalType, RemovalDispatch> = {
   board: boardDispatch,
   category: categoryDispatch,
+  final: finalDispatch,
   row: rowDispatch,
 }
