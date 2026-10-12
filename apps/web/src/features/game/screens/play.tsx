@@ -10,6 +10,7 @@ import {
   formatValue,
   getNextBoardIndex,
   isGameDone,
+  isGameOver,
 } from "@/lib/board"
 import type { Stake } from "@/lib/score"
 import type { BuildSessionChanges, GameStorage } from "@/lib/game-store"
@@ -25,6 +26,9 @@ import { TeamSetup } from "@/features/game/components/team-setup"
 import { useQuestionKeys } from "@/features/game/hooks/use-question-keys"
 import { useTeamDrafts } from "@/features/game/hooks/use-team-drafts"
 import { getAnswerTurnKey } from "@/features/game/lib/answer-turn"
+import { FinalIntro } from "@/features/game/final-jeopardy/components/final-intro"
+import { FinalJeopardyView } from "@/features/game/final-jeopardy/components/final-jeopardy-view"
+import { finalChanges } from "@/features/game/final-jeopardy/lib/final-changes"
 import {
   buildNewSession,
   sessionChanges,
@@ -133,12 +137,10 @@ export default function Play({
     onReveal: handleReveal,
   })
 
-  // The game ends when the host shuts the last question that the game holds.
+  // The game ends when the host shuts the last question that the game holds,
+  // or finishes its Final Jeopardy.
   const isFinished = Boolean(
-    game &&
-    session &&
-    !session.openPosition &&
-    isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
+    game && session && !session.openPosition && isGameOver({ game, session })
   )
 
   useEffect(() => {
@@ -217,6 +219,11 @@ export default function Play({
     if (session.wager) return { ...session.wager, type: "team" }
   }
   const stake = buildStake()
+  const finalJeopardy =
+    !openQuestionView &&
+    isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
+      ? game.finalJeopardy
+      : null
 
   return (
     <div className="flex h-svh flex-col">
@@ -245,7 +252,20 @@ export default function Play({
           value={formatValue(stake.points)}
         />
       )}
-      {!openQuestionView && (
+      {finalJeopardy &&
+        (session.final ? (
+          <FinalJeopardyView
+            change={(buildChanges) => void change(buildChanges)}
+            final={session.final}
+            finalJeopardy={finalJeopardy}
+            isAnswerShown={session.isAnswerShown}
+            scores={session.scores}
+            teamNames={session.teamNames}
+          />
+        ) : (
+          <FinalIntro onStart={() => change(finalChanges.start())} />
+        ))}
+      {!openQuestionView && !finalJeopardy && (
         <>
           <HostStrip
             boardCount={game.boards.length}

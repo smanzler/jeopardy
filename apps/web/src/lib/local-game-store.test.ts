@@ -20,6 +20,7 @@ const draft: GameDraft = {
 const buildSession = (gameId: string): Session => ({
   boardIndex: 0,
   dailyDoubleKeys: [],
+  final: null,
   gameId,
   isAnswerShown: false,
   openPosition: null,

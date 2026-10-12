@@ -113,6 +113,53 @@ export const wagerSchema = z.object({
 
 export type Wager = z.infer<typeof wagerSchema>
 
+/** A team with no points at the start of Final Jeopardy sits it out. */
+const finalOutSchema = z.object({ status: z.literal("out") })
+
+const finalInSchema = z.object({
+  status: z.literal("in"),
+  /** The score of the team when Final Jeopardy started. */
+  maxWager: indexSchema,
+})
+
+/** How far the host got with the response of one team. */
+export const finalRevealSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("hidden") }),
+  z.object({ status: z.literal("shown") }),
+  z.object({ status: z.literal("scored"), delta: z.number() }),
+])
+
+export type FinalReveal = z.infer<typeof finalRevealSchema>
+
+const wageringTeamSchema = z.discriminatedUnion("status", [
+  finalOutSchema,
+  finalInSchema.extend({ wager: indexSchema.nullable() }),
+])
+
+const wageredTeamSchema = z.discriminatedUnion("status", [
+  finalOutSchema,
+  finalInSchema.extend({ wager: indexSchema }),
+])
+
+const revealTeamSchema = z.discriminatedUnion("status", [
+  finalOutSchema,
+  finalInSchema.extend({ reveal: finalRevealSchema, wager: indexSchema }),
+])
+
+/**
+ * Final Jeopardy in progress, with one entry in `teams` for each team. The
+ * teams wager, then the clue shows, then the host reveals and scores each
+ * team. `done` sends the game to its winner screen.
+ */
+export const finalStateSchema = z.discriminatedUnion("step", [
+  z.object({ step: z.literal("wagering"), teams: z.array(wageringTeamSchema) }),
+  z.object({ step: z.literal("clue"), teams: z.array(wageredTeamSchema) }),
+  z.object({ step: z.literal("reveal"), teams: z.array(revealTeamSchema) }),
+  z.object({ step: z.literal("done"), teams: z.array(revealTeamSchema) }),
+])
+
+export type FinalState = z.infer<typeof finalStateSchema>
+
 /** Where a question sits in a game. */
 export const questionPositionSchema = cellPositionSchema.extend({
   boardIndex: indexSchema,
@@ -126,6 +173,8 @@ export const sessionStateSchema = z.object({
   boardIndex: indexSchema,
   /** Keys from `buildQuestionKey`, fixed when the game starts. */
   dailyDoubleKeys: z.array(z.string()),
+  /** `null` until Final Jeopardy starts. */
+  final: finalStateSchema.nullable().default(null),
   isAnswerShown: z.boolean(),
   openPosition: questionPositionSchema.nullable(),
   /** At most one result for each team, for the open question only. */

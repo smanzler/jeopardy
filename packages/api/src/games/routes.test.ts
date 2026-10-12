@@ -20,6 +20,7 @@ const draft: GameDraft = {
 const state: SessionState = {
   boardIndex: 0,
   dailyDoubleKeys: [],
+  final: null,
   isAnswerShown: false,
   openPosition: null,
   questionResults: [],

@@ -5,7 +5,7 @@ import {
   countCompleteQuestions,
   countQuestions,
   countQuestionsLeft,
-  isGameDone,
+  isGameOver,
 } from "@/lib/board"
 import { formatLeaders } from "@/lib/score"
 
@@ -42,11 +42,7 @@ export const findGamesInProgress = (
   games.flatMap((entry) => {
     const { game, session } = entry
     // A finished game waits on its winner screen, so it has nothing to resume.
-    if (
-      !session ||
-      isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
-    )
-      return []
+    if (!session || isGameOver({ game, session })) return []
     return [{ ...entry, session }]
   })
 
@@ -74,10 +70,7 @@ export const buildCardStatus = ({
   session: Session | undefined
 }): CardStatus => {
   const total = countQuestions(game)
-  if (
-    session &&
-    !isGameDone({ boards: game.boards, usedKeys: session.usedKeys })
-  ) {
+  if (session && !isGameOver({ game, session })) {
     const left = game.boards.reduce(
       (sum, board, boardIndex) =>
         sum +

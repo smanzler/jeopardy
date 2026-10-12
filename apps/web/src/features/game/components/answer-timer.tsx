@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react"
 
-const ANSWER_MS = 5000
-
 type AnswerTimerProps = {
+  durationMs: number
   /** A new key starts the timer again. */
   turnKey: string
 }
 
-/** Empties a bar in 5 seconds, then says that the time is up. */
-export function AnswerTimer({ turnKey }: AnswerTimerProps) {
+/** Empties a bar in `durationMs`, then says that the time is up. */
+export function AnswerTimer({ durationMs, turnKey }: AnswerTimerProps) {
   const [expiredKey, setExpiredKey] = useState<string>()
   const isExpired = expiredKey === turnKey
 
   useEffect(() => {
-    const timeout = setTimeout(() => setExpiredKey(turnKey), ANSWER_MS)
+    const timeout = setTimeout(() => setExpiredKey(turnKey), durationMs)
     return () => clearTimeout(timeout)
-  }, [turnKey])
+  }, [durationMs, turnKey])
 
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-3">
@@ -28,7 +27,7 @@ export function AnswerTimer({ turnKey }: AnswerTimerProps) {
         <div
           key={turnKey}
           className="h-full animate-answer-timer bg-primary"
-          style={{ animationDuration: `${ANSWER_MS}ms` }}
+          style={{ animationDuration: `${durationMs}ms` }}
         />
       </div>
       {isExpired && (

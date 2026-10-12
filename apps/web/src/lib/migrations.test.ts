@@ -8,6 +8,7 @@ import {
   toSessionV5,
   toSessionV6,
   toSessionV7,
+  toSessionV8,
 } from "@/lib/migrations"
 
 const categories = [
@@ -173,5 +174,23 @@ describe("toSessionV7", () => {
       wager: 1500,
     }
     expect(toSessionV7(session)).toEqual({ ...session, wager: null })
+  })
+})
+
+describe("toSessionV8", () => {
+  it("keeps the session and starts no Final Jeopardy", () => {
+    const session = {
+      boardIndex: 0,
+      dailyDoubleKeys: [],
+      gameId: "g1",
+      isAnswerShown: false,
+      openPosition: null,
+      questionResults: [],
+      scores: [300, -100],
+      teamNames: ["Owls", "Foxes"],
+      usedKeys: [],
+      wager: null,
+    }
+    expect(toSessionV8(session)).toEqual({ ...session, final: null })
   })
 })
