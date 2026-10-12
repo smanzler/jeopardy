@@ -1,8 +1,11 @@
 import type { Question } from "@/lib/db"
 import { Kbd } from "@/components/ui/kbd"
+import { AnswerTimer } from "@/features/game/components/answer-timer"
 import { QuestionHeader } from "@/features/game/components/question-header"
 
 type QuestionViewProps = {
+  /** No key hides the answer timer. */
+  answerTurnKey: string | undefined
   /** Shows the B key hint. */
   canOpenBuzzers: boolean
   /** No status hides the buzzer line. */
@@ -15,6 +18,7 @@ type QuestionViewProps = {
 }
 
 export function QuestionView({
+  answerTurnKey,
   buzzerStatus,
   canOpenBuzzers,
   categoryName,
@@ -37,6 +41,7 @@ export function QuestionView({
             {buzzerStatus}
           </p>
         )}
+        {answerTurnKey !== undefined && <AnswerTimer turnKey={answerTurnKey} />}
         {isAnswerShown && (
           <p className="max-w-4xl font-heading text-5xl font-semibold tracking-wide text-balance text-primary uppercase text-shadow-[0_3px_0_var(--shade)]">
             {question.answer}

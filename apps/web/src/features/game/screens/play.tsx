@@ -24,6 +24,7 @@ import { ScoreBar } from "@/features/game/components/score-bar"
 import { TeamSetup } from "@/features/game/components/team-setup"
 import { useQuestionKeys } from "@/features/game/hooks/use-question-keys"
 import { useTeamDrafts } from "@/features/game/hooks/use-team-drafts"
+import { getAnswerTurnKey } from "@/features/game/lib/answer-turn"
 import {
   buildNewSession,
   sessionChanges,
@@ -230,6 +231,11 @@ export default function Play({
       )}
       {openQuestionView && !isWagering && stake !== undefined && (
         <QuestionView
+          answerTurnKey={getAnswerTurnKey({
+            buzzer,
+            isAnswerShown: session.isAnswerShown,
+            isDailyDouble,
+          })}
           buzzerStatus={buzzer && describeBuzzer(buzzer, session.teamNames)}
           canOpenBuzzers={canOpenBuzzers}
           categoryName={openQuestionView.categoryName}

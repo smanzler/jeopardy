@@ -12,6 +12,7 @@ describe("QuestionView", () => {
   it("shows the category and the value at the top", () => {
     render(
       <QuestionView
+        answerTurnKey={undefined}
         buzzerStatus={undefined}
         canOpenBuzzers={false}
         categoryName="History"
@@ -30,6 +31,7 @@ describe("QuestionView", () => {
   it("holds the answer back until the host asks for it", () => {
     render(
       <QuestionView
+        answerTurnKey={undefined}
         buzzerStatus={undefined}
         canOpenBuzzers={false}
         categoryName="History"
@@ -47,6 +49,7 @@ describe("QuestionView", () => {
   it("drops the note about Space once the answer is out", () => {
     render(
       <QuestionView
+        answerTurnKey={undefined}
         buzzerStatus={undefined}
         canOpenBuzzers={false}
         categoryName="History"
@@ -66,6 +69,7 @@ describe("QuestionView", () => {
     const onClose = vi.fn()
     render(
       <QuestionView
+        answerTurnKey={undefined}
         buzzerStatus={undefined}
         canOpenBuzzers={false}
         categoryName="History"
@@ -82,6 +86,7 @@ describe("QuestionView", () => {
   it("shows the buzzer line and the B key hint", () => {
     render(
       <QuestionView
+        answerTurnKey={undefined}
         buzzerStatus="Foxes buzzed first"
         canOpenBuzzers
         categoryName="History"
