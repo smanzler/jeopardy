@@ -138,12 +138,20 @@ const wageringTeamSchema = z.discriminatedUnion("status", [
 
 const wageredTeamSchema = z.discriminatedUnion("status", [
   finalOutSchema,
-  finalInSchema.extend({ wager: indexSchema }),
+  finalInSchema.extend({
+    /** What the team wrote on a phone. A team with no phone says it aloud. */
+    answer: z.string().nullable(),
+    wager: indexSchema,
+  }),
 ])
 
 const revealTeamSchema = z.discriminatedUnion("status", [
   finalOutSchema,
-  finalInSchema.extend({ reveal: finalRevealSchema, wager: indexSchema }),
+  finalInSchema.extend({
+    answer: z.string().nullable(),
+    reveal: finalRevealSchema,
+    wager: indexSchema,
+  }),
 ])
 
 /**

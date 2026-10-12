@@ -78,6 +78,12 @@ export function FinalReveal({
                 </Button>
               ) : (
                 <div className="flex flex-col items-center gap-2">
+                  {/* A team with no phone says its answer aloud. */}
+                  {team.answer !== null && (
+                    <span className="font-heading text-2xl font-semibold text-balance uppercase">
+                      {team.answer}
+                    </span>
+                  )}
                   <span className="text-sm text-muted-foreground">
                     Wagered {formatValue(team.wager)}
                   </span>

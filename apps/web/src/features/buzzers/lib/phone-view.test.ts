@@ -82,3 +82,71 @@ describe("buildPhoneView", () => {
     })
   })
 })
+
+describe("buildPhoneView in Final Jeopardy", () => {
+  const withFinal = (final: Room["final"]): Room => ({
+    ...buildRoom(open),
+    final,
+  })
+  const wagering = (hasWagered: boolean): Room["final"] => ({
+    step: "wagering",
+    category: "Cities",
+    teams: [{ status: "in", maxWager: 800, hasWagered }, { status: "out" }],
+  })
+
+  it("asks for a wager in place of the buzzer", () => {
+    expect(
+      buildPhoneView({
+        buzzedRoundId: null,
+        room: withFinal(wagering(false)),
+        teamIndex: 0,
+      })
+    ).toEqual({
+      kind: "finalWager",
+      category: "Cities",
+      maxWager: 800,
+      teamName: "Owls",
+    })
+  })
+
+  it("locks the wager once the team wagered", () => {
+    expect(
+      buildPhoneView({
+        buzzedRoundId: null,
+        room: withFinal(wagering(true)),
+        teamIndex: 0,
+      }).kind
+    ).toBe("finalWagered")
+  })
+
+  it("tells a team with no points that it sits out", () => {
+    expect(
+      buildPhoneView({
+        buzzedRoundId: null,
+        room: withFinal(wagering(false)),
+        teamIndex: 1,
+      }).kind
+    ).toBe("finalOut")
+  })
+
+  it("shows the clue and asks for an answer", () => {
+    expect(
+      buildPhoneView({
+        buzzedRoundId: null,
+        room: withFinal({
+          step: "answering",
+          category: "Cities",
+          question: "Not built in a day",
+          teams: [{ status: "in", hasAnswered: false }, { status: "out" }],
+        }),
+        teamIndex: 0,
+      })
+    ).toEqual({
+      kind: "finalAnswer",
+      category: "Cities",
+      hasAnswered: false,
+      question: "Not built in a day",
+      teamName: "Owls",
+    })
+  })
+})

@@ -8,7 +8,7 @@ import type { FinalStep } from "@/features/game/final-jeopardy/lib/final-changes
 import type { FinalStepProps } from "@/features/game/final-jeopardy/components/final-step-props"
 import { FinalScreen } from "@/features/game/final-jeopardy/components/final-screen"
 import { FinalTeamCard } from "@/features/game/final-jeopardy/components/final-team-card"
-import { WagerForm } from "@/features/game/final-jeopardy/components/wager-form"
+import { WagerForm } from "@/components/wager-form"
 
 /** Shows the category and takes a wager from each team that plays. */
 export function FinalWagering({

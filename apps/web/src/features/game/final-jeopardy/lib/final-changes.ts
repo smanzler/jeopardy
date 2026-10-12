@@ -128,13 +128,59 @@ export const finalChanges = {
         },
       }
     },
+  /** Keeps a wager from a phone only when the team has none yet. */
+  takePhoneWager:
+    ({
+      points,
+      teamIndex,
+    }: {
+      points: number
+      teamIndex: number
+    }): BuildSessionChanges =>
+    (session) => {
+      const team =
+        session.final?.step === "wagering"
+          ? session.final.teams.at(teamIndex)
+          : undefined
+      if (team?.status !== "in" || team.wager !== null) return {}
+      return finalChanges.setWager({ points, teamIndex })(session)
+    },
   showClue:
     (): BuildSessionChanges =>
     ({ final }) => {
       if (final?.step !== "wagering") return {}
       const { teams } = final
       if (!teams.every(isWagered)) return {}
-      return { final: { step: "clue", teams } }
+      return {
+        final: {
+          step: "clue",
+          teams: teams.map((team) =>
+            team.status === "in" ? { ...team, answer: null } : team
+          ),
+        },
+      }
+    },
+  /** A new answer from the same team replaces the one before it. */
+  setAnswer:
+    ({
+      answer,
+      teamIndex,
+    }: {
+      answer: string
+      teamIndex: number
+    }): BuildSessionChanges =>
+    ({ final }) => {
+      if (final?.step !== "clue") return {}
+      const team = final.teams.at(teamIndex)
+      if (team?.status !== "in") return {}
+      return {
+        final: {
+          ...final,
+          teams: final.teams.map((existing, index) =>
+            index === teamIndex ? { ...team, answer } : existing
+          ),
+        },
+      }
     },
   startReveal:
     (): BuildSessionChanges =>
