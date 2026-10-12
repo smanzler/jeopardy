@@ -11,6 +11,7 @@ import {
   addCategory,
   addRow,
   buildEmptyDraft,
+  buildEmptyFinalJeopardy,
   formatValue,
   getRowCount,
   moveQuestion,
@@ -34,6 +35,7 @@ import { EditorHeader } from "@/features/board-editor/components/editor-header"
 import type { SaveState } from "@/features/board-editor/components/editor-header"
 import { BoardStrip } from "@/features/board-editor/components/board-strip"
 import { DailyDoublesLine } from "@/features/board-editor/components/daily-doubles-line"
+import { FinalJeopardySection } from "@/features/board-editor/components/final-jeopardy-section"
 import { getDailyDoubleOps } from "@/lib/daily-doubles"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { removalDispatches } from "@/features/board-editor/lib/removals"
@@ -54,7 +56,13 @@ type BoardEditorProps = {
 export default function BoardEditor({ game, storage }: BoardEditorProps) {
   const { saveGame } = useGameActions(storage)
   const [draft, setDraft] = useState<GameDraft>(() =>
-    game ? { boards: game.boards, title: game.title } : buildEmptyDraft()
+    game
+      ? {
+          boards: game.boards,
+          finalJeopardy: game.finalJeopardy,
+          title: game.title,
+        }
+      : buildEmptyDraft()
   )
   // The board claims its key before the first write, so quick changes cannot
   // race each other into two rows. A new board reaches the database when the
@@ -329,6 +337,14 @@ export default function BoardEditor({ game, storage }: BoardEditorProps) {
         onChange={(dailyDoubles) =>
           updateCurrentBoard({ ...board, dailyDoubles })
         }
+      />
+      <FinalJeopardySection
+        finalJeopardy={draft.finalJeopardy}
+        onAdd={() =>
+          updateBoard({ ...draft, finalJeopardy: buildEmptyFinalJeopardy() })
+        }
+        onChange={(finalJeopardy) => updateBoard({ ...draft, finalJeopardy })}
+        onRemove={() => handleRemove({ index: 0, type: "final" })}
       />
       <QuestionDialog
         categoryName={

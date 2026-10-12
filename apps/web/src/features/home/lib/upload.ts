@@ -29,7 +29,11 @@ export const uploadGame = async ({
     ? game.id
     : crypto.randomUUID()
   await cloud.saveGame({
-    draft: { boards: game.boards, title: game.title },
+    draft: {
+      boards: game.boards,
+      finalJeopardy: game.finalJeopardy,
+      title: game.title,
+    },
     id,
   })
   if (session) await cloud.putSession({ ...session, gameId: id })

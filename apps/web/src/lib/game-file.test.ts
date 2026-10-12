@@ -20,6 +20,23 @@ describe("renderGameFile and parseGameFile", () => {
     expect(parseGameFile(renderGameFile(draft))).toEqual(draft)
   })
 
+  it("keep the Final Jeopardy", () => {
+    const withFinal: GameDraft = {
+      ...draft,
+      finalJeopardy: { answer: "A", category: "Cities", question: "Q" },
+    }
+    expect(parseGameFile(renderGameFile(withFinal))).toEqual(withFinal)
+  })
+
+  it("read a file from before Final Jeopardy", () => {
+    const text = JSON.stringify({
+      format: "jeopardy-game",
+      game: { boards: draft.boards, title: draft.title },
+      version: 1,
+    })
+    expect(parseGameFile(text).finalJeopardy).toBeNull()
+  })
+
   it("keep chosen daily doubles and custom values", () => {
     const [first, second] = draft.boards
     const custom: GameDraft = {

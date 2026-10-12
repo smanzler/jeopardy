@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   toGameV3,
   toGameV4,
+  toGameV5,
   toSessionV3,
   toSessionV4,
   toSessionV5,
@@ -82,6 +83,24 @@ describe("toGameV4", () => {
       { positions: [], type: "chosen" },
     ])
     expect(game.boards[1].values).toEqual([200, 400, 600])
+  })
+})
+
+describe("toGameV5", () => {
+  it("keeps the game and gives it no Final Jeopardy", () => {
+    const game = {
+      boards: [
+        {
+          categories,
+          dailyDoubles: { type: "none" as const },
+          values: [100, 200, 300],
+        },
+      ],
+      id: "g1",
+      title: "Quiz",
+      updatedAt: 5,
+    }
+    expect(toGameV5(game)).toEqual({ ...game, finalJeopardy: null })
   })
 })
 

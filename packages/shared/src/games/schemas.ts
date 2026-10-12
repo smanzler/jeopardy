@@ -80,9 +80,18 @@ export const boardSchema = z
 
 export type Board = z.infer<typeof boardSchema>
 
+/** The last question of a game. Each team wagers on it before it shows. */
+export const finalJeopardySchema = questionSchema.extend({
+  category: z.string(),
+})
+
+export type FinalJeopardy = z.infer<typeof finalJeopardySchema>
+
 /** A game that has no storage identity yet. */
 export const gameDraftSchema = z.object({
   boards: z.array(boardSchema).min(1).max(MAX_BOARD_COUNT),
+  // Games that were saved before Final Jeopardy have no key for it.
+  finalJeopardy: finalJeopardySchema.nullable().default(null),
   title: z.string(),
 })
 

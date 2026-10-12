@@ -51,6 +51,7 @@ const buildFilledBoard = (board: Board): Board => ({
 
 const buildFilledDraft = (draft: GameDraft): GameDraft => ({
   boards: draft.boards.map(buildFilledBoard),
+  finalJeopardy: null,
   title: "A game",
 })
 

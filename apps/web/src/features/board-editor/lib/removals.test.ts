@@ -3,6 +3,7 @@ import { removalDispatches } from "@/features/board-editor/lib/removals"
 import {
   addBoard,
   buildEmptyDraft,
+  buildEmptyFinalJeopardy,
   setBoard,
   setCategoryName,
   setQuestion,
@@ -58,5 +59,25 @@ describe("removalDispatches", () => {
     expect(removalDispatches.row.buildPrompt(context).title).toBe(
       "Remove the $200 row?"
     )
+  })
+
+  it("asks first for a Final Jeopardy only when it holds work", () => {
+    const draft = buildEmptyDraft()
+    const { final } = removalDispatches
+    const empty = { ...draft, finalJeopardy: buildEmptyFinalJeopardy() }
+    const filled = {
+      ...draft,
+      finalJeopardy: { ...buildEmptyFinalJeopardy(), category: "Cities" },
+    }
+    expect(final.hasContent({ boardIndex: 0, draft, index: 0 })).toBe(false)
+    expect(final.hasContent({ boardIndex: 0, draft: empty, index: 0 })).toBe(
+      false
+    )
+    expect(final.hasContent({ boardIndex: 0, draft: filled, index: 0 })).toBe(
+      true
+    )
+    expect(
+      final.remove({ boardIndex: 0, draft: filled, index: 0 }).finalJeopardy
+    ).toBeNull()
   })
 })

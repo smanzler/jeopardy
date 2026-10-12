@@ -16,6 +16,7 @@ const buildGame = ({
   id: string
 }): Game => ({
   boards,
+  finalJeopardy: null,
   id,
   title: id,
   updatedAt: 1,

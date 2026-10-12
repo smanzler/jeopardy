@@ -14,6 +14,7 @@ const draft: GameDraft = {
       values: [200],
     },
   ],
+  finalJeopardy: null,
 }
 
 const buildSession = (gameId: string): Session => ({

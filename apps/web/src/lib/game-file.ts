@@ -12,9 +12,17 @@ const gameFileSchema = z.object({
   version: z.literal(VERSION),
 })
 
-export const renderGameFile = ({ boards, title }: GameDraft): string =>
+export const renderGameFile = ({
+  boards,
+  finalJeopardy,
+  title,
+}: GameDraft): string =>
   JSON.stringify(
-    { format: FORMAT, game: { boards, title }, version: VERSION },
+    {
+      format: FORMAT,
+      game: { boards, finalJeopardy, title },
+      version: VERSION,
+    },
     null,
     2
   )

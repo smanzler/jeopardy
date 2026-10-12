@@ -14,6 +14,7 @@ const draft: GameDraft = {
       values: [200],
     },
   ],
+  finalJeopardy: null,
 }
 
 const state: SessionState = {
@@ -70,6 +71,21 @@ describe("game routes", () => {
 
     const one = await request("GET", `/api/games/${gameId}`)
     expect(one.json()).toMatchObject({ game: draft, session: null })
+  })
+
+  it("keeps the Final Jeopardy of a game", async () => {
+    const finalJeopardy = { answer: "A", category: "Cities", question: "Q" }
+    await request("PUT", `/api/games/${gameId}`, { ...draft, finalJeopardy })
+
+    const one = await request("GET", `/api/games/${gameId}`)
+    expect(one.json()).toMatchObject({ game: { finalJeopardy } })
+  })
+
+  it("saves a game that has no Final Jeopardy key", async () => {
+    const { finalJeopardy: _finalJeopardy, ...older } = draft
+    const saved = await request("PUT", `/api/games/${gameId}`, older)
+
+    expect(saved.json()).toMatchObject({ finalJeopardy: null })
   })
 
   it("refuses a board that breaks the schema", async () => {
