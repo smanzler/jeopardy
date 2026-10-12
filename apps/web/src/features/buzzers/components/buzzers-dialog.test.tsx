@@ -40,6 +40,7 @@ describe("BuzzersDialog", () => {
           { id: "b", teamIndex: 1 },
         ],
         buzzer: { status: "closed" },
+        final: { step: "off" },
       },
     })
 

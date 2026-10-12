@@ -18,10 +18,51 @@ export const buzzerSchema = z.discriminatedUnion("status", [
 
 export type Buzzer = z.infer<typeof buzzerSchema>
 
+export const MAX_FINAL_ANSWER_LENGTH = 200
+
+const finalOutSchema = z.object({ status: z.literal("out") })
+
+/**
+ * What the phones see of Final Jeopardy. The host sends it, and keeps the
+ * wagers and the answers to itself.
+ */
+export const roomFinalSchema = z.discriminatedUnion("step", [
+  z.object({ step: z.literal("off") }),
+  z.object({
+    step: z.literal("wagering"),
+    category: z.string(),
+    teams: z.array(
+      z.discriminatedUnion("status", [
+        finalOutSchema,
+        z.object({
+          status: z.literal("in"),
+          maxWager: z.number().int().nonnegative(),
+          hasWagered: z.boolean(),
+        }),
+      ])
+    ),
+  }),
+  z.object({
+    step: z.literal("answering"),
+    category: z.string(),
+    question: z.string(),
+    teams: z.array(
+      z.discriminatedUnion("status", [
+        finalOutSchema,
+        z.object({ status: z.literal("in"), hasAnswered: z.boolean() }),
+      ])
+    ),
+  }),
+  z.object({ step: z.literal("closed") }),
+])
+
+export type RoomFinal = z.infer<typeof roomFinalSchema>
+
 export const roomSchema = z.object({
   teamNames: z.array(z.string()),
   players: z.array(z.object({ id: z.string(), teamIndex: teamIndexSchema })),
   buzzer: buzzerSchema,
+  final: roomFinalSchema,
 })
 
 export type Room = z.infer<typeof roomSchema>
@@ -35,6 +76,7 @@ export const hostMessageSchema = z.discriminatedUnion("type", [
     excludedTeamIndexes: z.array(teamIndexSchema),
   }),
   z.object({ type: z.literal("close") }),
+  z.object({ type: z.literal("setFinal"), final: roomFinalSchema }),
 ])
 
 export type HostMessage = z.infer<typeof hostMessageSchema>
@@ -46,6 +88,15 @@ export const playerMessageSchema = z.discriminatedUnion("type", [
     roundId: z.number().int(),
     /** Milliseconds from when the phone got the "open" room to the press. */
     reactionMs: z.number().nonnegative(),
+  }),
+  z.object({
+    type: z.literal("wager"),
+    points: z.number().int().nonnegative(),
+  }),
+  /** A new answer from the same team replaces the one before it. */
+  z.object({
+    type: z.literal("answer"),
+    answer: z.string().trim().min(1).max(MAX_FINAL_ANSWER_LENGTH),
   }),
 ])
 
@@ -60,6 +111,18 @@ export const serverMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("hosting"),
     code: roomCodeSchema,
     hostToken: z.string(),
+  }),
+  /** Sent to the host only. */
+  z.object({
+    type: z.literal("finalWager"),
+    teamIndex: teamIndexSchema,
+    points: z.number().int().nonnegative(),
+  }),
+  /** Sent to the host only. */
+  z.object({
+    type: z.literal("finalAnswer"),
+    teamIndex: teamIndexSchema,
+    answer: z.string(),
   }),
 ])
 

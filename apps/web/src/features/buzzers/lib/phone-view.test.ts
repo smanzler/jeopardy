@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest"
-import type { Buzzer } from "@jeopardy/shared/buzzers/messages"
+import type { Buzzer, Room } from "@jeopardy/shared/buzzers/messages"
 import { buildPhoneView } from "@/features/buzzers/lib/phone-view"
 
-const buildRoom = (buzzer: Buzzer) => ({
+const buildRoom = (buzzer: Buzzer): Room => ({
   teamNames: ["Owls", "Foxes"],
   players: [],
   buzzer,
+  final: { step: "off" },
 })
 
 const open: Buzzer = { status: "open", roundId: 4, excludedTeamIndexes: [] }

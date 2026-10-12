@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   applyHostMessage,
   applyPlayerMessage,
+  buildHostForward,
   createRoomState,
   removePlayer,
   settleBuzzes,
@@ -75,6 +76,7 @@ describe("removeTeam", () => {
         { id: "green-1", teamIndex: 1 },
       ],
       buzzer: { status: "closed" },
+      final: { step: "off" },
     })
   })
 })
@@ -164,5 +166,78 @@ describe("removePlayer", () => {
     const state = removePlayer(buildOpenRoom(), "blue-1")
 
     expect(state.players.map(({ id }) => id)).toEqual(["red-1", "green-1"])
+  })
+})
+
+describe("buildHostForward", () => {
+  const wagering = (hasWagered: boolean) =>
+    applyHostMessage(buildOpenRoom(), {
+      type: "setFinal",
+      final: {
+        step: "wagering",
+        category: "Cities",
+        teams: [
+          { status: "in", maxWager: 1000, hasWagered },
+          { status: "out" },
+          { status: "in", maxWager: 400, hasWagered: false },
+        ],
+      },
+    })
+
+  it("sends a wager to the host with the team of the phone", () => {
+    expect(
+      buildHostForward(wagering(false), "red-1", { type: "wager", points: 800 })
+    ).toEqual({ type: "finalWager", teamIndex: 0, points: 800 })
+  })
+
+  it("drops a wager over the most, from a team that sits out, or again", () => {
+    expect(
+      buildHostForward(wagering(false), "green-1", {
+        type: "wager",
+        points: 401,
+      })
+    ).toBeUndefined()
+    expect(
+      buildHostForward(wagering(false), "blue-1", { type: "wager", points: 0 })
+    ).toBeUndefined()
+    expect(
+      buildHostForward(wagering(true), "red-1", { type: "wager", points: 800 })
+    ).toBeUndefined()
+  })
+
+  it("sends an answer only while the teams answer", () => {
+    const answer = { type: "answer", answer: "What is Rome?" } as const
+    expect(buildHostForward(wagering(false), "red-1", answer)).toBeUndefined()
+
+    const answering = applyHostMessage(buildOpenRoom(), {
+      type: "setFinal",
+      final: {
+        step: "answering",
+        category: "Cities",
+        question: "Not built in a day",
+        teams: [
+          { status: "in", hasAnswered: true },
+          { status: "out" },
+          { status: "in", hasAnswered: false },
+        ],
+      },
+    })
+    expect(buildHostForward(answering, "red-1", answer)).toEqual({
+      type: "finalAnswer",
+      teamIndex: 0,
+      answer: "What is Rome?",
+    })
+    expect(buildHostForward(answering, "blue-1", answer)).toBeUndefined()
+    expect(buildHostForward(answering, "stranger", answer)).toBeUndefined()
+  })
+
+  it("sends nothing for a buzz", () => {
+    expect(
+      buildHostForward(buildOpenRoom(), "red-1", {
+        type: "buzz",
+        roundId: 1,
+        reactionMs: 100,
+      })
+    ).toBeUndefined()
   })
 })

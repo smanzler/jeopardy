@@ -85,7 +85,7 @@ export const useHostRoom = ({
         saveStored({ code: message.code, hostToken: message.hostToken })
         return
       }
-      setRoom(message.room)
+      if (message.type === "room") setRoom(message.room)
     },
   })
 

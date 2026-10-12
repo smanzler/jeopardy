@@ -109,6 +109,7 @@ describe("TeamSetup", () => {
           { id: "b", teamIndex: 0 },
         ],
         buzzer: { status: "closed" },
+        final: { step: "off" },
       },
     })
     expect(screen.getByText("ABCD")).toBeTruthy()
