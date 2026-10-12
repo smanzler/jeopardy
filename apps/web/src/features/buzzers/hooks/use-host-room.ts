@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react"
-import type { HostMessage, Room } from "@jeopardy/shared/buzzers/messages"
+import { roomFinalSchema } from "@jeopardy/shared/buzzers/messages"
+import type {
+  HostMessage,
+  Room,
+  RoomFinal,
+  ServerMessage,
+} from "@jeopardy/shared/buzzers/messages"
 import { buildRoomUrl } from "@/features/buzzers/lib/room-url"
 import { useRoomSocket } from "@/features/buzzers/hooks/use-room-socket"
 
@@ -34,15 +40,43 @@ const writeStoredRoom = (gameId: string, stored: StoredRoom | null) => {
 const isSameTeams = (a: Array<string>, b: Array<string>) =>
   a.length === b.length && a.every((name, index) => name === b[index])
 
+// The parse puts the keys in the order of the schema, the same as the room.
+const isSameFinal = (a: RoomFinal, b: RoomFinal) =>
+  JSON.stringify(roomFinalSchema.parse(a)) ===
+  JSON.stringify(roomFinalSchema.parse(b))
+
+type ServerMessageHandlers = {
+  [TType in ServerMessage["type"]]: (
+    message: Extract<ServerMessage, { type: TType }>
+  ) => void
+}
+
+const handleServerMessage = <TType extends ServerMessage["type"]>(
+  handlers: ServerMessageHandlers,
+  message: Extract<ServerMessage, { type: TType }> & { type: TType }
+) => handlers[message.type](message)
+
+type FinalWager = Extract<ServerMessage, { type: "finalWager" }>
+
+type FinalAnswer = Extract<ServerMessage, { type: "finalAnswer" }>
+
 /**
  * Hosts a buzzer room for the game. The room starts with `start`, and stays
  * in this tab after a reload.
+ * @param final What the phones see of Final Jeopardy. The hook sends it to
+ * the room each time that it changes.
  */
 export const useHostRoom = ({
+  final,
   gameId,
+  onFinalAnswer,
+  onFinalWager,
   teamNames,
 }: {
+  final: RoomFinal
   gameId: string
+  onFinalAnswer: (message: FinalAnswer) => void
+  onFinalWager: (message: FinalWager) => void
   teamNames: Array<string>
 }) => {
   const [isEnabled, setIsEnabled] = useState(false)
@@ -80,13 +114,16 @@ export const useHostRoom = ({
       setRoom(null)
       setIsEnabled(false)
     },
-    onMessage: (message) => {
-      if (message.type === "hosting") {
-        saveStored({ code: message.code, hostToken: message.hostToken })
-        return
-      }
-      if (message.type === "room") setRoom(message.room)
-    },
+    onMessage: (message) =>
+      handleServerMessage(
+        {
+          hosting: ({ code, hostToken }) => saveStored({ code, hostToken }),
+          room: (next) => setRoom(next.room),
+          finalWager: onFinalWager,
+          finalAnswer: onFinalAnswer,
+        },
+        message
+      ),
   })
 
   const { send } = socket
@@ -95,6 +132,12 @@ export const useHostRoom = ({
       send({ type: "setTeams", teamNames })
     }
   }, [room, send, teamNames])
+
+  useEffect(() => {
+    if (room && !isSameFinal(room.final, final)) {
+      send({ type: "setFinal", final })
+    }
+  }, [final, room, send])
 
   const toHostRoom = (): HostRoom => {
     if (!isEnabled) return { status: "off" }

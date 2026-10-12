@@ -29,6 +29,7 @@ import { getAnswerTurnKey } from "@/features/game/lib/answer-turn"
 import { FinalIntro } from "@/features/game/final-jeopardy/components/final-intro"
 import { FinalJeopardyView } from "@/features/game/final-jeopardy/components/final-jeopardy-view"
 import { finalChanges } from "@/features/game/final-jeopardy/lib/final-changes"
+import { toRoomFinal } from "@/features/game/final-jeopardy/lib/room-final"
 import {
   buildNewSession,
   sessionChanges,
@@ -63,7 +64,15 @@ export default function Play({
     send: sendToRoom,
     start: startBuzzers,
   } = useHostRoom({
+    final: toRoomFinal({
+      final: session?.final ?? null,
+      finalJeopardy: game?.finalJeopardy ?? null,
+    }),
     gameId,
+    onFinalAnswer: ({ answer, teamIndex }) =>
+      change(finalChanges.setAnswer({ answer, teamIndex })),
+    onFinalWager: ({ points, teamIndex }) =>
+      change(finalChanges.takePhoneWager({ points, teamIndex })),
     // The phones can join while the host names the teams.
     teamNames: session?.teamNames ?? teamDrafts.teamNames,
   })

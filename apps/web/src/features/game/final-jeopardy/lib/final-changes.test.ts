@@ -119,6 +119,35 @@ describe("finalChanges", () => {
   })
 })
 
+describe("finalChanges from phones", () => {
+  it("keeps the first wager from a phone", () => {
+    const session = apply(
+      buildSession([3000, 0, 400]),
+      finalChanges.start(),
+      finalChanges.takePhoneWager({ points: 1000, teamIndex: 0 }),
+      finalChanges.takePhoneWager({ points: 2000, teamIndex: 0 })
+    )
+    expect(session.final?.teams[0]).toMatchObject({ wager: 1000 })
+  })
+
+  it("keeps the last answer while the clue shows", () => {
+    const session = apply(
+      wagerAll(buildSession([3000, 0, 400])),
+      finalChanges.showClue(),
+      finalChanges.setAnswer({ answer: "Paris", teamIndex: 0 }),
+      finalChanges.setAnswer({ answer: "Rome", teamIndex: 0 })
+    )
+    expect(session.final?.teams[0]).toMatchObject({ answer: "Rome" })
+    expect(session.final?.teams[2]).toMatchObject({ answer: null })
+
+    const revealed = apply(session, finalChanges.startReveal())
+    expect(
+      finalChanges.setAnswer({ answer: "Oslo", teamIndex: 0 })(revealed)
+    ).toEqual({})
+    expect(revealed.final?.teams[0]).toMatchObject({ answer: "Rome" })
+  })
+})
+
 describe("listRevealOrder", () => {
   it("puts the lowest score before Final Jeopardy first", () => {
     const revealed = apply(

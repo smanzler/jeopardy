@@ -106,6 +106,10 @@ export const usePlayerRoom = (code: string) => {
     if ("vibrate" in navigator) navigator.vibrate(40)
   }
 
+  const sendWager = (points: number) => send({ type: "wager", points })
+
+  const sendAnswer = (answer: string) => send({ type: "answer", answer })
+
   const toPlayerRoom = (): PlayerRoom => {
     if (isEnded) return { status: "ended" }
     if (!isOpen || !room) return { status: "connecting" }
@@ -118,6 +122,8 @@ export const usePlayerRoom = (code: string) => {
     changeTeam: () => setTeamIndex(undefined),
     join,
     playerRoom: toPlayerRoom(),
+    sendAnswer,
+    sendWager,
     teamIndex,
   }
 }

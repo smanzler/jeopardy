@@ -9,10 +9,15 @@ import { useWakeLock } from "@/features/buzzers/hooks/use-wake-lock"
 import { buildPhoneView } from "@/features/buzzers/lib/phone-view"
 import type { PhoneView } from "@/features/buzzers/lib/phone-view"
 import { cn } from "@/lib/utils"
+import { formatValue } from "@/lib/board"
+import { WagerForm } from "@/components/wager-form"
+import { FinalAnswerForm } from "@/features/buzzers/components/final-answer-form"
 
 type Actions = {
   buzz: () => void
   join: (teamIndex: number) => void
+  sendAnswer: (answer: string) => void
+  sendWager: (points: number) => void
 }
 
 const MESSAGE_CLASS =
@@ -101,6 +106,50 @@ const phoneViews: {
       <p className={BIG_TEXT_CLASS}>{winnerName} buzzed first</p>
     </Message>
   ),
+  finalOut: () => (
+    <Message>
+      <p className={cn(BIG_TEXT_CLASS, "text-muted-foreground")}>
+        Your team sits out Final Jeopardy
+      </p>
+    </Message>
+  ),
+  finalWager: ({ category, maxWager, teamName }, { sendWager }) => (
+    <Message>
+      <p className="font-heading tracking-widest text-muted-foreground uppercase">
+        Final Jeopardy
+      </p>
+      <p className={cn(BIG_TEXT_CLASS, "text-primary")}>{category}</p>
+      <WagerForm maxWager={maxWager} teamName={teamName} onWager={sendWager} />
+      <p className="text-sm text-muted-foreground">
+        Wager up to {formatValue(maxWager)}. You cannot change it after you lock
+        it.
+      </p>
+    </Message>
+  ),
+  finalWagered: ({ category }) => (
+    <Message>
+      <p className={cn(BIG_TEXT_CLASS, "text-primary")}>{category}</p>
+      <p className={BIG_TEXT_CLASS}>Wager locked in</p>
+      <p className="text-muted-foreground">Wait for the clue.</p>
+    </Message>
+  ),
+  finalAnswer: ({ category, hasAnswered, question }, { sendAnswer }) => (
+    <Message>
+      <p className="font-heading tracking-widest text-primary uppercase">
+        {category}
+      </p>
+      <p className="font-clue text-xl leading-snug font-bold text-balance uppercase">
+        {question}
+      </p>
+      <FinalAnswerForm hasAnswered={hasAnswered} onAnswer={sendAnswer} />
+    </Message>
+  ),
+  finalClosed: () => (
+    <Message>
+      <p className={BIG_TEXT_CLASS}>Answers are in</p>
+      <p className="text-muted-foreground">Watch the screen.</p>
+    </Message>
+  ),
 }
 
 const renderPhoneView = <TKind extends PhoneView["kind"]>(
@@ -120,8 +169,16 @@ function Ended() {
 }
 
 function LiveRoom({ code }: { code: string }) {
-  const { buzz, buzzedRoundId, changeTeam, join, playerRoom, teamIndex } =
-    usePlayerRoom(code)
+  const {
+    buzz,
+    buzzedRoundId,
+    changeTeam,
+    join,
+    playerRoom,
+    sendAnswer,
+    sendWager,
+    teamIndex,
+  } = usePlayerRoom(code)
   useWakeLock(playerRoom.status === "live")
 
   const bodies: {
@@ -139,6 +196,8 @@ function LiveRoom({ code }: { code: string }) {
       renderPhoneView(buildPhoneView({ buzzedRoundId, room, teamIndex }), {
         buzz,
         join,
+        sendAnswer,
+        sendWager,
       }),
   }
   const renderBody = <TStatus extends PlayerRoom["status"]>(

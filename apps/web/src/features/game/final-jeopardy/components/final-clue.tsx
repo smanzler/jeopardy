@@ -10,7 +10,9 @@ const THINK_MS = 30_000
 /** Shows the clue while the teams write their responses. */
 export function FinalClue({
   change,
+  final,
   finalJeopardy,
+  teamNames,
 }: FinalStepProps<FinalStep<"clue">>) {
   return (
     <FinalScreen
@@ -29,6 +31,15 @@ export function FinalClue({
         {finalJeopardy.question}
       </p>
       <AnswerTimer durationMs={THINK_MS} turnKey="final" />
+      <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-heading tracking-widest uppercase">
+        {final.teams.map((team, teamIndex) =>
+          team.status === "in" && team.answer !== null ? (
+            <li key={teamIndex} className="text-success-foreground">
+              {teamNames[teamIndex]} answered
+            </li>
+          ) : null
+        )}
+      </ul>
     </FinalScreen>
   )
 }
