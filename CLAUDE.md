@@ -69,15 +69,16 @@ Paths in `packages/api`:
 
 Run these from the repository root. Each one runs in every package.
 
-| Command          | Effect                             |
-| ---------------- | ---------------------------------- |
-| `pnpm dev`       | Web on port 3100, API on port 4000 |
-| `pnpm build`     | Production build                   |
-| `pnpm test`      | Vitest, single run                 |
-| `pnpm lint`      | ESLint (TanStack config)           |
-| `pnpm typecheck` | `tsc --noEmit`                     |
-| `pnpm format`    | Prettier, write                    |
-| `pnpm check`     | Prettier, check only               |
+| Command          | Effect                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `pnpm dev`       | Docker, then web on port 3100 and API on port 4000 in the tmux session `jeopardy`             |
+| `pnpm down`      | Stop the dev servers, the containers and the session (`-- --purge` also removes the database) |
+| `pnpm build`     | Production build                                                                              |
+| `pnpm test`      | Vitest, single run                                                                            |
+| `pnpm lint`      | ESLint (TanStack config)                                                                      |
+| `pnpm typecheck` | `tsc --noEmit`                                                                                |
+| `pnpm format`    | Prettier, write                                                                               |
+| `pnpm check`     | Prettier, check only                                                                          |
 
 Use `pnpm --filter <package> <script>` to run one package's script, e.g. `pnpm --filter @jeopardy/web preview`.
 
