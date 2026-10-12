@@ -53,6 +53,16 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@theme {
+    --animate-answer-timer: answer-timer linear forwards;
+
+    @keyframes answer-timer {
+        to {
+            transform: scaleX(0);
+        }
+    }
+}
+
 :root {
     --background: oklch(0.23 0.11 266);
     --foreground: oklch(0.98 0.01 260);
