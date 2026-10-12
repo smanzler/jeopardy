@@ -2,7 +2,7 @@ import { vi } from "vitest"
 import type { FastifyInstance } from "fastify"
 import { mailer } from "@/auth/mailer"
 
-const ORIGIN = "http://localhost:3100"
+const ORIGIN = "http://localhost:4310"
 
 /**
  * Signs in through the email code flow, and gives the cookie header of the

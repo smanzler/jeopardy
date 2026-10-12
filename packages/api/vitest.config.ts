@@ -5,9 +5,9 @@ export default defineConfig({
   test: {
     setupFiles: ["src/db/test-database.ts"],
     env: {
-      DATABASE_URL: "postgres://test:test@localhost:5432/test",
+      DATABASE_URL: "postgres://test:test@localhost:4312/test",
       BETTER_AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
-      BETTER_AUTH_URL: "http://localhost:3100",
+      BETTER_AUTH_URL: "http://localhost:4310",
     },
   },
 })

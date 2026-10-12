@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: jeopardy
       POSTGRES_DB: jeopardy
     ports:
-      - "5432:5432"
+      - "4312:5432"
     volumes:
       - database:/var/lib/postgresql/data
     healthcheck:
@@ -19,8 +19,8 @@ services:
   mailpit:
     image: axllent/mailpit
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "4313:1025"
+      - "4314:8025"
 
 volumes:
   database:

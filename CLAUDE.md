@@ -63,7 +63,7 @@ Paths in `packages/api`:
 - Vitest has no config block in `apps/web/vite.config.ts`, so tests run in the Node environment. A test that renders a component needs `environment: "jsdom"` first — `jsdom` and `@testing-library/react` are already installed
 - Use a dev server that already runs when you must see the change. Examples: a UI difference, or a bug that you must reproduce
 - Do not start a dev server when `lint` and `typecheck` answer the question
-- Check for a dev server on port 3100 before you start one. Stop each dev server that you start
+- Check for a dev server on port 4310 before you start one. Stop each dev server that you start
 
 ## Commands
 
@@ -71,7 +71,7 @@ Run these from the repository root. Each one runs in every package.
 
 | Command          | Effect                                                                                        |
 | ---------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm dev`       | Docker, then web on port 3100 and API on port 4000 in the tmux session `jeopardy`             |
+| `pnpm dev`       | Docker, then web on port 4310 and API on port 4311 in the tmux session `jeopardy`             |
 | `pnpm down`      | Stop the dev servers, the containers and the session (`-- --purge` also removes the database) |
 | `pnpm build`     | Production build                                                                              |
 | `pnpm test`      | Vitest, single run                                                                            |
@@ -82,6 +82,6 @@ Run these from the repository root. Each one runs in every package.
 
 Use `pnpm --filter <package> <script>` to run one package's script, e.g. `pnpm --filter @jeopardy/web preview`.
 
-Database scripts run in `packages/api` (`pnpm --filter @jeopardy/api <script>`): `db:up` starts Postgres and Mailpit in Docker (read the sign-in emails at http://localhost:8025), `db:generate` writes a migration after a schema change, and `db:migrate` applies the migrations. The deploy workflow applies them in production.
+Database scripts run in `packages/api` (`pnpm --filter @jeopardy/api <script>`): `db:up` starts Postgres and Mailpit in Docker (read the sign-in emails at http://localhost:4314), `db:generate` writes a migration after a schema change, and `db:migrate` applies the migrations. The deploy workflow applies them in production.
 
 Test an API route with `buildServer().inject(...)`. Do not start a server for it. API tests run on PGlite (in-memory Postgres) with the migrations applied, from `src/db/test-database.ts`, so they need no Docker. Use `signIn` from `src/auth/test-sign-in.ts` to get a session cookie.

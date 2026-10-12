@@ -1,4 +1,4 @@
-const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:4000"
+const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:4311"
 
 /** Gives the WebSocket URL of an API path. */
 export const buildRoomUrl = (

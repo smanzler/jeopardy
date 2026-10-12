@@ -5,7 +5,7 @@ import { nitro } from "nitro/vite"
 import viteReact from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 
-const apiUrl = process.env.VITE_API_URL ?? "http://localhost:4000"
+const apiUrl = process.env.VITE_API_URL ?? "http://localhost:4311"
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },

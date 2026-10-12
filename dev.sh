@@ -59,8 +59,8 @@ tmux send-keys -t "$p_docker" "docker compose -f packages/api/docker-compose.yml
 tmux send-keys -t "$p_api"    "pnpm dev" Enter
 tmux send-keys -t "$p_web"    "pnpm dev" Enter
 
-info "backend:  docker logs | api      :4000"
-info "frontend: web    :3100"
+info "backend:  docker logs | api      :4311"
+info "frontend: web    :4310"
 
 step "Ready"
 info "running detached in session '$SESSION'"

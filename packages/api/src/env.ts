@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 const envSchema = z.object({
-  PORT: z.coerce.number().default(4000),
+  PORT: z.coerce.number().default(4311),
   DATABASE_URL: z.string(),
 
   BETTER_AUTH_SECRET: z.string().min(32),
@@ -9,7 +9,7 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url(),
 
   SMTP_HOST: z.string().default("localhost"),
-  SMTP_PORT: z.coerce.number().default(1025),
+  SMTP_PORT: z.coerce.number().default(4313),
   SMTP_SECURE: z.stringbool().default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),

@@ -10,7 +10,7 @@ set -uo pipefail
 SESSION="${JEOPARDY_SESSION:-jeopardy}"
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 COMPOSE="$ROOT/packages/api/docker-compose.yml"
-PORTS=(4000 3100 5432 1025 8025)
+PORTS=(4311 4310 4312 4313 4314)
 PURGE=0
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
@@ -52,7 +52,7 @@ if tmux has-session -t "=$SESSION:" 2>/dev/null; then
   # Wait for the watchers to release their ports before taking the database
   # away, so tsx and vite exit cleanly instead of on a dropped connection.
   for _ in $(seq 1 10); do
-    port_busy 4000 || port_busy 3100 || break
+    port_busy 4311 || port_busy 4310 || break
     sleep 1
   done
 else
